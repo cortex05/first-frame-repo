@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from 'react'
 import './App.css'
 import { Stage, Layer, Rect, Text, Transformer } from 'react-konva';
 
+import { initialStudentGeneration } from './utilities/studentUtilities';
+
 const PALETTE_X = 20;
 const PALETTE_Y = 20;
 const PALETTE_W = 120;
@@ -29,6 +31,7 @@ function App() {
     const numberOfStudents = prompt('How many students are in the class?');
     const studentsToNumber = Number(numberOfStudents);
     setStudentCount(studentsToNumber);
+    setStudents(initialStudentGeneration(studentsToNumber));
   }, [])
   
   useEffect(() => {

@@ -9,3 +9,5 @@ class Student {
     this.questionsAnswered.push(question);
   }
 }
+
+export default Student;
