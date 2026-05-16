@@ -15,10 +15,22 @@ const TEMPLATE_Y = PALETTE_Y + 80;
 function App() {
   const [rects, setRects] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
+  const [studentCount, setStudentCount] = useState(0);
+  const [students, setStudents] = useState([]);
+
   const templateRef = useRef(null);
   const trRef = useRef(null);
   const stageRef = useRef(null);
+  const prompted = useRef(false);
 
+  useEffect(() => {
+    if (prompted.current) return;
+    prompted.current = true;
+    const numberOfStudents = prompt('How many students are in the class?');
+    const studentsToNumber = Number(numberOfStudents);
+    setStudentCount(studentsToNumber);
+  }, [])
+  
   useEffect(() => {
     if (!trRef.current) return;
     if (selectedId && stageRef.current) {
