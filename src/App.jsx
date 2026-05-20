@@ -18,6 +18,10 @@ const CIRCLE_R = 18;
 const CELL_PAD = 8;
 const BUTTON_H = 28;
 
+const SCALE_MIN = 0.1;
+const SCALE_MAX = 5;
+const SCALE_STEP = 1.2;
+
 // Returns { cols, rows } for N students.
 // Up to 6: fill a 3-col, 2-row grid. Beyond 6: alternate adding a col then a row.
 function getGridDimensions(count) {
@@ -73,10 +77,14 @@ function App() {
   const [modalRectId, setModalRectId] = useState(null);
   const [modalInput, setModalInput] = useState('');
 
+  const [scale, setScale] = useState(1);
+  const [stagePos, setStagePos] = useState({ x: 0, y: 0 });
+
   const templateRef = useRef(null);
   const trRef = useRef(null);
   const stageRef = useRef(null);
   const prompted = useRef(false);
+  const lastPinchDist = useRef(0);
 
   useEffect(() => {
     if (prompted.current) return;
@@ -136,6 +144,74 @@ function App() {
     if (e.target === e.target.getStage()) {
       setSelectedId(null);
     }
+  };
+
+  const clampScale = (s) => Math.min(SCALE_MAX, Math.max(SCALE_MIN, s));
+
+  const zoomBy = (factor) => {
+    const stage = stageRef.current;
+    const oldScale = stage.scaleX();
+    const newScale = clampScale(oldScale * factor);
+    const center = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    const pointTo = {
+      x: (center.x - stage.x()) / oldScale,
+      y: (center.y - stage.y()) / oldScale,
+    };
+    setScale(newScale);
+    setStagePos({
+      x: center.x - pointTo.x * newScale,
+      y: center.y - pointTo.y * newScale,
+    });
+  };
+
+  const handleWheel = (e) => {
+    e.evt.preventDefault();
+    const stage = stageRef.current;
+    const oldScale = stage.scaleX();
+    const pointer = stage.getPointerPosition();
+    const pointTo = {
+      x: (pointer.x - stage.x()) / oldScale,
+      y: (pointer.y - stage.y()) / oldScale,
+    };
+    const direction = e.evt.deltaY < 0 ? 1 : -1;
+    const newScale = clampScale(direction > 0 ? oldScale * SCALE_STEP : oldScale / SCALE_STEP);
+    setScale(newScale);
+    setStagePos({
+      x: pointer.x - pointTo.x * newScale,
+      y: pointer.y - pointTo.y * newScale,
+    });
+  };
+
+  const handleTouchMove = (e) => {
+    const touches = e.evt.touches;
+    if (touches.length !== 2) return;
+    e.evt.preventDefault();
+    const t1 = touches[0];
+    const t2 = touches[1];
+    const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+    if (lastPinchDist.current === 0) {
+      lastPinchDist.current = dist;
+      return;
+    }
+    const stage = stageRef.current;
+    const oldScale = stage.scaleX();
+    const midX = (t1.clientX + t2.clientX) / 2;
+    const midY = (t1.clientY + t2.clientY) / 2;
+    const pointTo = {
+      x: (midX - stage.x()) / oldScale,
+      y: (midY - stage.y()) / oldScale,
+    };
+    const newScale = clampScale(oldScale * (dist / lastPinchDist.current));
+    lastPinchDist.current = dist;
+    setScale(newScale);
+    setStagePos({
+      x: midX - pointTo.x * newScale,
+      y: midY - pointTo.y * newScale,
+    });
+  };
+
+  const handleTouchEnd = (e) => {
+    if (e.evt.touches.length < 2) lastPinchDist.current = 0;
   };
 
   const handleAssignSubmit = () => {
@@ -211,6 +287,7 @@ function App() {
                   flex: 1, padding: '8px 0', background: '#4a90d9', color: '#fff',
                   border: 'none', borderRadius: 4, fontSize: 15, cursor: 'pointer',
                 }}
+                disabled={!modalInput || isNaN(modalInput) || parseInt(modalInput, 10) <= 0 || parseInt(modalInput, 10) > students.length}
               >
                 Assign
               </button>
@@ -228,11 +305,43 @@ function App() {
         </div>
       )}
 
+      {/* Zoom controls */}
+      <div style={{
+        position: 'fixed', bottom: 16, left: 16, zIndex: 100,
+        display: 'flex', alignItems: 'center', gap: 6,
+        background: 'rgba(255,255,255,0.92)', borderRadius: 8,
+        padding: '6px 10px', boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+        userSelect: 'none',
+      }}>
+        <button
+          onClick={() => zoomBy(1 / SCALE_STEP)}
+          style={{ width: 28, height: 28, fontSize: 18, lineHeight: 1, border: '1px solid #ccc', borderRadius: 4, cursor: 'pointer', background: '#f5f5f5' }}
+        >−</button>
+        <span style={{ minWidth: 52, textAlign: 'center', fontSize: 14, fontFamily: 'monospace' }}>
+          {Math.round(scale * 100)}%
+        </span>
+        <button
+          onClick={() => zoomBy(SCALE_STEP)}
+          style={{ width: 28, height: 28, fontSize: 18, lineHeight: 1, border: '1px solid #ccc', borderRadius: 4, cursor: 'pointer', background: '#f5f5f5' }}
+        >+</button>
+        <button
+          onClick={() => { setScale(1); setStagePos({ x: 0, y: 0 }); }}
+          style={{ height: 28, padding: '0 8px', fontSize: 12, border: '1px solid #ccc', borderRadius: 4, cursor: 'pointer', background: '#f5f5f5', marginLeft: 4 }}
+        >Reset</button>
+      </div>
+
       <Stage
         ref={stageRef}
         width={window.innerWidth}
         height={window.innerHeight}
+        scaleX={scale}
+        scaleY={scale}
+        x={stagePos.x}
+        y={stagePos.y}
         onClick={handleStageClick}
+        onWheel={handleWheel}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
         <Layer>
           {/* Fixed palette rectangle */}
