@@ -79,9 +79,11 @@ function getCirclePositions(count, rectWidth, rectHeight) {
 const StartScreen = () => {
   const [rects, setRects] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
+  
   const [studentCount, setStudentCount] = useState(0);
   const [students, setStudents] = useState([]);
   const [displayedStudents, setDisplayedStudents] = useState([]);
+
   const [modalRectId, setModalRectId] = useState(null);
   const [modalInput, setModalInput] = useState("");
 

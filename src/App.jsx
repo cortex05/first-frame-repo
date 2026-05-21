@@ -4,8 +4,12 @@ import './App.css'
 import { Stage, Layer, Rect, Circle, Text, Transformer, Group } from 'react-konva';
 
 import { initialStudentGeneration } from './utilities/studentUtilities';
+
 import Home from './screens/home/HomeScreen';
 import Start from './screens/start/StartScreen';
+import CreateCaseScreen from './screens/create-case/CreateCaseScreen';
+import CaseScreen from './screens/case/CaseScreen';
+import QuestionsScreen from './screens/questions/QuestionsScreen';
 
 function App() {
 
@@ -15,6 +19,9 @@ function App() {
         <Route path="/" element={<Navigate to="/home" />} />
         <Route path="/home" element={<Home />} />
         <Route path="/start" element={<Start />} />
+        <Route path="/create-case" element={<CreateCaseScreen />} />
+        <Route path="/case/:id" element={<CaseScreen />} />
+        <Route path="/questions/:caseId" element={<QuestionsScreen />} />
       </Routes>
     </BrowserRouter>
   );
