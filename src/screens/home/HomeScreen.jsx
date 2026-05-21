@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import Modal from '../../components/modal/Modal';
 
 const Home = () => {
   const [modalOpen, setModalOpen] = useState(false);
@@ -45,30 +46,11 @@ const Home = () => {
         </button>
       </div>
 
-      {modalOpen && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
-          background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center',
-          justifyContent: 'center', zIndex: 1000,
-        }}>
-          <div style={{
-            background: '#fff', borderRadius: 8, padding: 32, minWidth: 320,
-            boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-          }}>
-            <h2 style={{ margin: '0 0 24px' }}>Access Existing Case</h2>
-            <button
-              onClick={() => setModalOpen(false)}
-              style={{
-                width: '100%', padding: '12px 0', fontSize: 16,
-                background: '#f0f0f0', color: '#333', border: '1px solid #ccc',
-                borderRadius: 6, cursor: 'pointer',
-              }}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+      <Modal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title="Access Existing Case"
+      />
     </div>
   );
 };
