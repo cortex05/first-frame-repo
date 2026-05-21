@@ -1,9 +1,241 @@
-import React from 'react'
+import React, { useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
+import Modal from '../../components/modal/Modal';
+import Question from '../../types/polls/Question';
+import { QuestionType } from '../../types/ENUMS';
+
+const EMPTY_QUESTION_FORM = {
+  text: '',
+  type: QuestionType.TRUE_FALSE,
+  options: ['', '', '', ''],
+};
+
+const fieldStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 4,
+  marginBottom: 16,
+};
+
+const inputStyle = {
+  padding: '10px 12px',
+  fontSize: 15,
+  border: '1px solid #ccc',
+  borderRadius: 6,
+  width: '100%',
+  boxSizing: 'border-box',
+};
+
+const labelStyle = {
+  fontSize: 13,
+  fontWeight: 600,
+  color: '#444',
+};
 
 const CreateCaseScreen = () => {
-  return (
-    <div>CreateCaseScreen</div>
-  )
-}
+  const [caseId] = useState(() => uuidv4());
 
-export default CreateCaseScreen
+  const [name, setName] = useState('');
+  const [author, setAuthor] = useState('');
+  const [location, setLocation] = useState('');
+  const [numberOfStudents, setNumberOfStudents] = useState('');
+  const [dateTime, setDateTime] = useState('');
+
+  const [questions, setQuestions] = useState([]);
+  const [questionModal, setQuestionModal] = useState(false);
+  const [questionForm, setQuestionForm] = useState(EMPTY_QUESTION_FORM);
+
+  const [previewModal, setPreviewModal] = useState(false);
+
+  const openQuestionModal = () => {
+    setQuestionForm(EMPTY_QUESTION_FORM);
+    setQuestionModal(true);
+  };
+
+  const handleOptionChange = (index, value) => {
+    setQuestionForm((prev) => {
+      const options = [...prev.options];
+      options[index] = value;
+      return { ...prev, options };
+    });
+  };
+
+  const handleAddQuestion = () => {
+    if (!questionForm.text.trim()) return;
+    const options =
+      questionForm.type === QuestionType.MULTIPLE_CHOICE
+        ? questionForm.options.filter((o) => o.trim() !== '')
+        : [];
+    const q = new Question(uuidv4(), questionForm.text.trim(), questionForm.type, caseId, options);
+    setQuestions((prev) => [...prev, q]);
+    setQuestionModal(false);
+  };
+
+  return (
+    <div style={{ maxWidth: 640, margin: '0 auto', padding: 32 }}>
+      <h1 style={{ marginBottom: 24 }}>Create New Case</h1>
+
+      {/* Basic Info */}
+      <section style={{ marginBottom: 32 }}>
+        <h2 style={{ marginBottom: 16 }}>Basic Info</h2>
+
+        <div style={fieldStyle}>
+          <label style={labelStyle}>Name</label>
+          <input style={inputStyle} type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Case name" />
+        </div>
+
+        <div style={fieldStyle}>
+          <label style={labelStyle}>Author</label>
+          <input style={inputStyle} type="text" value={author} onChange={(e) => setAuthor(e.target.value)} placeholder="Your name" />
+        </div>
+
+        <div style={fieldStyle}>
+          <label style={labelStyle}>Location</label>
+          <input style={inputStyle} type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Room / building" />
+        </div>
+
+        <div style={fieldStyle}>
+          <label style={labelStyle}>Number of Students</label>
+          <input style={inputStyle} type="number" min={1} value={numberOfStudents} onChange={(e) => setNumberOfStudents(e.target.value)} placeholder="e.g. 30" />
+        </div>
+
+        <div style={fieldStyle}>
+          <label style={labelStyle}>Date / Time</label>
+          <input style={inputStyle} type="datetime-local" value={dateTime} onChange={(e) => setDateTime(e.target.value)} />
+        </div>
+      </section>
+
+      {/* Questions */}
+      <section style={{ marginBottom: 32 }}>
+        <h2 style={{ marginBottom: 12 }}>Questions</h2>
+
+        {questions.length === 0 && (
+          <p style={{ color: '#888', fontSize: 14, marginBottom: 12 }}>No questions added yet.</p>
+        )}
+
+        {questions.map((q, i) => (
+          <div key={q.id} style={{
+            display: 'flex', alignItems: 'center', gap: 10,
+            padding: '8px 12px', marginBottom: 8,
+            background: '#f5f8ff', border: '1px solid #c5d8f5',
+            borderRadius: 6, fontSize: 14,
+          }}>
+            <span style={{ fontWeight: 600, color: '#2c6fad', minWidth: 24 }}>{i + 1}.</span>
+            <span style={{ flex: 1 }}>{q.text}</span>
+            <span style={{
+              fontSize: 11, fontWeight: 600, padding: '2px 8px',
+              background: q.type === QuestionType.TRUE_FALSE ? '#e6f4ea' : '#fff3cd',
+              color: q.type === QuestionType.TRUE_FALSE ? '#2e7d32' : '#856404',
+              borderRadius: 12,
+            }}>
+              {q.type === QuestionType.TRUE_FALSE ? 'T/F' : 'MC'}
+            </span>
+          </div>
+        ))}
+
+        <button
+          onClick={openQuestionModal}
+          style={{
+            marginTop: 8, padding: '10px 20px', fontSize: 15,
+            background: '#4a90d9', color: '#fff',
+            border: 'none', borderRadius: 6, cursor: 'pointer',
+          }}
+        >
+          + Add Question
+        </button>
+      </section>
+
+      {/* Submit */}
+      <button
+        onClick={() => setPreviewModal(true)}
+        style={{
+          padding: '14px 36px', fontSize: 17, fontWeight: 600,
+          background: '#2c6fad', color: '#fff',
+          border: 'none', borderRadius: 8, cursor: 'pointer',
+        }}
+      >
+        Submit Case
+      </button>
+
+      {/* Add Question Modal */}
+      <Modal isOpen={questionModal} onClose={() => setQuestionModal(false)} title="Add Question">
+        <div style={fieldStyle}>
+          <label style={labelStyle}>Question Text</label>
+          <input
+            style={inputStyle}
+            type="text"
+            value={questionForm.text}
+            onChange={(e) => setQuestionForm((prev) => ({ ...prev, text: e.target.value }))}
+            placeholder="Enter question..."
+            autoFocus
+          />
+        </div>
+
+        <div style={fieldStyle}>
+          <label style={labelStyle}>Type</label>
+          <select
+            style={inputStyle}
+            value={questionForm.type}
+            onChange={(e) => setQuestionForm((prev) => ({ ...prev, type: e.target.value }))}
+          >
+            <option value={QuestionType.TRUE_FALSE}>True / False</option>
+            <option value={QuestionType.MULTIPLE_CHOICE}>Multiple Choice</option>
+          </select>
+        </div>
+
+        {questionForm.type === QuestionType.MULTIPLE_CHOICE && (
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ ...labelStyle, display: 'block', marginBottom: 8 }}>Options (up to 4)</label>
+            {questionForm.options.map((opt, i) => (
+              <input
+                key={i}
+                style={{ ...inputStyle, marginBottom: 8 }}
+                type="text"
+                value={opt}
+                onChange={(e) => handleOptionChange(i, e.target.value)}
+                placeholder={`Option ${i + 1}`}
+              />
+            ))}
+          </div>
+        )}
+
+        <button
+          onClick={handleAddQuestion}
+          disabled={!questionForm.text.trim()}
+          style={{
+            width: '100%', padding: '12px 0', fontSize: 15, fontWeight: 600,
+            background: questionForm.text.trim() ? '#4a90d9' : '#aaa',
+            color: '#fff', border: 'none', borderRadius: 6, marginBottom: 8,
+            cursor: questionForm.text.trim() ? 'pointer' : 'not-allowed',
+          }}
+        >
+          Add Question
+        </button>
+      </Modal>
+
+      {/* Preview / Submit Modal */}
+      <Modal isOpen={previewModal} onClose={() => setPreviewModal(false)} title="Case Summary">
+        <div style={{ fontSize: 14, marginBottom: 16, lineHeight: 1.8 }}>
+          <div><strong>Case ID:</strong> {caseId}</div>
+          <div><strong>Name:</strong> {name || '—'}</div>
+          <div><strong>Author:</strong> {author || '—'}</div>
+          <div><strong>Location:</strong> {location || '—'}</div>
+          <div><strong>Students:</strong> {numberOfStudents || '—'}</div>
+          <div><strong>Date / Time:</strong> {dateTime || '—'}</div>
+          <div style={{ marginTop: 12 }}><strong>Questions ({questions.length}):</strong></div>
+          {questions.length === 0 && <div style={{ color: '#888' }}>None</div>}
+          {questions.map((q, i) => (
+            <div key={q.id} style={{ marginLeft: 12, color: '#333' }}>
+              {i + 1}. [{q.type === QuestionType.TRUE_FALSE ? 'T/F' : 'MC'}] {q.text}
+              {q.type === QuestionType.MULTIPLE_CHOICE && q.options.length > 0 && (
+                <span style={{ color: '#666' }}> — {q.options.join(', ')}</span>
+              )}
+            </div>
+          ))}
+        </div>
+      </Modal>
+    </div>
+  );
+};
+
+export default CreateCaseScreen;
