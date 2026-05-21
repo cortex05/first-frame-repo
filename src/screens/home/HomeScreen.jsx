@@ -1,46 +1,29 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Modal from '../../components/modal/Modal';
+import styles from './HomeScreen.module.css';
 
 const Home = () => {
   const [modalOpen, setModalOpen] = useState(false);
 
   return (
-    <div>
+    <div className={styles.homeContainer}>
       <h1>Welcome to the Home Page!</h1>
       <p>This is the home screen of our application. Here you will be able to access our various features.</p>
       <hr />
       <h3>What would you like to do?</h3>
 
-      <div style={{ display: 'flex', gap: 16, marginTop: 24 }}>
+      <div className={styles.actionContainer}>
         <Link
           to="/create-case"
-          style={{
-            display: 'inline-block',
-            padding: '16px 32px',
-            fontSize: 18,
-            fontWeight: 600,
-            background: '#4a90d9',
-            color: '#fff',
-            borderRadius: 8,
-            textDecoration: 'none',
-          }}
+            className={styles.linkButton}
         >
           Create New Case
         </Link>
 
         <button
           onClick={() => setModalOpen(true)}
-          style={{
-            padding: '16px 32px',
-            fontSize: 18,
-            fontWeight: 600,
-            background: '#f0f0f0',
-            color: '#333',
-            border: '2px solid #ccc',
-            borderRadius: 8,
-            cursor: 'pointer',
-          }}
+          className={styles.linkButton}
         >
           Access Existing Case
         </button>
