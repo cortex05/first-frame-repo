@@ -1,0 +1,33 @@
+.linkButton {
+    display: inline-block;
+    padding: 16px 32px;
+    font-size: 18px;
+    font-weight: 600;
+    background: #4a90d9;
+    color: #fff;
+    border-radius: 8px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.labelStyle {
+  font-size: 13px;
+  font-weight: 600;
+  color: #444;
+}
+
+.inputStyle {
+  padding: 10px 12px;
+  font-size: 15px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.fieldStyle {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 16px;
+};
