@@ -5,6 +5,14 @@ import styles from './HomeScreen.module.css';
 
 const Home = () => {
   const [modalOpen, setModalOpen] = useState(false);
+  const [storedCases, setStoredCases] = useState([]);
+
+  useEffect(() => {
+    const cases = localStorage.getItem('cases');
+    if (cases) {
+      setStoredCases(JSON.parse(cases));
+    }
+  }, []);
 
   return (
     <div className={styles.homeContainer}>
@@ -33,9 +41,27 @@ const Home = () => {
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         title="Access Existing Case"
-      />
+      >
+        <div>
+        <h3>Existing Cases:</h3>
+          {storedCases.length === 0 ? (
+            <p>No existing cases found.</p>
+          ) : (
+            <ul>
+              {storedCases.map((c, i) => (
+                <li key={i}>
+                    <Link to={`/case/${c._id}`} className={styles.caseLink}>
+					  {c.name} by {c.author}
+					</Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+      </Modal>
     </div>
   );
 };
 
-export default Home
+export default Home;

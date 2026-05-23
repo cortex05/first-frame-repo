@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import styles from "./CreateCaseScreen.module.css";
+import { useNavigate } from "react-router-dom";
 
 import Modal from "../../components/modal/Modal";
 
@@ -16,13 +17,14 @@ const EMPTY_QUESTION_FORM = {
 };
 
 const CreateCaseScreen = () => {
-  const [caseId] = useState(() => uuidv4());
+	const navigate = useNavigate();
+  	const [caseId] = useState(() => uuidv4());
 
-  const [name, setName] = useState("");
-  const [author, setAuthor] = useState("");
-  const [location, setLocation] = useState("");
-  const [numberOfStudents, setNumberOfStudents] = useState("");
-  const [dateTime, setDateTime] = useState("");
+  	const [name, setName] = useState("");
+  	const [author, setAuthor] = useState("");
+  	const [location, setLocation] = useState("");
+  	const [numberOfStudents, setNumberOfStudents] = useState("");
+  	const [dateTime, setDateTime] = useState("");
 
   const [questions, setQuestions] = useState([]);
   const [questionModal, setQuestionModal] = useState(false);
@@ -62,8 +64,11 @@ const CreateCaseScreen = () => {
 
   const handleSubmit = () => {
     const createdCase = new Case(caseId, name, author, location, numberOfStudents, questions);
-    localStorage.setItem(`${name}`, JSON.stringify(createdCase));
+    const casesArray = JSON.parse(localStorage.getItem('cases')) || [];
+    casesArray.push(createdCase);
+    localStorage.setItem('cases', JSON.stringify(casesArray));
     setPreviewModal(false);
+    navigate(`/case/${caseId}`);
   };
 
   return (
