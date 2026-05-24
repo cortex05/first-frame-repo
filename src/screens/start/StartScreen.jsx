@@ -235,6 +235,7 @@ const StartScreen = () => {
     		students: displayedStudents,
   		});
   		localStorage.setItem('cases', JSON.stringify(useCaseStore.getState().cases));
+		navigate(`/questions/${activeCase._id}`);
 	};
 
   	const handleAssignSubmit = () => {
