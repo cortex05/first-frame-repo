@@ -1,11 +1,22 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Modal from '../../components/modal/Modal';
 import styles from './HomeScreen.module.css';
+
+import useCaseStore from '../../store/useCaseStore';
 
 const Home = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [storedCases, setStoredCases] = useState([]);
+  const setActiveCase = useCaseStore((state) => state.setActiveCase);
+
+  const navigate = useNavigate();
+
+  const handleSelectCase = (caseId) => {
+	setActiveCase(caseId);
+	setModalOpen(false);
+	navigate(`/case/${caseId}`);
+  }
 
   useEffect(() => {
     const cases = localStorage.getItem('cases');
@@ -49,10 +60,10 @@ const Home = () => {
           ) : (
             <ul>
               {storedCases.map((c, i) => (
-                <li key={i}>
-                    <Link to={`/case/${c._id}`} className={styles.caseLink}>
+                <li key={i} onClick={() => handleSelectCase(c._id)}>
+                    <button className={styles.caseLink}>
 					  {c.name} by {c.author}
-					</Link>
+					</button>
                 </li>
               ))}
             </ul>

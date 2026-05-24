@@ -4,6 +4,7 @@ import styles from "./CreateCaseScreen.module.css";
 import { useNavigate } from "react-router-dom";
 
 import Modal from "../../components/modal/Modal";
+import useCaseStore from "../../store/useCaseStore";
 
 import Question from "../../types/polls/Question";
 import Case from "../../types/Case";
@@ -31,6 +32,9 @@ const CreateCaseScreen = () => {
   const [questionForm, setQuestionForm] = useState(EMPTY_QUESTION_FORM);
 
   const [previewModal, setPreviewModal] = useState(false);
+
+  const addCase = useCaseStore((state) => state.addCase);
+  const setActiveCase = useCaseStore((state) => state.setActiveCase);
 
   const openQuestionModal = () => {
     setQuestionForm(EMPTY_QUESTION_FORM);
@@ -67,6 +71,8 @@ const CreateCaseScreen = () => {
     const casesArray = JSON.parse(localStorage.getItem('cases')) || [];
     casesArray.push(createdCase);
     localStorage.setItem('cases', JSON.stringify(casesArray));
+	addCase(createdCase);
+	setActiveCase(caseId);
     setPreviewModal(false);
     navigate(`/case/${caseId}`);
   };
