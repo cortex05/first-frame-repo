@@ -9,6 +9,8 @@ import {
   Group,
 } from "react-konva";
 import "../../App.css";
+import useCaseStore from "../../store/useCaseStore";
+import { useNavigate, useParams } from "react-router-dom";
 
 import { initialStudentGeneration } from "../../utilities/studentUtilities";
 
@@ -77,6 +79,10 @@ function getCirclePositions(count, rectWidth, rectHeight) {
 }
 
 const StartScreen = () => {
+  const { caseId } = useParams();
+  const activeCase = useCaseStore((state) => state.cases.find((c) => c._id === caseId));
+  const updateCase = useCaseStore((state) => state.updateCase);
+
   const [rects, setRects] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   
@@ -93,16 +99,13 @@ const StartScreen = () => {
   const templateRef = useRef(null);
   const trRef = useRef(null);
   const stageRef = useRef(null);
-  const prompted = useRef(false);
   const lastPinchDist = useRef(0);
 
   useEffect(() => {
-    if (prompted.current) return;
-    prompted.current = true;
-    const numberOfStudents = prompt("How many students are in the class?");
-    const studentsToNumber = Number(numberOfStudents);
-    setStudentCount(studentsToNumber);
-    setStudents(initialStudentGeneration(studentsToNumber));
+    if (!activeCase) return;
+
+    setStudentCount(activeCase.studentNumber);
+    setStudents(initialStudentGeneration(activeCase.studentNumber));
   }, []);
   
   useEffect(() => {
@@ -221,22 +224,31 @@ const StartScreen = () => {
     });
   };
 
-  const handleTouchEnd = (e) => {
+  	const handleTouchEnd = (e) => {
     if (e.evt.touches.length < 2) lastPinchDist.current = 0;
-  };
+  	};
 
-  const handleAssignSubmit = () => {
-    const count = parseInt(modalInput, 10);
-    if (isNaN(count) || count <= 0 || count > students.length) return;
+	const saveChart = () => {
+  		updateCase({
+    		...activeCase,
+    		chartData: { rects },
+    		students: displayedStudents,
+  		});
+  		localStorage.setItem('cases', JSON.stringify(useCaseStore.getState().cases));
+	};
 
-    const toAssign = students.slice(0, count);
-    const remaining = students.slice(count);
-    const { width, height } = getMinRectSize(count);
+  	const handleAssignSubmit = () => {
+    	const count = parseInt(modalInput, 10);
+    	if (isNaN(count) || count <= 0 || count > students.length) return;
 
-    const targetRect = rects.find((r) => r.id === modalRectId);
-    const relPositions = getCirclePositions(count, width, height);
+    	const toAssign = students.slice(0, count);
+    	const remaining = students.slice(count);
+    	const { width, height } = getMinRectSize(count);
 
-    setRects((prev) =>
+    	const targetRect = rects.find((r) => r.id === modalRectId);
+    	const relPositions = getCirclePositions(count, width, height);
+
+    	setRects((prev) =>
       prev.map((r) =>
         r.id === modalRectId
           ? {
@@ -252,15 +264,30 @@ const StartScreen = () => {
             }
           : r
       )
-    );
-    setStudents(remaining);
-    setDisplayedStudents((prev) => [...prev, ...toAssign]);
-    setModalRectId(null);
-    setModalInput('');
-  };
+    	);
+    	setStudents(remaining);
+    	setStudentCount(remaining.length);
+    	setDisplayedStudents((prev) => [...prev, ...toAssign]);
+    	setModalRectId(null);
+    	setModalInput('');
+  	};
 
-  return <React.Fragment>
-        <h1>Student Count: {studentCount}</h1>
+  	return <React.Fragment>
+  		{students.length === 0 && displayedStudents.length === activeCase.studentNumber && (
+  			<button
+    			onClick={saveChart}
+    			style={{
+      				position: 'fixed', top: 16, right: 16, zIndex: 200,
+      				padding: '12px 28px', fontSize: 16, fontWeight: 600,
+      				background: '#2e7d32', color: '#fff',
+      				border: 'none', borderRadius: 8, cursor: 'pointer',
+      				boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
+    			}}
+  			>
+    			Save Chart
+  			</button>
+		)}
+        <h1>Students to assign: {studentCount}</h1>
   
         {/* Assign modal */}
         {modalRectId && (

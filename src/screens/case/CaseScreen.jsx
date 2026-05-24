@@ -7,6 +7,7 @@ import Question from '../../types/polls/Question';
 import { QuestionType } from '../../types/ENUMS';
 
 import styles from './CaseScreen.module.css';
+import { setPointerCapture } from 'konva/lib/PointerEvents';
 
 const EMPTY_QUESTION_FORM = {
   text: '',
@@ -17,7 +18,9 @@ const EMPTY_QUESTION_FORM = {
 const CaseScreen = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  
   const activeCase = useCaseStore((state) => state.cases.find((c) => c._id === id));
+  const setActiveCase = useCaseStore((state) => state.setActiveCase);
   const updateCase = useCaseStore((state) => state.updateCase);
 
   const [questionModal, setQuestionModal] = useState(false);
@@ -31,6 +34,7 @@ const CaseScreen = () => {
 
   const handleStart = () => {
 	setStartModal(false);
+	setActiveCase(activeCase._id);
 	navigate(`/start/${activeCase._id}`);
   }
 

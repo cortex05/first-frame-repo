@@ -1,6 +1,7 @@
 class Case {
   students = []
   questions = []
+  chartData = {}
 
   constructor(_id, name, author, location, studentNumber, questions) {
     this._id = _id;
