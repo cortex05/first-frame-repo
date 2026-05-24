@@ -1,0 +1,12 @@
+.label {
+	font-size: 13px;
+	font-weight: 600;
+	color: #888;
+	margin-bottom: 2px;
+}
+
+.value {
+	font-size: 15px;
+	color: #c0bdbd;
+	margin-bottom: 16px;
+}
