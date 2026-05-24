@@ -24,7 +24,7 @@ function App() {
       		<Routes>
         		<Route path="/" element={<Navigate to="/home" />} />
         		<Route path="/home" element={<Home />} />
-        		<Route path="/start" element={<Start />} />
+        		<Route path="/start/:caseId" element={<Start />} />
         		<Route path="/create-case" element={<CreateCaseScreen />} />
         		<Route path="/case/:id" element={<CaseScreen />} />
         		<Route path="/questions/:caseId" element={<QuestionsScreen />} />

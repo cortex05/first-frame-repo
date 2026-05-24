@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import useCaseStore from '../../store/useCaseStore';
 import Modal from '../../components/modal/Modal';
@@ -16,13 +16,29 @@ const EMPTY_QUESTION_FORM = {
 
 const CaseScreen = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const activeCase = useCaseStore((state) => state.cases.find((c) => c._id === id));
   const updateCase = useCaseStore((state) => state.updateCase);
 
   const [questionModal, setQuestionModal] = useState(false);
   const [questionForm, setQuestionForm] = useState(EMPTY_QUESTION_FORM);
 
+  const [startModal, setStartModal] = useState(false);
+  const [editStudentNumber, setEditStudentNumber] = useState(false);
+  const [numberOfStudents, setNumberOfStudents] = useState(activeCase ? activeCase.studentNumber : 0);
+
   if (!activeCase) return <p>Case not found.</p>;
+
+  const handleStart = () => {
+	setStartModal(false);
+	navigate(`/start/${activeCase._id}`);
+  }
+
+  const handleNumberOfStudentsChange = () => {
+	updateCase({ ...activeCase, studentNumber: Number(numberOfStudents) });
+	localStorage.setItem('cases', JSON.stringify(useCaseStore.getState().cases));
+	setEditStudentNumber(false);
+  }
 
   const openQuestionModal = () => {
     setQuestionForm(EMPTY_QUESTION_FORM);
@@ -62,24 +78,19 @@ const CaseScreen = () => {
         <h2 style={{ marginBottom: 16 }}>Basic Info</h2>
 
         <div>
-			<p className={styles.label}>Name</p>
-			<p className={styles.value}>{activeCase.name || '—'}</p>
+			<p className={styles.value}>Case name: {activeCase.name || '—'}</p>
 		</div>
         <div>
-			<p className={styles.label}>Author</p>
-			<p className={styles.value}>{activeCase.author || '—'}</p>
+			<p className={styles.value}>Author: {activeCase.author || '—'}</p>
 		</div>
         <div>
-			<p className={styles.label}>Location</p>
-			<p className={styles.value}>{activeCase.location || '—'}</p>
+			<p className={styles.value}>Location: {activeCase.location || '—'}</p>
 		</div>
         <div>
-			<p className={styles.label}>Number of Students</p>
-			<p className={styles.value}>{activeCase.studentNumber || '—'}</p>
+			<p className={styles.value}>Number of Students: {activeCase.studentNumber || '—'}</p>
 		</div>
         <div>
-			<p className={styles.label}>Date / Time</p>
-			<p className={styles.value}>{activeCase.dateCreated ? new Date(activeCase.dateCreated).toLocaleString() : '—'}</p>
+			<p className={styles.value}>Date / Time: {activeCase.dateCreated ? new Date(activeCase.dateCreated).toLocaleString() : '—'}</p>
 		</div>
       </section>
 
@@ -124,8 +135,8 @@ const CaseScreen = () => {
       </section>
 
       {/* Start link */}
-      <Link
-        to="/start"
+      <button
+        onClick={() => setStartModal(true)}
         style={{
           display: 'inline-block', padding: '14px 36px',
           fontSize: 17, fontWeight: 600,
@@ -134,7 +145,7 @@ const CaseScreen = () => {
         }}
       >
         Start Session
-      </Link>
+      </button>
 
       {/* Add Question Modal */}
       <Modal isOpen={questionModal} onClose={() => setQuestionModal(false)} title="Add Question">
@@ -193,6 +204,38 @@ const CaseScreen = () => {
           Add Question
         </button>
       </Modal>
+
+	{/* Start Session Modal */}
+	<Modal isOpen={startModal} onClose={() => setStartModal(false)} title="Start Session">
+		{!editStudentNumber ? (
+			<React.Fragment><p style={{ marginBottom: 16 }}>You are moving to assign the students to their rows and tables.</p>
+				<p style={{ marginBottom: 24 }}>Currently this case is set for {activeCase.studentNumber}</p>
+				<p style={{ marginBottom: 16 }}>Is this correct?</p>
+				<div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginBottom: 8 }}>
+		    		<button onClick={handleStart}>Yes</button>
+					<button onClick={() => setEditStudentNumber(true)}>No</button>
+				</div>
+			</React.Fragment>
+		  ) : (<React.Fragment>
+				<p style={{ marginBottom: 16 }}>How many students are in this case?</p>
+				<div className={styles.fieldStyle}>
+					<label className={styles.labelStyle}>Number of Students</label>
+					<input
+						className={styles.inputStyle}
+						type="number"
+						min={1}
+						value={numberOfStudents}
+						onChange={(e) => setNumberOfStudents(e.target.value)}
+						placeholder="e.g. 30"
+					/>
+				</div>
+				<button onClick={() => handleNumberOfStudentsChange()}>Confirm</button>
+				<button onClick={() => setEditStudentNumber(false)} style={{ marginLeft: 8 }}>Cancel</button>
+			</React.Fragment>
+		   )
+		}
+		
+	</Modal>  
     </div>
   );
 };
