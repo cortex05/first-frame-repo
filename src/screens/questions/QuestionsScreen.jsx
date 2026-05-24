@@ -18,7 +18,6 @@ const QuestionsScreen = () => {
 
   const [selectedQuestionId, setSelectedQuestionId] = useState(null);
   const [currentAnswers, setCurrentAnswers] = useState({});
-  const [savedAnswers, setSavedAnswers] = useState(() => activeCase?.answers ?? {});
   const [activeOptionIndex, setActiveOptionIndex] = useState(null);
 
   const [scale, setScale] = useState(1);
@@ -50,7 +49,7 @@ const QuestionsScreen = () => {
   const handleSelectQuestion = (questionId) => {
     setSelectedQuestionId(questionId);
     setActiveOptionIndex(null);
-    setCurrentAnswers(savedAnswers[questionId] ?? {});
+    setCurrentAnswers((activeCase.answers ?? {})[questionId] ?? {});
   };
 
   // ── T/F set all ────────────────────────────────────────────────
@@ -79,9 +78,8 @@ const QuestionsScreen = () => {
   // ── save answers ───────────────────────────────────────────────
   const handleDone = () => {
     if (!selectedQuestion) return;
-    const newSavedAnswers = { ...savedAnswers, [selectedQuestionId]: currentAnswers };
-    setSavedAnswers(newSavedAnswers);
-    updateCase({ ...activeCase, answers: newSavedAnswers });
+    const newAnswers = { ...(activeCase.answers ?? {}), [selectedQuestionId]: currentAnswers };
+    updateCase({ ...activeCase, answers: newAnswers });
     localStorage.setItem('cases', JSON.stringify(useCaseStore.getState().cases));
   };
 
