@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { Stage, Layer, Rect, Circle, Text, Group } from 'react-konva';
 import useCaseStore from '../../store/useCaseStore';
 import { QuestionType } from '../../types/ENUMS';
@@ -81,6 +81,7 @@ const QuestionsScreen = () => {
     const newAnswers = { ...(activeCase.answers ?? {}), [selectedQuestionId]: currentAnswers };
     updateCase({ ...activeCase, answers: newAnswers });
     localStorage.setItem('cases', JSON.stringify(useCaseStore.getState().cases));
+	alert('Answers saved! (This is a placeholder action.)');
   };
 
   // ── zoom / pan ─────────────────────────────────────────────────
@@ -237,6 +238,13 @@ const QuestionsScreen = () => {
             >
               Done
             </button>
+			<Link to={`/case/${activeCase._id}`} style={{
+                width: '100%', padding: '12px 0', fontSize: 15, fontWeight: 600,
+                background: '#2c6fad', color: '#fff',
+                border: 'none', borderRadius: 6, cursor: 'pointer',
+              }}>
+			  	<button>Back to case</button>
+			</Link>
           </div>
         )}
       </div>

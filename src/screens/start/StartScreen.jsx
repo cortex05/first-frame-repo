@@ -80,6 +80,7 @@ function getCirclePositions(count, rectWidth, rectHeight) {
 
 const StartScreen = () => {
   const { caseId } = useParams();
+  const navigate = useNavigate();
   const activeCase = useCaseStore((state) => state.cases.find((c) => c._id === caseId));
   const updateCase = useCaseStore((state) => state.updateCase);
 
@@ -233,6 +234,7 @@ const StartScreen = () => {
     		...activeCase,
     		chartData: { rects },
     		students: displayedStudents,
+			seated: true,
   		});
   		localStorage.setItem('cases', JSON.stringify(useCaseStore.getState().cases));
 		navigate(`/questions/${activeCase._id}`);
