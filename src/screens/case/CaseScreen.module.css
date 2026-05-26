@@ -10,3 +10,12 @@
 	color: #c0bdbd;
 	margin-bottom: 16px;
 }
+
+.inputStyles {
+	padding: 10px 12px;
+    font-size: 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    width: 100%;
+    box-sizing: border-box;
+}

@@ -9,13 +9,7 @@ import useCaseStore from "../../store/useCaseStore";
 import Question from "../../types/polls/Question";
 import Case from "../../types/Case";
 import { QuestionType } from "../../types/ENUMS";
-
-
-const EMPTY_QUESTION_FORM = {
-  text: "",
-  type: QuestionType.TRUE_FALSE,
-  options: ["", "", "", ""],
-};
+import { EMPTY_QUESTION_FORM } from "../../utils/formUtils";
 
 const CreateCaseScreen = () => {
 	const navigate = useNavigate();
@@ -303,9 +297,6 @@ const CreateCaseScreen = () => {
         title="Case Summary"
       >
         <div style={{ fontSize: 14, marginBottom: 16, lineHeight: 1.8 }}>
-          <div>
-            <strong>Case ID:</strong> {caseId}
-          </div>
           <div>
             <strong>Name:</strong> {name || "—"}
           </div>

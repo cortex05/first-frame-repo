@@ -5,15 +5,10 @@ import useCaseStore from "../../store/useCaseStore";
 import Modal from "../../components/modal/Modal";
 import Question from "../../types/polls/Question";
 import { QuestionType } from "../../types/ENUMS";
+import { EMPTY_QUESTION_FORM } from "../../utils/formUtils";
 
 import styles from "./CaseScreen.module.css";
 import { setPointerCapture } from "konva/lib/PointerEvents";
-
-const EMPTY_QUESTION_FORM = {
-  text: "",
-  type: QuestionType.TRUE_FALSE,
-  options: ["", "", "", ""],
-};
 
 const CaseScreen = () => {
   const { id } = useParams();
@@ -81,14 +76,6 @@ const CaseScreen = () => {
     setQuestionModal(false);
   };
 
-  const inputStyle = {
-    padding: "10px 12px",
-    fontSize: 15,
-    border: "1px solid #ccc",
-    borderRadius: 6,
-    width: "100%",
-    boxSizing: "border-box",
-  };
 
   return (
     <div style={{ maxWidth: 640, margin: "0 auto", padding: 32 }}>
@@ -263,7 +250,7 @@ const CaseScreen = () => {
             Question Text
           </label>
           <input
-            style={inputStyle}
+            className={styles.inputStyle}
             type="text"
             value={questionForm.text}
             onChange={(e) =>
@@ -286,7 +273,7 @@ const CaseScreen = () => {
             Type
           </label>
           <select
-            style={inputStyle}
+            className={styles.inputStyle}
             value={questionForm.type}
             onChange={(e) =>
               setQuestionForm((prev) => ({ ...prev, type: e.target.value }))
@@ -315,7 +302,8 @@ const CaseScreen = () => {
             {questionForm.options.map((opt, i) => (
               <input
                 key={i}
-                style={{ ...inputStyle, marginBottom: 8 }}
+                className={styles.inputStyle}
+                style={{ marginBottom: 8 }}
                 type="text"
                 value={opt}
                 onChange={(e) => handleOptionChange(i, e.target.value)}

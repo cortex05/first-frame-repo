@@ -238,12 +238,12 @@ const QuestionsScreen = () => {
             >
               Done
             </button>
-			<Link to={`/case/${activeCase._id}`} style={{
+			<Link to={`/case/${activeCase._id}`} >
+			  	<button style={{
                 width: '100%', padding: '12px 0', fontSize: 15, fontWeight: 600,
                 background: '#2c6fad', color: '#fff',
-                border: 'none', borderRadius: 6, cursor: 'pointer',
-              }}>
-			  	<button>Back to case</button>
+                border: 'none', borderRadius: 6, cursor: 'pointer', marginTop: 8,
+              }}>Back to case</button>
 			</Link>
           </div>
         )}
