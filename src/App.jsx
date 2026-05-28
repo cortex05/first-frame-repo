@@ -14,9 +14,15 @@ import QuestionsScreen from './screens/questions/QuestionsScreen';
 
 function App() {
 	const getAllCases = useCaseStore((state) => state.getAllCases);
+
 	useEffect(() => {
 		const storedCases = localStorage.getItem('cases') || [];
-		getAllCases(JSON.parse(storedCases));
+		if(storedCases.length > 0) {
+			getAllCases(JSON.parse(storedCases));
+		} else {
+			localStorage.setItem('cases', JSON.stringify([]));
+			getAllCases([]);
+		}
 	}, []);
 
   	return (
