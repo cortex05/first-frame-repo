@@ -35,11 +35,19 @@ const CreateCaseScreen = () => {
     setQuestionModal(true);
   };
 
-  const handleOptionChange = (index, value) => {
+  const handleOptionChange = (index, field, value) => {
     setQuestionForm((prev) => {
       const options = [...prev.options];
-      options[index] = value;
+      options[index] = { ...options[index], [field]: field === 'value' ? Number(value) : value };
       return { ...prev, options };
+    });
+  };
+
+  const handleTFValueChange = (index, value) => {
+    setQuestionForm((prev) => {
+      const tfValues = [...prev.tfValues];
+      tfValues[index] = { ...tfValues[index], value: Number(value) };
+      return { ...prev, tfValues };
     });
   };
 
@@ -47,8 +55,8 @@ const CreateCaseScreen = () => {
     if (!questionForm.text.trim()) return;
     const options =
       questionForm.type === QuestionType.MULTIPLE_CHOICE
-        ? questionForm.options.filter((o) => o.trim() !== "")
-        : [];
+        ? questionForm.options.filter((o) => o.label.trim() !== "")
+        : questionForm.tfValues;
     const q = new Question(
       uuidv4(),
       questionForm.text.trim(),
@@ -251,21 +259,51 @@ const CreateCaseScreen = () => {
           </select>
         </div>
 
+        {questionForm.type === QuestionType.TRUE_FALSE && (
+          <div className={styles.fieldStyle}>
+            <label className={styles.labelStyle} style={{ display: "block", marginBottom: 8 }}>
+              Point Values
+            </label>
+            {questionForm.tfValues.map((opt, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <span style={{ minWidth: 52, fontSize: 14, fontWeight: 600 }}>{String(opt.label)}</span>
+                <input
+                  className={styles.inputStyle}
+                  type="number"
+                  value={opt.value}
+                  onChange={(e) => handleTFValueChange(i, e.target.value)}
+                  placeholder="Points"
+                  style={{ width: 80 }}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
         {questionForm.type === QuestionType.MULTIPLE_CHOICE && (
           <div className={styles.fieldStyle}>
             <label className={styles.labelStyle} style={{ display: "block", marginBottom: 8 }}>
               Options (up to 4)
             </label>
             {questionForm.options.map((opt, i) => (
-              <input
-                key={i}
-                className={styles.inputStyle}
-                style={{ marginBottom: 8 }}
-                type="text"
-                value={opt}
-                onChange={(e) => handleOptionChange(i, e.target.value)}
-                placeholder={`Option ${i + 1}`}
-              />
+              <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                <input
+                  className={styles.inputStyle}
+                  type="text"
+                  value={opt.label}
+                  onChange={(e) => handleOptionChange(i, 'label', e.target.value)}
+                  placeholder={`Option ${i + 1}`}
+                  style={{ flex: 1 }}
+                />
+                <input
+                  className={styles.inputStyle}
+                  type="number"
+                  value={opt.value}
+                  onChange={(e) => handleOptionChange(i, 'value', e.target.value)}
+                  placeholder="Points"
+                  style={{ width: 80 }}
+                />
+              </div>
             ))}
           </div>
         )}
@@ -320,11 +358,10 @@ const CreateCaseScreen = () => {
             <div key={q.id} style={{ marginLeft: 12, color: "#333" }}>
               {i + 1}. [{q.type === QuestionType.TRUE_FALSE ? "T/F" : "MC"}]{" "}
               {q.text}
-              {q.type === QuestionType.MULTIPLE_CHOICE &&
-                q.options.length > 0 && (
+              {q.options.length > 0 && (
                   <span style={{ color: "#666" }}>
                     {" "}
-                    — {q.options.join(", ")}
+                    — {q.options.map((o) => `${o.label} (${o.value}pts)`).join(", ")}
                   </span>
                 )}
             </div>

@@ -8,9 +8,7 @@ class Question {
     this.text = text;
     this.type = type;
     this.caseId = caseId;
-    this.options = type === QuestionType.TRUE_FALSE
-      ? [true, false]
-      : options; // expect 3-4 items for MULTIPLE_CHOICE
+    this.options = options; // { label, value }[] — provided by caller
     this.answers = new Map(); // studentId -> answer string
   }
 

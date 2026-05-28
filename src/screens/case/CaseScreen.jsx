@@ -51,11 +51,19 @@ const CaseScreen = () => {
     setQuestionModal(true);
   };
 
-  const handleOptionChange = (index, value) => {
+  const handleOptionChange = (index, field, value) => {
     setQuestionForm((prev) => {
       const options = [...prev.options];
-      options[index] = value;
+      options[index] = { ...options[index], [field]: field === 'value' ? Number(value) : value };
       return { ...prev, options };
+    });
+  };
+
+  const handleTFValueChange = (index, value) => {
+    setQuestionForm((prev) => {
+      const tfValues = [...prev.tfValues];
+      tfValues[index] = { ...tfValues[index], value: Number(value) };
+      return { ...prev, tfValues };
     });
   };
 
@@ -63,8 +71,8 @@ const CaseScreen = () => {
     if (!questionForm.text.trim()) return;
     const options =
       questionForm.type === QuestionType.MULTIPLE_CHOICE
-        ? questionForm.options.filter((o) => o.trim() !== "")
-        : [];
+        ? questionForm.options.filter((o) => o.label.trim() !== "")
+        : questionForm.tfValues;
     const q = new Question(
       uuidv4(),
       questionForm.text.trim(),
@@ -286,6 +294,35 @@ const CaseScreen = () => {
           </select>
         </div>
 
+        {questionForm.type === QuestionType.TRUE_FALSE && (
+          <div style={{ marginBottom: 16 }}>
+            <label
+              style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: "#444",
+                display: "block",
+                marginBottom: 8,
+              }}
+            >
+              Point Values
+            </label>
+            {questionForm.tfValues.map((opt, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <span style={{ minWidth: 52, fontSize: 14, fontWeight: 600 }}>{String(opt.label)}</span>
+                <input
+				  className={styles.inputStyle}
+                  style={{ width: 80 }}
+                  type="number"
+                  value={opt.value}
+                  onChange={(e) => handleTFValueChange(i, e.target.value)}
+                  placeholder="Points"
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
         {questionForm.type === QuestionType.MULTIPLE_CHOICE && (
           <div style={{ marginBottom: 16 }}>
             <label
@@ -300,15 +337,24 @@ const CaseScreen = () => {
               Options (up to 4)
             </label>
             {questionForm.options.map((opt, i) => (
-              <input
-                key={i}
-                className={styles.inputStyle}
-                style={{ marginBottom: 8 }}
-                type="text"
-                value={opt}
-                onChange={(e) => handleOptionChange(i, e.target.value)}
-                placeholder={`Option ${i + 1}`}
-              />
+              <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                <input
+				  className={styles.inputStyle}
+                  style={{ flex: 1 }}
+                  type="text"
+                  value={opt.label}
+                  onChange={(e) => handleOptionChange(i, 'label', e.target.value)}
+                  placeholder={`Option ${i + 1}`}
+                />
+                <input
+				  className={styles.inputStyle}
+                  style={{ width: 80 }}
+                  type="number"
+                  value={opt.value}
+                  onChange={(e) => handleOptionChange(i, 'value', e.target.value)}
+                  placeholder="Points"
+                />
+              </div>
             ))}
           </div>
         )}

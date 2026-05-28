@@ -36,9 +36,9 @@ const QuestionsScreen = () => {
     const answer = currentAnswers[studentId];
     if (answer === undefined) return '#fff';
     if (selectedQuestion.type === QuestionType.TRUE_FALSE) {
-      return answer === true ? '#4caf50' : '#f44336';
+      return answer.label === true ? '#4caf50' : '#f44336';
     }
-    const idx = selectedQuestion.options.indexOf(answer);
+    const idx = selectedQuestion.options.findIndex((o) => o.label === answer.label);
     return idx >= 0 ? MC_COLORS[idx] : '#fff';
   };
 
@@ -53,10 +53,10 @@ const QuestionsScreen = () => {
   };
 
   // ── T/F set all ────────────────────────────────────────────────
-  const handleSetAllTF = (value) => {
+  const handleSetAllTF = (optionObj) => {
     const all = rects.flatMap((r) => r.assignedStudents);
     const answers = {};
-    all.forEach((s) => { answers[s.id] = value; });
+    all.forEach((s) => { answers[s.id] = optionObj; });
     setCurrentAnswers(answers);
   };
 
@@ -64,14 +64,15 @@ const QuestionsScreen = () => {
   const handleStudentTap = (studentId) => {
     if (!selectedQuestion) return;
     if (selectedQuestion.type === QuestionType.TRUE_FALSE) {
+      const trueOpt = selectedQuestion.options.find((o) => o.label === true);
+      const falseOpt = selectedQuestion.options.find((o) => o.label === false);
       setCurrentAnswers((prev) => ({
         ...prev,
-        [studentId]: prev[studentId] !== true,
+        [studentId]: prev[studentId]?.label === true ? falseOpt : trueOpt,
       }));
     } else {
       if (activeOptionIndex === null) return;
-      const optionValue = selectedQuestion.options[activeOptionIndex];
-      setCurrentAnswers((prev) => ({ ...prev, [studentId]: optionValue }));
+      setCurrentAnswers((prev) => ({ ...prev, [studentId]: selectedQuestion.options[activeOptionIndex] }));
     }
   };
 
@@ -81,7 +82,6 @@ const QuestionsScreen = () => {
     const newAnswers = { ...(activeCase.answers ?? {}), [selectedQuestionId]: currentAnswers };
     updateCase({ ...activeCase, answers: newAnswers });
     localStorage.setItem('cases', JSON.stringify(useCaseStore.getState().cases));
-	alert('Answers saved! (This is a placeholder action.)');
   };
 
   // ── zoom / pan ─────────────────────────────────────────────────
@@ -184,7 +184,7 @@ const QuestionsScreen = () => {
             {selectedQuestion.type === QuestionType.TRUE_FALSE ? (
               <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
                 <button
-                  onClick={() => handleSetAllTF(true)}
+                  onClick={() => handleSetAllTF(selectedQuestion.options.find((o) => o.label === true))}
                   style={{
                     flex: 1, padding: '10px 0', fontSize: 14, fontWeight: 600,
                     background: '#4caf50', color: '#fff',
@@ -192,7 +192,7 @@ const QuestionsScreen = () => {
                   }}
                 >All True</button>
                 <button
-                  onClick={() => handleSetAllTF(false)}
+                  onClick={() => handleSetAllTF(selectedQuestion.options.find((o) => o.label === false))}
                   style={{
                     flex: 1, padding: '10px 0', fontSize: 14, fontWeight: 600,
                     background: '#f44336', color: '#fff',
@@ -214,7 +214,7 @@ const QuestionsScreen = () => {
                       opacity: activeOptionIndex !== null && activeOptionIndex !== i ? 0.6 : 1,
                     }}
                   >
-                    {opt}
+                    {opt.label}
                   </button>
                 ))}
               </div>
@@ -224,7 +224,7 @@ const QuestionsScreen = () => {
               {selectedQuestion.type === QuestionType.TRUE_FALSE
                 ? 'Tap a student circle to toggle their answer.'
                 : activeOptionIndex !== null
-                  ? `Tap students to assign "${selectedQuestion.options[activeOptionIndex]}".`
+                  ? `Tap students to assign "${selectedQuestion.options[activeOptionIndex].label}".`
                   : 'Select an option above, then tap students.'}
             </p>
 
