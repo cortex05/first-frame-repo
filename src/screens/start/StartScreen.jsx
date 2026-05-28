@@ -276,7 +276,7 @@ const StartScreen = () => {
   	};
 
   	return <React.Fragment>
-  		{students.length === 0 && displayedStudents.length === activeCase.studentNumber && (
+  		{students.length === 0 && displayedStudents.length > 0 && (
   			<button
     			onClick={saveChart}
     			style={{

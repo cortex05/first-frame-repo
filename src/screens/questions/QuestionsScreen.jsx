@@ -77,11 +77,12 @@ const QuestionsScreen = () => {
   };
 
   // ── save answers ───────────────────────────────────────────────
-  const handleDone = () => {
+  const handleSaveAnswers = () => {
     if (!selectedQuestion) return;
     const newAnswers = { ...(activeCase.answers ?? {}), [selectedQuestionId]: currentAnswers };
     updateCase({ ...activeCase, answers: newAnswers });
     localStorage.setItem('cases', JSON.stringify(useCaseStore.getState().cases));
+	alert('Answers saved!');
   };
 
   // ── zoom / pan ─────────────────────────────────────────────────
@@ -229,14 +230,14 @@ const QuestionsScreen = () => {
             </p>
 
             <button
-              onClick={handleDone}
+              onClick={handleSaveAnswers}
               style={{
                 width: '100%', padding: '12px 0', fontSize: 15, fontWeight: 600,
                 background: '#2c6fad', color: '#fff',
                 border: 'none', borderRadius: 6, cursor: 'pointer',
               }}
             >
-              Done
+              Save Answers
             </button>
 			<Link to={`/case/${activeCase._id}`} >
 			  	<button style={{
