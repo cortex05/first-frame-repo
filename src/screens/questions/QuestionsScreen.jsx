@@ -19,6 +19,7 @@ const QuestionsScreen = () => {
   const [selectedQuestionId, setSelectedQuestionId] = useState(null);
   const [currentAnswers, setCurrentAnswers] = useState({});
   const [activeOptionIndex, setActiveOptionIndex] = useState(null);
+  const [showScores, setShowScores] = useState(false);
 
   const [scale, setScale] = useState(1);
   const [stagePos, setStagePos] = useState({ x: 0, y: 0 });
@@ -30,8 +31,33 @@ const QuestionsScreen = () => {
   const rects = activeCase.chartData?.rects ?? [];
   const selectedQuestion = activeCase.questions.find((q) => q.id === selectedQuestionId) ?? null;
 
+  // ── score helper ──────────────────────────────────────────────
+  const getStudentScore = (studentId) => {
+    const answers = activeCase.answers ?? {};
+    return Object.values(answers).reduce(
+      (sum, qAnswers) => sum + (qAnswers[studentId]?.value ?? 0),
+      0
+    );
+  };
+
+  // ── score colour (gradient: #5BF527 low → #F54927 high) ────────
+  const _allStudents = rects.flatMap((r) => r.assignedStudents);
+  const _allScores = _allStudents.map((s) => getStudentScore(s.id));
+  const _minScore = _allScores.length ? Math.min(..._allScores) : 0;
+  const _maxScore = _allScores.length ? Math.max(..._allScores) : 0;
+
+  const getScoreColor = (studentId) => {
+    const score = getStudentScore(studentId);
+    if (_maxScore === _minScore) return '#5BF527';
+    const range = _maxScore - _minScore;
+    if (score <= _minScore + range / 3) return '#5BF527';
+    if (score <= _minScore + (2 * range) / 3) return '#F7F46D';
+    return '#F54927';
+  };
+
   // ── colour helpers ─────────────────────────────────────────────
   const getStudentFill = (studentId) => {
+    if (showScores) return getScoreColor(studentId);
     if (!selectedQuestion) return '#fff';
     const answer = currentAnswers[studentId];
     if (answer === undefined) return '#fff';
@@ -42,14 +68,17 @@ const QuestionsScreen = () => {
     return idx >= 0 ? MC_COLORS[idx] : '#fff';
   };
 
-  const getStudentTextColor = (studentId) =>
-    getStudentFill(studentId) === '#fff' ? '#2c6fad' : '#fff';
+  const getStudentTextColor = (studentId) => {
+    if (showScores) return '#2E2E2D';
+    return getStudentFill(studentId) === '#fff' ? '#2c6fad' : '#fff';
+  };
 
   // ── question selection ─────────────────────────────────────────
   const handleSelectQuestion = (questionId) => {
     setSelectedQuestionId(questionId);
     setActiveOptionIndex(null);
     setCurrentAnswers((activeCase.answers ?? {})[questionId] ?? {});
+    setShowScores(false);
   };
 
   // ── T/F set all ────────────────────────────────────────────────
@@ -146,7 +175,20 @@ const QuestionsScreen = () => {
         borderRight: '1px solid #c5d8f5', display: 'flex',
         flexDirection: 'column', overflowY: 'auto', padding: 16,
       }}>
-        <h2 style={{ margin: '0 0 16px', fontSize: 16, color: '#2c6fad' }}>Questions</h2>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <h2 style={{ margin: 0, fontSize: 16, color: '#2c6fad' }}>Questions</h2>
+          <button
+            onClick={() => setShowScores((v) => !v)}
+            style={{
+              padding: '5px 12px', fontSize: 13, fontWeight: 600,
+              background: showScores ? '#2c6fad' : '#e3edf7',
+              color: showScores ? '#fff' : '#2c6fad',
+              border: '1px solid #2c6fad', borderRadius: 6, cursor: 'pointer',
+            }}
+          >
+            Scores
+          </button>
+        </div>
 
         {activeCase.questions.length === 0 && (
           <p style={{ color: '#888', fontSize: 13 }}>No questions on this case.</p>
@@ -306,8 +348,8 @@ const QuestionsScreen = () => {
                         y={-CIRCLE_R}
                         width={CIRCLE_R * 2}
                         height={CIRCLE_R * 2}
-                        text={String(s.id)}
-                        fontSize={12}
+                        text={showScores ? `${s.id} - ${getStudentScore(s.id)}` : String(s.id)}
+                        fontSize={showScores ? 9 : 12}
                         fill={getStudentTextColor(s.id)}
                         align="center"
                         verticalAlign="middle"
