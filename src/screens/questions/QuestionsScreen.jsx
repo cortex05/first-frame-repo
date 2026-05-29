@@ -20,6 +20,7 @@ const QuestionsScreen = () => {
   const [currentAnswers, setCurrentAnswers] = useState({});
   const [activeOptionIndex, setActiveOptionIndex] = useState(null);
   const [showScores, setShowScores] = useState(false);
+  const [sortModal, setSortModal] = useState(null); // 'high' | 'low' | null
 
   const [scale, setScale] = useState(1);
   const [stagePos, setStagePos] = useState({ x: 0, y: 0 });
@@ -178,7 +179,12 @@ const QuestionsScreen = () => {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
           <h2 style={{ margin: 0, fontSize: 16, color: '#2c6fad' }}>Questions</h2>
           <button
-            onClick={() => setShowScores((v) => !v)}
+            onClick={() => {
+              setShowScores((v) => {
+                if (v) setSelectedQuestionId(null);
+                return !v;
+              });
+            }}
             style={{
               padding: '5px 12px', fontSize: 13, fontWeight: 600,
               background: showScores ? '#2c6fad' : '#e3edf7',
@@ -190,6 +196,34 @@ const QuestionsScreen = () => {
           </button>
         </div>
 
+        {showScores ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <button
+              onClick={() => setSortModal('high')}
+              style={{
+                width: '100%', padding: '12px 0', fontSize: 15, fontWeight: 600,
+                background: '#2c6fad', color: '#fff',
+                border: 'none', borderRadius: 6, cursor: 'pointer',
+              }}
+            >High to Low</button>
+            <button
+              onClick={() => setSortModal('low')}
+              style={{
+                width: '100%', padding: '12px 0', fontSize: 15, fontWeight: 600,
+                background: '#2c6fad', color: '#fff',
+                border: 'none', borderRadius: 6, cursor: 'pointer',
+              }}
+            >Low to High</button>
+            <Link to={`/case/${activeCase._id}`}>
+              <button style={{
+                width: '100%', padding: '12px 0', fontSize: 15, fontWeight: 600,
+                background: '#2c6fad', color: '#fff',
+                border: 'none', borderRadius: 6, cursor: 'pointer',
+              }}>Back to case</button>
+            </Link>
+          </div>
+        ) : (
+          <>
         {activeCase.questions.length === 0 && (
           <p style={{ color: '#888', fontSize: 13 }}>No questions on this case.</p>
         )}
@@ -290,7 +324,65 @@ const QuestionsScreen = () => {
 			</Link>
           </div>
         )}
+          </>
+        )}
       </div>
+
+      {/* ── Sort modal ── */}
+      {sortModal && (() => {
+        const sorted = [..._allStudents].sort((a, b) =>
+          sortModal === 'high'
+            ? getStudentScore(b.id) - getStudentScore(a.id)
+            : getStudentScore(a.id) - getStudentScore(b.id)
+        );
+        return (
+          <div
+            onClick={() => setSortModal(null)}
+            style={{
+              position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 500,
+            }}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: '#fff', borderRadius: 10, padding: 24, minWidth: 280, maxWidth: 360,
+                maxHeight: '75vh', display: 'flex', flexDirection: 'column',
+                boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                <h3 style={{ margin: 0, fontSize: 16, color: '#2c6fad' }}>
+                  {sortModal === 'high' ? 'High to Low' : 'Low to High'}
+                </h3>
+                <button
+                  onClick={() => setSortModal(null)}
+                  style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#666', lineHeight: 1 }}
+                >×</button>
+              </div>
+              <div style={{ overflowY: 'auto' }}>
+                {sorted.map((s) => {
+                  const score = getStudentScore(s.id);
+                  const bg = getScoreColor(s.id);
+                  const textColor = bg === '#F54927' ? '#fff' : '#2E2E2D';
+                  return (
+                    <div
+                      key={s.id}
+                      style={{
+                        background: bg, color: textColor,
+                        padding: '10px 14px', borderRadius: 6,
+                        marginBottom: 8, fontSize: 14, fontWeight: 600,
+                      }}
+                    >
+                      #{s.id} &mdash; {score}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ── Canvas area ── */}
       <div style={{ flex: 1, position: 'relative' }}>
