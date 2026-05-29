@@ -251,6 +251,7 @@ const QuestionsScreen = () => {
           </div>
         ))}
 
+
         {/* Answer controls */}
         {selectedQuestion && (
           <div style={{ borderTop: '1px solid #c5d8f5', paddingTop: 16, marginTop: 8 }}>
@@ -324,6 +325,16 @@ const QuestionsScreen = () => {
 			</Link>
           </div>
         )}
+
+		{!selectedQuestion && !showScores && (
+			<Link to={`/case/${activeCase._id}`}>
+              <button style={{
+                width: '100%', padding: '12px 0', fontSize: 15, fontWeight: 600,
+                background: '#2c6fad', color: '#fff',
+                border: 'none', borderRadius: 6, cursor: 'pointer',
+              }}>Back to case</button>
+            </Link>
+		)}
           </>
         )}
       </div>
