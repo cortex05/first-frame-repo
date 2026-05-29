@@ -69,7 +69,7 @@ const QuestionsScreen = () => {
   };
 
   const getStudentTextColor = (studentId) => {
-    if (showScores) return '#2E2E2D';
+    if (showScores) return getScoreColor(studentId) === '#F54927' ? '#fff' : '#2E2E2D';
     return getStudentFill(studentId) === '#fff' ? '#2c6fad' : '#fff';
   };
 
@@ -348,7 +348,7 @@ const QuestionsScreen = () => {
                         y={-CIRCLE_R}
                         width={CIRCLE_R * 2}
                         height={CIRCLE_R * 2}
-                        text={showScores ? `${s.id} - ${getStudentScore(s.id)}` : String(s.id)}
+                        text={showScores ? `#${s.id} - ${getStudentScore(s.id)}` : String(s.id)}
                         fontSize={showScores ? 9 : 12}
                         fill={getStudentTextColor(s.id)}
                         align="center"
