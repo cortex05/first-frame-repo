@@ -411,6 +411,8 @@ const QuestionsScreen = () => {
               scaleY={scale}
               x={stagePos.x}
               y={stagePos.y}
+              draggable
+              onDragEnd={(e) => setStagePos({ x: e.target.x(), y: e.target.y() })}
               onWheel={handleWheel}
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
