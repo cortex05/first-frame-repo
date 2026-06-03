@@ -269,7 +269,7 @@ const QuestionsScreen = () => {
                     background: '#4caf50', color: '#fff',
                     border: 'none', borderRadius: 6, cursor: 'pointer',
                   }}
-                >All True</button>
+                >All True | {selectedQuestion.options.find((o) => o.label === true).value}</button>
                 <button
                   onClick={() => handleSetAllTF(selectedQuestion.options.find((o) => o.label === false))}
                   style={{
@@ -277,7 +277,7 @@ const QuestionsScreen = () => {
                     background: '#f44336', color: '#fff',
                     border: 'none', borderRadius: 6, cursor: 'pointer',
                   }}
-                >All False</button>
+                >All False | {selectedQuestion.options.find((o) => o.label === false).value}</button>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
@@ -291,9 +291,10 @@ const QuestionsScreen = () => {
                       border: activeOptionIndex === i ? '3px solid #222' : '3px solid transparent',
                       borderRadius: 6, cursor: 'pointer', textAlign: 'left',
                       opacity: activeOptionIndex !== null && activeOptionIndex !== i ? 0.6 : 1,
+					  display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8,
                     }}
                   >
-                    {opt.label}
+                    <span>{opt.label}</span><span>{opt.value}</span>
                   </button>
                 ))}
               </div>
