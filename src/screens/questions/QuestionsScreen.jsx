@@ -21,6 +21,7 @@ const QuestionsScreen = () => {
   const [activeOptionIndex, setActiveOptionIndex] = useState(null);
   const [showScores, setShowScores] = useState(false);
   const [sortModal, setSortModal] = useState(null); // 'high' | 'low' | null
+  const [studentReport, setStudentReport] = useState(null); // studentId | null
 
   const [scale, setScale] = useState(1);
   const [stagePos, setStagePos] = useState({ x: 0, y: 0 });
@@ -377,15 +378,85 @@ const QuestionsScreen = () => {
                   const bg = getScoreColor(s.id);
                   const textColor = bg === '#F54927' ? '#fff' : '#2E2E2D';
                   return (
-                    <div
+                    <button
                       key={s.id}
+                      onClick={() => setStudentReport(s.id)}
                       style={{
+                        display: 'block', width: '100%', textAlign: 'left',
                         background: bg, color: textColor,
                         padding: '10px 14px', borderRadius: 6,
                         marginBottom: 8, fontSize: 14, fontWeight: 600,
+                        border: 'none', cursor: 'pointer',
                       }}
                     >
                       #{s.id} &mdash; {score}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ── Student Report modal ── */}
+      {studentReport !== null && (() => {
+        const getAnswerColor = (question, value) => {
+          const vals = question.options.map((o) => o.value);
+          const minVal = Math.min(...vals);
+          const maxVal = Math.max(...vals);
+          if (maxVal === minVal) return '#5BF527';
+          const range = maxVal - minVal;
+          if (value <= minVal + range / 3) return '#5BF527';
+          if (value <= minVal + (2 * range) / 3) return '#F7F46D';
+          return '#F54927';
+        };
+        return (
+          <div
+            style={{
+              position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 600,
+            }}
+          >
+            <div
+              style={{
+                background: '#fff', borderRadius: 10, padding: 24, minWidth: 320, maxWidth: 480,
+                maxHeight: '75vh', display: 'flex', flexDirection: 'column',
+                boxShadow: '0 4px 24px rgba(0,0,0,0.35)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                <h3 style={{ margin: 0, fontSize: 16, color: '#2c6fad' }}>Student Report</h3>
+                <button
+                  onClick={() => setStudentReport(null)}
+                  style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#666', lineHeight: 1 }}
+                >×</button>
+              </div>
+              <div style={{ overflowY: 'auto' }}>
+                {activeCase.questions.map((q) => {
+                  const answerObj = (activeCase.answers?.[q.id] ?? {})[studentReport];
+                  const value = answerObj?.value ?? 0;
+                  const bg = getAnswerColor(q, value);
+                  const textColor = bg === '#F54927' ? '#fff' : '#2E2E2D';
+                  return (
+                    <div
+                      key={q.id}
+                      style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        gap: 12, marginBottom: 8,
+                        border: '1px solid #e0e0e0', borderRadius: 6, overflow: 'hidden',
+                      }}
+                    >
+                      <span style={{ flex: 1, padding: '10px 14px', fontSize: 13, color: '#333' }}>
+                        {q.text}
+                      </span>
+                      <span style={{
+                        background: bg, color: textColor,
+                        padding: '10px 14px', fontSize: 14, fontWeight: 700,
+                        minWidth: 48, textAlign: 'center', flexShrink: 0,
+                      }}>
+                        {value}
+                      </span>
                     </div>
                   );
                 })}
