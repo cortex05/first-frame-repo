@@ -93,6 +93,7 @@ const QuestionsScreen = () => {
 
   // ── student tap ────────────────────────────────────────────────
   const handleStudentTap = (studentId) => {
+    if (showScores) { setStudentReport(studentId); return; }
     if (!selectedQuestion) return;
     if (selectedQuestion.type === QuestionType.TRUE_FALSE) {
       const trueOpt = selectedQuestion.options.find((o) => o.label === true);
@@ -443,18 +444,19 @@ const QuestionsScreen = () => {
                     <div
                       key={q.id}
                       style={{
-                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        display: 'flex', alignItems: 'stretch', justifyContent: 'space-between',
                         gap: 12, marginBottom: 8,
                         border: '1px solid #e0e0e0', borderRadius: 6, overflow: 'hidden',
                       }}
                     >
-                      <span style={{ flex: 1, padding: '10px 14px', fontSize: 13, color: '#333' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', flex: 1, padding: '10px 14px', fontSize: 13, color: '#333' }}>
                         {q.text}
                       </span>
                       <span style={{
                         background: bg, color: textColor,
                         padding: '10px 14px', fontSize: 14, fontWeight: 700,
                         minWidth: 48, textAlign: 'center', flexShrink: 0,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
                       }}>
                         {value}
                       </span>
