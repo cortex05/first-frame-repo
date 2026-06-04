@@ -268,6 +268,7 @@ const StartScreen = () => {
           scaleY={scale}
           x={stagePos.x}
           y={stagePos.y}
+          draggable
           onWheel={handleWheel}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
