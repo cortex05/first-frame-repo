@@ -6,9 +6,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import { initialStudentGeneration } from "../../utilities/studentUtilities";
 
 const SIDEBAR_W = 260;
-const CIRCLE_R = 18;
+const CIRCLE_R = 24;
 const CELL_PAD = 8;
-const CELL_SIZE = CIRCLE_R * 2 + CELL_PAD; // 44px per cell
+const CELL_SIZE = CIRCLE_R * 2 + CELL_PAD; // 
 
 const SCALE_MIN = 0.1;
 const SCALE_MAX = 5;

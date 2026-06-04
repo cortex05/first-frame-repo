@@ -4,7 +4,7 @@ import { Stage, Layer, Rect, Circle, Text, Group } from 'react-konva';
 import useCaseStore from '../../store/useCaseStore';
 import { QuestionType } from '../../types/ENUMS';
 
-const CIRCLE_R = 18;
+const CIRCLE_R = 24;
 const SCALE_MIN = 0.1;
 const SCALE_MAX = 5;
 const SCALE_STEP = 1.2;
