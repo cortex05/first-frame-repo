@@ -428,7 +428,7 @@ const QuestionsScreen = () => {
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                <h3 style={{ margin: 0, fontSize: 16, color: '#2c6fad' }}>Student Report</h3>
+                <h3 style={{ margin: 0, fontSize: 16, color: '#2c6fad' }}>Student Report - #{studentReport}</h3>
                 <button
                   onClick={() => setStudentReport(null)}
                   style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#666', lineHeight: 1 }}
