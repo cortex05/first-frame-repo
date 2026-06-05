@@ -30,23 +30,22 @@ const QuestionsScreen = () => {
 
   if (!activeCase) return <p style={{ padding: 32 }}>Case not found.</p>;
 
-  const rects = activeCase.chartData?.rects ?? [];
-  const selectedQuestion = activeCase.questions.find((q) => q.id === selectedQuestionId) ?? null;
+  const rects = (activeCase.chartData || {}).rects || [];
+  const selectedQuestion = activeCase.questions.find((q) => q.id === selectedQuestionId) || null;
 
   // ── score helper ──────────────────────────────────────────────
   const getStudentScore = (studentId) => {
-    const answers = activeCase.answers ?? {};
-    return Object.values(answers).reduce(
-      (sum, qAnswers) => sum + (qAnswers[studentId]?.value ?? 0),
-      0
-    );
+    const answers = activeCase.answers || {};
+    return Object.values(answers).reduce((sum, qAnswers) => {
+      return sum + ((qAnswers[studentId] || {}).value || 0);
+    }, 0);
   };
 
   // ── score colour (gradient: #5BF527 low → #F54927 high) ────────
-  const _allStudents = rects.flatMap((r) => r.assignedStudents);
-  const _allScores = _allStudents.map((s) => getStudentScore(s.id));
-  const _minScore = _allScores.length ? Math.min(..._allScores) : 0;
-  const _maxScore = _allScores.length ? Math.max(..._allScores) : 0;
+  const allStudents = rects.flatMap((r) => r.assignedStudents);
+  const allScores = allStudents.map((s) => getStudentScore(s.id));
+  const _minScore = allScores.length ? Math.min(...allScores) : 0;
+  const _maxScore = allScores.length ? Math.max(...allScores) : 0;
 
   const getScoreColor = (studentId) => {
     const score = getStudentScore(studentId);
@@ -79,7 +78,7 @@ const QuestionsScreen = () => {
   const handleSelectQuestion = (questionId) => {
     setSelectedQuestionId(questionId);
     setActiveOptionIndex(null);
-    setCurrentAnswers((activeCase.answers ?? {})[questionId] ?? {});
+    setCurrentAnswers((activeCase.answers || {})[questionId] || {});
     setShowScores(false);
   };
 
@@ -100,7 +99,7 @@ const QuestionsScreen = () => {
       const falseOpt = selectedQuestion.options.find((o) => o.label === false);
       setCurrentAnswers((prev) => ({
         ...prev,
-        [studentId]: prev[studentId]?.label === true ? falseOpt : trueOpt,
+        [studentId]: prev[studentId].label === true ? falseOpt : trueOpt,
       }));
     } else {
       if (activeOptionIndex === null) return;
@@ -111,7 +110,7 @@ const QuestionsScreen = () => {
   // ── save answers ───────────────────────────────────────────────
   const handleSaveAnswers = () => {
     if (!selectedQuestion) return;
-    const newAnswers = { ...(activeCase.answers ?? {}), [selectedQuestionId]: currentAnswers };
+    const newAnswers = { ...(activeCase.answers || {}), [selectedQuestionId]: currentAnswers };
     updateCase({ ...activeCase, answers: newAnswers });
     localStorage.setItem('cases', JSON.stringify(useCaseStore.getState().cases));
 	alert('Answers saved!');
@@ -225,7 +224,7 @@ const QuestionsScreen = () => {
             </Link>
           </div>
         ) : (
-          <>
+          <React.Fragment>
         {activeCase.questions.length === 0 && (
           <p style={{ color: '#888', fontSize: 13 }}>No questions on this case.</p>
         )}
@@ -338,13 +337,13 @@ const QuestionsScreen = () => {
               }}>Back to case</button>
             </Link>
 		)}
-          </>
+          </React.Fragment>
         )}
       </div>
 
       {/* ── Sort modal ── */}
       {sortModal && (() => {
-        const sorted = [..._allStudents].sort((a, b) =>
+        const sorted = [...allStudents].sort((a, b) =>
           sortModal === 'high'
             ? getStudentScore(b.id) - getStudentScore(a.id)
             : getStudentScore(a.id) - getStudentScore(b.id)
@@ -407,12 +406,16 @@ const QuestionsScreen = () => {
           const vals = question.options.map((o) => o.value);
           const minVal = Math.min(...vals);
           const maxVal = Math.max(...vals);
+
           if (maxVal === minVal) return '#5BF527';
+
           const range = maxVal - minVal;
-          if (value <= minVal + range / 3) return '#5BF527';
+          
+		  if (value <= minVal + range / 3) return '#5BF527';
           if (value <= minVal + (2 * range) / 3) return '#F7F46D';
           return '#F54927';
         };
+		
         return (
           <div
             style={{
@@ -436,8 +439,8 @@ const QuestionsScreen = () => {
               </div>
               <div style={{ overflowY: 'auto' }}>
                 {activeCase.questions.map((q) => {
-                  const answerObj = (activeCase.answers?.[q.id] ?? {})[studentReport];
-                  const value = answerObj?.value ?? 0;
+                  const answerObj = ((activeCase.answers || {})[q.id] || {})[studentReport];
+                  const value = answerObj.value ||  0;
                   const bg = getAnswerColor(q, value);
                   const textColor = bg === '#F54927' ? '#fff' : '#2E2E2D';
                   return (
@@ -467,7 +470,8 @@ const QuestionsScreen = () => {
             </div>
           </div>
         );
-      })()}
+      })()
+      }
 
       {/* ── Canvas area ── */}
       <div style={{ flex: 1, position: 'relative' }}>
@@ -476,7 +480,7 @@ const QuestionsScreen = () => {
             <p style={{ color: '#888' }}>No seating chart saved yet. Complete the seating chart first.</p>
           </div>
         ) : (
-          <>
+          <React.Fragment>
             <Stage
               ref={stageRef}
               width={window.innerWidth - SIDEBAR_W}
@@ -553,7 +557,7 @@ const QuestionsScreen = () => {
               <button onClick={() => zoomBy(SCALE_STEP)} style={{ width: 28, height: 28, fontSize: 18, lineHeight: 1, border: '1px solid #ccc', borderRadius: 4, cursor: 'pointer', background: '#f5f5f5' }}>+</button>
               <button onClick={() => { setScale(1); setStagePos({ x: 0, y: 0 }); }} style={{ height: 28, padding: '0 8px', fontSize: 12, border: '1px solid #ccc', borderRadius: 4, cursor: 'pointer', background: '#f5f5f5', marginLeft: 4 }}>Reset</button>
             </div>
-          </>
+          </React.Fragment>
         )}
       </div>
     </div>
