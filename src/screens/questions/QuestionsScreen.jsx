@@ -199,7 +199,14 @@ const QuestionsScreen = () => {
 
         {showScores ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <button
+			<Link to={`/case/${activeCase._id}`}>
+              <button style={{
+                width: '100%', padding: '12px 0', fontSize: 15, fontWeight: 600,
+                background: '#2c6fad', color: '#fff',
+                border: 'none', borderRadius: 6, cursor: 'pointer',
+              }}>Back to case</button>
+            </Link>
+		  <button
               onClick={() => setSortModal('high')}
               style={{
                 width: '100%', padding: '12px 0', fontSize: 15, fontWeight: 600,
@@ -215,129 +222,124 @@ const QuestionsScreen = () => {
                 border: 'none', borderRadius: 6, cursor: 'pointer',
               }}
             >Low to High</button>
-            <Link to={`/case/${activeCase._id}`}>
-              <button style={{
-                width: '100%', padding: '12px 0', fontSize: 15, fontWeight: 600,
-                background: '#2c6fad', color: '#fff',
-                border: 'none', borderRadius: 6, cursor: 'pointer',
-              }}>Back to case</button>
-            </Link>
           </div>
         ) : (
-          <React.Fragment>
-        {activeCase.questions.length === 0 && (
-          <p style={{ color: '#888', fontSize: 13 }}>No questions on this case.</p>
-        )}
+          	<React.Fragment>
+				{activeCase.questions.length === 0 && (
+					<p style={{ color: '#888', fontSize: 13 }}>No questions on this case.</p>
+				)}
+			
+				<Link to={`/case/${activeCase._id}`} style={{ marginBottom: 12 }}>
+				<button style={{
+					width: '100%', padding: '12px 0', fontSize: 15, fontWeight: 600,
+					background: '#2c6fad', color: '#fff',
+					border: 'none', borderRadius: 6, cursor: 'pointer',
+				}}>Back to case</button>
+				</Link>
+			
+				{activeCase.questions.map((q) => (
+					<React.Fragment 
+						key={q.id} 
+						// make this a card body that expands to show answer controls when selected 
+					>
+						<div
+							key={q.id}
+							onClick={() => handleSelectQuestion(q.id)}
+							style={{
+								padding: '10px 12px', marginBottom: 6, borderRadius: 6, cursor: 'pointer',
+								background: selectedQuestionId === q.id ? '#2c6fad' : '#fff',
+								color: selectedQuestionId === q.id ? '#fff' : '#333',
+								border: '1px solid #c5d8f5', fontSize: 13,
+								display: 'flex', alignItems: 'center', gap: 8,
+							}}
+						>
+							<span style={{ flex: 1 }}>{q.text}</span>
+							<span style={{
+								fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 10,
+								background: q.type === QuestionType.TRUE_FALSE ? '#e6f4ea' : '#fff3cd',
+								color: q.type === QuestionType.TRUE_FALSE ? '#2e7d32' : '#856404',
+							}}>
+								{q.type === QuestionType.TRUE_FALSE ? 'T/F' : 'MC'}
+							</span>
+						</div>
+					
+						{selectedQuestionId === q.id && (
+							<div>
+								{/* Answer controls */}
+								{selectedQuestion && (
+									<div style={{ borderTop: '1px solid #c5d8f5', paddingTop: 16, marginTop: 8 }}>
+										<p style={{ fontSize: 13, fontWeight: 600, color: '#333', marginBottom: 12 }}>
+											{selectedQuestion.text}
+										</p>
 
-        {activeCase.questions.map((q) => (
-          <div
-            key={q.id}
-            onClick={() => handleSelectQuestion(q.id)}
-            style={{
-              padding: '10px 12px', marginBottom: 6, borderRadius: 6, cursor: 'pointer',
-              background: selectedQuestionId === q.id ? '#2c6fad' : '#fff',
-              color: selectedQuestionId === q.id ? '#fff' : '#333',
-              border: '1px solid #c5d8f5', fontSize: 13,
-              display: 'flex', alignItems: 'center', gap: 8,
-            }}
-          >
-            <span style={{ flex: 1 }}>{q.text}</span>
-            <span style={{
-              fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 10,
-              background: q.type === QuestionType.TRUE_FALSE ? '#e6f4ea' : '#fff3cd',
-              color: q.type === QuestionType.TRUE_FALSE ? '#2e7d32' : '#856404',
-            }}>
-              {q.type === QuestionType.TRUE_FALSE ? 'T/F' : 'MC'}
-            </span>
-          </div>
-        ))}
+										{selectedQuestion.type === QuestionType.TRUE_FALSE ? (
+											<div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+												<button
+													onClick={() => handleSetAllTF(selectedQuestion.options.find((o) => o.label === true))}
+													style={{
+														flex: 1, padding: '10px 0', fontSize: 14, fontWeight: 600,
+														background: '#4caf50', color: '#fff',
+														border: 'none', borderRadius: 6, cursor: 'pointer',
+													}}
+												>All True | {selectedQuestion.options.find((o) => o.label === true).value}</button>
+												<button
+													onClick={() => handleSetAllTF(selectedQuestion.options.find((o) => o.label === false))}
+													style={{
+														flex: 1, padding: '10px 0', fontSize: 14, fontWeight: 600,
+														background: '#f44336', color: '#fff',
+														border: 'none', borderRadius: 6, cursor: 'pointer',
+												}}
+												>All False | {selectedQuestion.options.find((o) => o.label === false).value}</button>
+											</div>
+										) : (
+											<div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
+												{selectedQuestion.options.map((opt, i) => (
+													<button
+														key={i}
+														onClick={() => setActiveOptionIndex(i)}
+														style={{
+															padding: '10px 12px', fontSize: 13, fontWeight: 600,
+															background: MC_COLORS[i], color: '#fff',
+															border: activeOptionIndex === i ? '3px solid #222' : '3px solid transparent',
+															borderRadius: 6, cursor: 'pointer', textAlign: 'left',
+															opacity: activeOptionIndex !== null && activeOptionIndex !== i ? 0.6 : 1,
+															display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8,
+														}}
+													>
+														<span>{opt.label}</span>
+														<span>{opt.value}</span>
+													</button>
+											))}
+											</div>
+										)}
 
+										<p style={{ fontSize: 11, color: '#888', marginBottom: 12 }}>
+											{selectedQuestion.type === QuestionType.TRUE_FALSE
+												? 'Tap a student circle to toggle their answer.'
+												: activeOptionIndex !== null
+												? `Tap students to assign "${selectedQuestion.options[activeOptionIndex].label}".`
+												: 'Select an option above, then tap students.'
+											}
+										</p>
 
-        {/* Answer controls */}
-        {selectedQuestion && (
-          <div style={{ borderTop: '1px solid #c5d8f5', paddingTop: 16, marginTop: 8 }}>
-            <p style={{ fontSize: 13, fontWeight: 600, color: '#333', marginBottom: 12 }}>
-              {selectedQuestion.text}
-            </p>
-
-            {selectedQuestion.type === QuestionType.TRUE_FALSE ? (
-              <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-                <button
-                  onClick={() => handleSetAllTF(selectedQuestion.options.find((o) => o.label === true))}
-                  style={{
-                    flex: 1, padding: '10px 0', fontSize: 14, fontWeight: 600,
-                    background: '#4caf50', color: '#fff',
-                    border: 'none', borderRadius: 6, cursor: 'pointer',
-                  }}
-                >All True | {selectedQuestion.options.find((o) => o.label === true).value}</button>
-                <button
-                  onClick={() => handleSetAllTF(selectedQuestion.options.find((o) => o.label === false))}
-                  style={{
-                    flex: 1, padding: '10px 0', fontSize: 14, fontWeight: 600,
-                    background: '#f44336', color: '#fff',
-                    border: 'none', borderRadius: 6, cursor: 'pointer',
-                  }}
-                >All False | {selectedQuestion.options.find((o) => o.label === false).value}</button>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
-                {selectedQuestion.options.map((opt, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setActiveOptionIndex(i)}
-                    style={{
-                      padding: '10px 12px', fontSize: 13, fontWeight: 600,
-                      background: MC_COLORS[i], color: '#fff',
-                      border: activeOptionIndex === i ? '3px solid #222' : '3px solid transparent',
-                      borderRadius: 6, cursor: 'pointer', textAlign: 'left',
-                      opacity: activeOptionIndex !== null && activeOptionIndex !== i ? 0.6 : 1,
-					  display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8,
-                    }}
-                  >
-                    <span>{opt.label}</span><span>{opt.value}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-
-            <p style={{ fontSize: 11, color: '#888', marginBottom: 12 }}>
-              {selectedQuestion.type === QuestionType.TRUE_FALSE
-                ? 'Tap a student circle to toggle their answer.'
-                : activeOptionIndex !== null
-                  ? `Tap students to assign "${selectedQuestion.options[activeOptionIndex].label}".`
-                  : 'Select an option above, then tap students.'}
-            </p>
-
-            <button
-              onClick={handleSaveAnswers}
-              style={{
-                width: '100%', padding: '12px 0', fontSize: 15, fontWeight: 600,
-                background: '#2c6fad', color: '#fff',
-                border: 'none', borderRadius: 6, cursor: 'pointer',
-              }}
-            >
-              Save Answers
-            </button>
-			<Link to={`/case/${activeCase._id}`} >
-			  	<button style={{
-                width: '100%', padding: '12px 0', fontSize: 15, fontWeight: 600,
-                background: '#2c6fad', color: '#fff',
-                border: 'none', borderRadius: 6, cursor: 'pointer', marginTop: 8,
-              }}>Back to case</button>
-			</Link>
-          </div>
-        )}
-
-		{!selectedQuestion && !showScores && (
-			<Link to={`/case/${activeCase._id}`}>
-              <button style={{
-                width: '100%', padding: '12px 0', fontSize: 15, fontWeight: 600,
-                background: '#2c6fad', color: '#fff',
-                border: 'none', borderRadius: 6, cursor: 'pointer',
-              }}>Back to case</button>
-            </Link>
-		)}
-          </React.Fragment>
+										<button
+											onClick={handleSaveAnswers}
+											style={{
+												width: '100%', padding: '12px 0', fontSize: 15, fontWeight: 600,
+												background: '#2c6fad', color: '#fff',
+												border: 'none', borderRadius: 6, cursor: 'pointer',
+												marginBottom: 16,
+											}}
+										>
+											Save Answers
+										</button>
+									</div>
+								)}
+							</div>
+						)}
+					</React.Fragment>
+				))}		
+          	</React.Fragment>
         )}
       </div>
 
