@@ -442,7 +442,7 @@ const QuestionsScreen = () => {
               <div style={{ overflowY: 'auto' }}>
                 {activeCase.questions.map((q) => {
                   const answerObj = ((activeCase.answers || {})[q.id] || {})[studentReport];
-                  const value = answerObj.value ||  0;
+                  const value = answerObj?.value ||  0;
                   const bg = getAnswerColor(q, value);
                   const textColor = bg === '#F54927' ? '#fff' : '#2E2E2D';
                   return (
