@@ -405,6 +405,7 @@ const QuestionsScreen = () => {
       {/* ── Student Report modal ── */}
       {studentReport !== null && (() => {
         const getAnswerColor = (question, value) => {
+			if (value === null || value === undefined) return '#fff';
           const vals = question.options.map((o) => o.value);
           const minVal = Math.min(...vals);
           const maxVal = Math.max(...vals);
@@ -442,7 +443,10 @@ const QuestionsScreen = () => {
               <div style={{ overflowY: 'auto' }}>
                 {activeCase.questions.map((q) => {
                   const answerObj = ((activeCase.answers || {})[q.id] || {})[studentReport];
-                  const value = answerObj?.value ||  0;
+				  let value = null;
+				  if (answerObj !== undefined) {
+					value = answerObj.value;
+					}
                   const bg = getAnswerColor(q, value);
                   const textColor = bg === '#F54927' ? '#fff' : '#2E2E2D';
                   return (
@@ -463,7 +467,7 @@ const QuestionsScreen = () => {
                         minWidth: 48, textAlign: 'center', flexShrink: 0,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                       }}>
-                        {value}
+                        {value !== null && value !== undefined ? value : 'N/A'}
                       </span>
                     </div>
                   );
