@@ -78,10 +78,12 @@ const QuestionsScreen = () => {
 
   // ── question selection ─────────────────────────────────────────
   const handleSelectQuestion = (questionId) => {
-    setSelectedQuestionId(questionId);
-    setActiveOptionIndex(null);
-    setCurrentAnswers((activeCase.answers || {})[questionId] || {});
-    setShowScores(false);
+	if (selectedQuestionId !== questionId) {
+		setSelectedQuestionId(questionId);
+    	setActiveOptionIndex(null);
+    	setCurrentAnswers((activeCase.answers || {})[questionId] || {});
+    	setShowScores(false);
+	}
   };
 
   // ── T/F set all ────────────────────────────────────────────────
@@ -241,37 +243,32 @@ const QuestionsScreen = () => {
 			
 				{activeCase.questions.map((q) => (
 					<div
-						key={q.id} 
-						// make this a card body that expands to show answer controls when selected
+						key={q.id}
 						className={selectedQuestionId === q.id ? `${styles.selectedQuestion}` : `${styles.questionCard}`}
+						onClick={() => handleSelectQuestion(q.id)}
 					>
-						<div
-							key={q.id}
-							onClick={() => handleSelectQuestion(q.id)}
-							style={{
-								padding: '10px 12px', marginBottom: 6, borderRadius: 6, cursor: 'pointer',
-								background: selectedQuestionId === q.id ? '#2c6fad' : '#fff',
-								color: selectedQuestionId === q.id ? '#fff' : '#333',
-								border: '1px solid #c5d8f5', fontSize: 13,
-								display: 'flex', alignItems: 'center', gap: 8,
-							}}
-						>
-							<span style={{ flex: 1 }}>{q.text}</span>
-							<span style={{
-								fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 10,
-								background: q.type === QuestionType.TRUE_FALSE ? '#e6f4ea' : '#fff3cd',
-								color: q.type === QuestionType.TRUE_FALSE ? '#2e7d32' : '#856404',
-							}}>
-								{q.type === QuestionType.TRUE_FALSE ? 'T/F' : 'MC'}
-							</span>
-						</div>
+
+						{selectedQuestionId !== q.id && (
+							<React.Fragment>
+								<span style={{ flex: 1 }}>{q.text}</span>
+								<span style={{
+									fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 10,
+									background: q.type === QuestionType.TRUE_FALSE ? '#e6f4ea' : '#fff3cd',
+									color: q.type === QuestionType.TRUE_FALSE ? '#2e7d32' : '#856404',
+								}}>
+									{q.type === QuestionType.TRUE_FALSE ? 'T/F' : 'MC'}
+								</span>
+							</React.Fragment>
+						)
+
+						}
 					
 						{selectedQuestionId === q.id && (
 							<div>
 								{/* Answer controls */}
 								{selectedQuestion && (
-									<div style={{ borderTop: '1px solid #c5d8f5', paddingTop: 16, marginTop: 8 }}>
-										<p style={{ fontSize: 13, fontWeight: 600, color: '#333', marginBottom: 12 }}>
+									<div style={{ borderTop: '1px solid #c5d8f5' }}>
+										<p style={{ fontSize: 20, fontWeight: 600, color: '#333', marginBottom: 12 }}>
 											{selectedQuestion.text}
 										</p>
 
@@ -316,12 +313,12 @@ const QuestionsScreen = () => {
 											</div>
 										)}
 
-										<p style={{ fontSize: 11, color: '#888', marginBottom: 12 }}>
+										<p style={{ fontSize: 15, color: '#363535', marginBottom: 12 }}>
 											{selectedQuestion.type === QuestionType.TRUE_FALSE
 												? 'Tap a student circle to toggle their answer.'
 												: activeOptionIndex !== null
 												? `Tap students to assign "${selectedQuestion.options[activeOptionIndex].label}".`
-												: 'Select an option above, then tap students.'
+												: 'Select an option above.'
 											}
 										</p>
 
