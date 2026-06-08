@@ -4,6 +4,8 @@ import { Stage, Layer, Rect, Circle, Text, Group } from 'react-konva';
 import useCaseStore from '../../store/useCaseStore';
 import { QuestionType } from '../../types/ENUMS';
 
+import styles from './QuestionsScreen.module.css';
+
 const CIRCLE_R = 24;
 const SCALE_MIN = 0.1;
 const SCALE_MAX = 5;
@@ -238,9 +240,10 @@ const QuestionsScreen = () => {
 				</Link>
 			
 				{activeCase.questions.map((q) => (
-					<React.Fragment 
+					<div
 						key={q.id} 
-						// make this a card body that expands to show answer controls when selected 
+						// make this a card body that expands to show answer controls when selected
+						className={selectedQuestionId === q.id ? `${styles.selectedQuestion}` : `${styles.questionCard}`}
 					>
 						<div
 							key={q.id}
@@ -337,7 +340,7 @@ const QuestionsScreen = () => {
 								)}
 							</div>
 						)}
-					</React.Fragment>
+					</div>
 				))}		
           	</React.Fragment>
         )}
