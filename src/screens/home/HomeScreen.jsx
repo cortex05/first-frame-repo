@@ -29,7 +29,6 @@ const Home = () => {
     <div className={styles.homeContainer}>
       <h1>Welcome to the Home Page!</h1>
       <p>This is the home screen of our application. Here you will be able to access our various features.</p>
-      <hr />
       <h3>What would you like to do?</h3>
 
       <div className={styles.actionContainer}>

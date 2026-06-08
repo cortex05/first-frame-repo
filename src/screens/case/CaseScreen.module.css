@@ -19,3 +19,11 @@
     width: 100%;
     box-sizing: border-box;
 }
+
+.infoSection {
+	margin-bottom: 32px;
+}
+
+.infoSection p {
+	font-size: 24px;
+}

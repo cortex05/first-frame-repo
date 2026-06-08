@@ -69,12 +69,14 @@ const CreateCaseScreen = () => {
   };
 
   const handleSubmit = () => {
-    const createdCase = new Case(caseId, name, author, location, numberOfStudents, questions);
+    const createdCase = new Case(caseId, name, author, location, numberOfStudents, dateTime, questions);
     const casesArray = JSON.parse(localStorage.getItem('cases')) || [];
     casesArray.push(createdCase);
+
     localStorage.setItem('cases', JSON.stringify(casesArray));
-	addCase(createdCase);
-	setActiveCase(caseId);
+	  
+    addCase(createdCase);
+	  setActiveCase(caseId);
     setPreviewModal(false);
     navigate(`/case/${caseId}`);
   };
@@ -348,7 +350,7 @@ const CreateCaseScreen = () => {
             <strong>Students:</strong> {numberOfStudents || "—"}
           </div>
           <div>
-            <strong>Date / Time:</strong> {dateTime || "—"}
+            <strong>Date / Time:</strong> {dateTime ? new Date(dateTime).toLocaleString() : "—"}
           </div>
           <div style={{ marginTop: 12 }}>
             <strong>Questions ({questions.length}):</strong>

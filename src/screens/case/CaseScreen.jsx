@@ -87,7 +87,7 @@ const CaseScreen = () => {
 
   return (
     <div style={{ maxWidth: 640, margin: "0 auto", padding: 32 }}>
-      <h1 style={{ marginBottom: 24 }}>{activeCase.name}</h1>
+      <h1 style={{ marginBottom: 32 }}>{activeCase.name}</h1>
       <Link
         to="/"
         style={{
@@ -110,28 +110,19 @@ const CaseScreen = () => {
       </Link>
 
       {/* Basic Info */}
-      <section style={{ marginBottom: 32 }}>
-        <h2 style={{ marginBottom: 16 }}>Basic Info</h2>
-
-        <div>
-          <p className={styles.value}>Case name: {activeCase.name || "—"}</p>
-        </div>
-        <div>
-          <p className={styles.value}>Author: {activeCase.author || "—"}</p>
-        </div>
-        <div>
-          <p className={styles.value}>Location: {activeCase.location || "—"}</p>
-        </div>
-        <div>
-          <p className={styles.value}>
+      <section 
+        style={{ marginBottom: 32 }}
+        className={styles.infoSection}>
+        <p className={styles.value}>Owner: {activeCase.author || "—"}</p>
+        <p className={styles.value}>Location: {activeCase.location || "—"}</p>
+        <p className={styles.value}>
             Number of Students: {activeCase.studentNumber || "—"}
-          </p>
-        </div>
+        </p>
         <div>
           <p className={styles.value}>
-            Date / Time:{" "}
-            {activeCase.dateCreated
-              ? new Date(activeCase.dateCreated).toLocaleString()
+            Date & Time:{" "}
+            {activeCase.caseDate
+              ? new Date(activeCase.caseDate).toLocaleString()
               : "—"}
           </p>
         </div>

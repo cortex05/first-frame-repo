@@ -3,14 +3,15 @@ class Case {
   	questions = [];
   	chartData = {};
   	answers = {};
-	seated = false;
+		seated = false;
 
-  	constructor(_id, name, author, location, studentNumber, questions) {
+  	constructor(_id, name, author, location, studentNumber, caseDate, questions) {
     	this._id = _id;
     	this.name = name;
     	this.author = author;
     	this.location = location;
     	this.studentNumber = studentNumber;
+			this.caseDate = caseDate;
     	this.questions = questions;
     	this.dateCreated = new Date();
   	}
