@@ -233,9 +233,9 @@ const CreateCaseScreen = () => {
       >
         <div className={styles.fieldStyle}>
           <label className={styles.labelStyle}>Question Text</label>
-          <input
+          <textarea
             className={styles.inputStyle}
-            type="text"
+            type="textarea"
             value={questionForm.text}
             onChange={(e) =>
               setQuestionForm((prev) => ({ ...prev, text: e.target.value }))

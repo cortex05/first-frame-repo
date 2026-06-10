@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Modal = ({ isOpen, onClose, title, children }) => {
+const Modal = ({ isOpen, onClose, title, children, hideDefaultClose = false }) => {
   if (!isOpen) return null;
 
   return (
@@ -15,16 +15,18 @@ const Modal = ({ isOpen, onClose, title, children }) => {
       }}>
         {title && <h2 style={{ margin: '0 0 24px' }}>{title}</h2>}
         {children}
-        <button
-          onClick={onClose}
-          style={{
-            width: '100%', padding: '12px 0', fontSize: 16,
-            background: '#f0f0f0', color: '#333', border: '1px solid #ccc',
-            borderRadius: 6, cursor: 'pointer',
-          }}
-        >
-          Close
-        </button>
+        {!hideDefaultClose && (
+          <button
+            onClick={onClose}
+            style={{
+              width: '100%', padding: '12px 0', fontSize: 16,
+              background: '#f0f0f0', color: '#333', border: '1px solid #ccc',
+              borderRadius: 6, cursor: 'pointer',
+            }}
+          >
+            Close
+          </button>
+        )}
       </div>
     </div>
   );

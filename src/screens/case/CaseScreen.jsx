@@ -8,7 +8,6 @@ import { QuestionType } from "../../types/ENUMS";
 import { EMPTY_QUESTION_FORM } from "../../utils/formUtils";
 
 import styles from "./CaseScreen.module.css";
-import { setPointerCapture } from "konva/lib/PointerEvents";
 
 const CaseScreen = () => {
   const { id } = useParams();
@@ -22,6 +21,8 @@ const CaseScreen = () => {
 
   const [questionModal, setQuestionModal] = useState(false);
   const [questionForm, setQuestionForm] = useState(EMPTY_QUESTION_FORM);
+  const [editingQuestionId, setEditingQuestionId] = useState(null);
+  const [deleteQuestionId, setDeleteQuestionId] = useState(null);
 
   const [startModal, setStartModal] = useState(false);
   const [editStudentNumber, setEditStudentNumber] = useState(false);
@@ -46,8 +47,60 @@ const CaseScreen = () => {
     setEditStudentNumber(false);
   };
 
+  const persistCaseUpdate = (updatedCase) => {
+    updateCase(updatedCase);
+    localStorage.setItem("cases", JSON.stringify(useCaseStore.getState().cases));
+  };
+
   const openQuestionModal = () => {
     setQuestionForm(EMPTY_QUESTION_FORM);
+    setEditingQuestionId(null);
+    setQuestionModal(true);
+  };
+
+  const closeQuestionModal = () => {
+    setQuestionModal(false);
+    setEditingQuestionId(null);
+    setQuestionForm(EMPTY_QUESTION_FORM);
+  };
+
+  const openEditQuestionModal = (question) => {
+    if (question.type === QuestionType.MULTIPLE_CHOICE) {
+      const mcOptions = question.options.map((opt) => ({
+        label: opt.label || "",
+        value: Number(opt.value) || 0,
+      }));
+      while (mcOptions.length < 4) {
+        mcOptions.push({ label: "", value: 0 });
+      }
+      setQuestionForm({
+        text: question.text || "",
+        type: QuestionType.MULTIPLE_CHOICE,
+        options: mcOptions.slice(0, 4),
+        tfValues: [
+          { label: true, value: 3 },
+          { label: false, value: 0 },
+        ],
+      });
+    } else {
+      const trueOption = question.options.find((opt) => opt.label === true || opt.label === "true");
+      const falseOption = question.options.find((opt) => opt.label === false || opt.label === "false");
+      setQuestionForm({
+        text: question.text || "",
+        type: QuestionType.TRUE_FALSE,
+        options: [
+          { label: "", value: 0 },
+          { label: "", value: 0 },
+          { label: "", value: 0 },
+          { label: "", value: 0 },
+        ],
+        tfValues: [
+          { label: true, value: Number(trueOption?.value) || 0 },
+          { label: false, value: Number(falseOption?.value) || 0 },
+        ],
+      });
+    }
+    setEditingQuestionId(question.id);
     setQuestionModal(true);
   };
 
@@ -80,8 +133,45 @@ const CaseScreen = () => {
       activeCase._id,
       options,
     );
-    updateCase({ ...activeCase, questions: [...activeCase.questions, q] });
-    setQuestionModal(false);
+    persistCaseUpdate({ ...activeCase, questions: [...activeCase.questions, q] });
+    closeQuestionModal();
+  };
+
+  const handleSaveEditedQuestion = () => {
+    if (!questionForm.text.trim() || !editingQuestionId) return;
+    const options =
+      questionForm.type === QuestionType.MULTIPLE_CHOICE
+        ? questionForm.options.filter((o) => o.label.trim() !== "")
+        : questionForm.tfValues;
+
+    const updatedQuestions = activeCase.questions.map((q) => {
+      if (q.id !== editingQuestionId) return q;
+      return {
+        ...q,
+        text: questionForm.text.trim(),
+        type: questionForm.type,
+        options,
+      };
+    });
+
+    persistCaseUpdate({ ...activeCase, questions: updatedQuestions });
+    closeQuestionModal();
+  };
+
+  const handleDeleteQuestion = () => {
+    if (!deleteQuestionId) return;
+
+    const updatedQuestions = activeCase.questions.filter((q) => q.id !== deleteQuestionId);
+    const updatedAnswers = { ...(activeCase.answers || {}) };
+    delete updatedAnswers[deleteQuestionId];
+
+    persistCaseUpdate({
+      ...activeCase,
+      questions: updatedQuestions,
+      answers: updatedAnswers,
+    });
+
+    setDeleteQuestionId(null);
   };
 
 
@@ -157,6 +247,40 @@ const CaseScreen = () => {
               {i + 1}.
             </span>
             <span style={{ flex: 1 }}>{q.text}</span>
+            <button
+              onClick={() => openEditQuestionModal(q)}
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                padding: "4px 8px",
+                background: "#f0ad4e",
+                color: "#fff",
+                border: "none",
+                borderRadius: 4,
+                cursor: "pointer",
+              }}
+            >
+              Edit
+            </button>
+            <button
+              onClick={() => setDeleteQuestionId(q.id)}
+              style={{
+                width: 22,
+                height: 22,
+                fontSize: 13,
+                fontWeight: 700,
+                padding: 0,
+                background: "#d9534f",
+                color: "#fff",
+                border: "none",
+                borderRadius: 4,
+                cursor: "pointer",
+                lineHeight: 1,
+              }}
+              aria-label="Delete question"
+            >
+              X
+            </button>
             <span
               style={{
                 fontSize: 11,
@@ -234,8 +358,9 @@ const CaseScreen = () => {
       {/* Add Question Modal */}
       <Modal
         isOpen={questionModal}
-        onClose={() => setQuestionModal(false)}
-        title="Add Question"
+        onClose={closeQuestionModal}
+        title={editingQuestionId ? "Edit Question" : "Add Question"}
+        hideDefaultClose={Boolean(editingQuestionId)}
       >
         <div
           style={{
@@ -350,24 +475,107 @@ const CaseScreen = () => {
           </div>
         )}
 
-        <button
-          onClick={handleAddQuestion}
-          disabled={!questionForm.text.trim()}
-          style={{
-            width: "100%",
-            padding: "12px 0",
-            fontSize: 15,
-            fontWeight: 600,
-            background: questionForm.text.trim() ? "#4a90d9" : "#aaa",
-            color: "#fff",
-            border: "none",
-            borderRadius: 6,
-            marginBottom: 8,
-            cursor: questionForm.text.trim() ? "pointer" : "not-allowed",
-          }}
-        >
-          Add Question
-        </button>
+        {!editingQuestionId && (
+          <button
+            onClick={handleAddQuestion}
+            disabled={!questionForm.text.trim()}
+            style={{
+              width: "100%",
+              padding: "12px 0",
+              fontSize: 15,
+              fontWeight: 600,
+              background: questionForm.text.trim() ? "#4a90d9" : "#aaa",
+              color: "#fff",
+              border: "none",
+              borderRadius: 6,
+              marginBottom: 8,
+              cursor: questionForm.text.trim() ? "pointer" : "not-allowed",
+            }}
+          >
+            Add Question
+          </button>
+        )}
+
+        {editingQuestionId && (
+          <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+            <button
+              onClick={handleSaveEditedQuestion}
+              disabled={!questionForm.text.trim()}
+              style={{
+                flex: 1,
+                padding: "12px 0",
+                fontSize: 15,
+                fontWeight: 600,
+                background: questionForm.text.trim() ? "#4a90d9" : "#aaa",
+                color: "#fff",
+                border: "none",
+                borderRadius: 6,
+                cursor: questionForm.text.trim() ? "pointer" : "not-allowed",
+              }}
+            >
+              Save
+            </button>
+            <button
+              onClick={closeQuestionModal}
+              style={{
+                flex: 1,
+                padding: "12px 0",
+                fontSize: 15,
+                fontWeight: 600,
+                background: "#f0f0f0",
+                color: "#333",
+                border: "1px solid #ccc",
+                borderRadius: 6,
+                cursor: "pointer",
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+      </Modal>
+
+      <Modal
+        isOpen={Boolean(deleteQuestionId)}
+        onClose={() => setDeleteQuestionId(null)}
+        title="Remove Question"
+        hideDefaultClose
+      >
+        <p style={{ marginBottom: 20 }}>
+          Are you sure you want to remove this question from this case?
+        </p>
+        <div style={{ display: "flex", justifyContent: "space-between", gap: 12, marginBottom: 8 }}>
+          <button
+            onClick={handleDeleteQuestion}
+            style={{
+              flex: 1,
+              padding: "10px 0",
+              fontWeight: 600,
+              background: "#d9534f",
+              color: "#fff",
+              border: "none",
+              borderRadius: 6,
+              cursor: "pointer",
+            }}
+          >
+            Yes
+          </button>
+          <button
+            onClick={() => setDeleteQuestionId(null)}
+            style={{
+              flex: 1,
+              padding: "10px 0",
+              fontWeight: 600,
+              background: "#f0f0f0",
+              color: "#333",
+              border: "1px solid #ccc",
+              borderRadius: 6,
+              cursor: "pointer",
+            }}
+          >
+            No
+          </button>
+        </div>
       </Modal>
 
       {/* Start Session Modal */}
