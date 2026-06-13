@@ -13,12 +13,42 @@
 }
 
 .linkButton {
-    display: inline-block;
-    padding: 16px 32px;
-    font-size: 18px;
-    font-weight: 600;
-    background: #4a90d9;
-    color: #fff;
-    border-radius: 8px;
-    text-decoration: none;
+  display: inline-block;
+  padding: 16px 32px;
+  font-size: 18px;
+  font-weight: 600;
+  background: #4a90d9;
+  color: #fff;
+  border-radius: 8px;
+  text-decoration: none;
+}
+
+.modalContent {
+  margin: 20px 0px;
+}
+
+.caseItem {
+  padding: 10px 12px;
+	margin-bottom: 6px;
+	border-radius: 6px;
+	cursor: pointer;
+	background: #fff;
+	color: #333;
+	border: 2px solid #abbbd3;
+	font-size: 13px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+  transition: background 0.5s ease;
+}
+
+.caseItem:hover {
+  background: #4a90d9;
+  color: #fff;
+}
+
+.caseItem span {
+  font-size: 18px;
+  font-weight: 450;
 }
