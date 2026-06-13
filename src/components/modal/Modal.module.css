@@ -37,4 +37,10 @@
     border: 1px solid #ccc;
     border-radius: 6px; 
     cursor: pointer;
+		transition: background 0.5s ease, color 0.5s ease;
+}
+
+.closeButton:hover {
+		background: #303030;
+		color: #d3d3d3; 
 }
