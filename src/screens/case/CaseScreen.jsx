@@ -338,7 +338,7 @@ const CaseScreen = () => {
       {activeCase.seated && (
         <Link to={`/questions/${activeCase._id}`}>
           <button
-            onClick={() => setStartModal(true)}
+            // onClick={() => setStartModal(true)}
             style={{
               display: "inline-block",
               padding: "14px 36px",
