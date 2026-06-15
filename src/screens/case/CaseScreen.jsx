@@ -600,12 +600,12 @@ const CaseScreen = () => {
             </div>
           </div>
         ) : (
-          <React.Fragment>
-            <p style={{ marginBottom: 16 }}>
+          <div className={styles.startModal}>
+            <p style={{ marginBottom: 8 }}>
               How many students are in this case?
             </p>
             <div className={styles.fieldStyle}>
-              <label className={styles.labelStyle}>Number of Students</label>
+              <label className={styles.labelStyle}>Number of Students:</label>
               <input
                 className={styles.inputStyle}
                 type="number"
@@ -615,7 +615,8 @@ const CaseScreen = () => {
                 placeholder="e.g. 30"
               />
             </div>
-            <button onClick={() => handleNumberOfStudentsChange()} className={styles.confirm}>
+            <div className={styles.startModalButtons}>
+              <button onClick={() => handleNumberOfStudentsChange()} className={styles.confirm}>
               Confirm
             </button>
             <button
@@ -624,7 +625,8 @@ const CaseScreen = () => {
             >
               Cancel
             </button>
-          </React.Fragment>
+            </div>
+          </div>
         )}
       </Modal>
     </div>
