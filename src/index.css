@@ -1,15 +1,34 @@
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
+  /* Semantic color tokens: light theme defaults */
+  --color-bg: #ffffff;
+  --color-surface: #f5f8ff;
+  --color-surface-muted: #f4f3ec;
+  --color-border: #e5e4e7;
+
+  --color-text-primary: #08060d;
+  --color-text-muted: #6b6375;
+  --color-text-on-accent: #ffffff;
+
+  --color-action-primary: #aa3bff;
+  --color-action-primary-bg: rgba(170, 59, 255, 0.1);
+  --color-action-primary-border: rgba(170, 59, 255, 0.5);
+
+  --color-overlay: rgba(0, 0, 0, 0.4);
+  --color-social-bg: rgba(244, 243, 236, 0.5);
+  --shadow-elev-1:
     rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+
+  /* Backward-compatible aliases for existing styles */
+  --text: var(--color-text-muted);
+  --text-h: var(--color-text-primary);
+  --bg: var(--color-bg);
+  --border: var(--color-border);
+  --code-bg: var(--color-surface-muted);
+  --accent: var(--color-action-primary);
+  --accent-bg: var(--color-action-primary-bg);
+  --accent-border: var(--color-action-primary-border);
+  --social-bg: var(--color-social-bg);
+  --shadow: var(--shadow-elev-1);
 
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
   --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
@@ -17,36 +36,75 @@
 
   font: 18px/145% var(--sans);
   letter-spacing: 0.18px;
-  color-scheme: light dark;
+  color-scheme: dark;
   color: var(--text);
   background: var(--bg);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
 }
 
+/* Manual theme override: dark */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+/* Manual theme override: light */
+:root[data-theme='light'] {
+  --color-bg: #16171d;
+  --color-surface: #1f2028;
+  --color-surface-muted: #1f2028;
+  --color-border: #2e303a;
+
+  --color-text-primary: #f3f4f6;
+  --color-text-muted: #9ca3af;
+  --color-text-on-accent: #ffffff;
+
+  --color-action-primary: #c084fc;
+  --color-action-primary-bg: rgba(192, 132, 252, 0.15);
+  --color-action-primary-border: rgba(192, 132, 252, 0.5);
+
+  --color-overlay: rgba(0, 0, 0, 0.55);
+  --color-social-bg: rgba(47, 48, 58, 0.5);
+  --shadow-elev-1:
+    rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+
+  color-scheme: light;
+}
+
+/* System dark mode only when no manual override is set */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
+  :root:not([data-theme='light']):not([data-theme='dark']) {
+    --color-bg: #16171d;
+    --color-surface: #1f2028;
+    --color-surface-muted: #1f2028;
+    --color-border: #2e303a;
+
+    --color-text-primary: #f3f4f6;
+    --color-text-muted: #9ca3af;
+    --color-text-on-accent: #ffffff;
+
+    --color-action-primary: #c084fc;
+    --color-action-primary-bg: rgba(192, 132, 252, 0.15);
+    --color-action-primary-border: rgba(192, 132, 252, 0.5);
+
+    --color-overlay: rgba(0, 0, 0, 0.55);
+    --color-social-bg: rgba(47, 48, 58, 0.5);
+    --shadow-elev-1:
       rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+
+    color-scheme: dark;
   }
 
   #social .button-icon {
     filter: invert(1) brightness(2);
+  }
+}
+
+@media (max-width: 1024px) {
+  :root {
+    font-size: 16px;
   }
 }
 

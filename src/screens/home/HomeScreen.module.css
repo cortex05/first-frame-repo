@@ -32,15 +32,15 @@
 	margin-bottom: 6px;
 	border-radius: 6px;
 	cursor: pointer;
-	background: #fff;
+	background: #e8edfa;
 	color: #333;
-	border: 2px solid #abbbd3;
+	border: 3px solid #abbbd3;
 	font-size: 13px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	gap: 8px;
-  transition: background 0.5s ease;
+  transition: background 0.5s ease, color 0.5s ease;
 }
 
 .caseItem:hover {

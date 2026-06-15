@@ -535,6 +535,7 @@ const CaseScreen = () => {
         )}
       </Modal>
 
+      {/* Delete Question Confirmation Modal */}
       <Modal
         isOpen={Boolean(deleteQuestionId)}
         onClose={() => setDeleteQuestionId(null)}
@@ -585,7 +586,7 @@ const CaseScreen = () => {
         title="Start Session"
       >
         {!editStudentNumber ? (
-          <React.Fragment>
+          <div>
             <p style={{ marginBottom: 16 }}>
               You are moving to assign the students to their rows and tables.
             </p>
@@ -604,7 +605,7 @@ const CaseScreen = () => {
               <button onClick={handleStart}>Yes</button>
               <button onClick={() => setEditStudentNumber(true)}>No</button>
             </div>
-          </React.Fragment>
+          </div>
         ) : (
           <React.Fragment>
             <p style={{ marginBottom: 16 }}>
