@@ -18,6 +18,11 @@
   --shadow-elev-1:
     rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
 
+  /* NEW GOING FORWARD */
+  --blue-background: #4a90d9;
+
+  --modal-text: #333;
+
   /* Backward-compatible aliases for existing styles */
   --text: var(--color-text-muted);
   --text-h: var(--color-text-primary);

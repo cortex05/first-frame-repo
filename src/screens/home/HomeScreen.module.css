@@ -33,7 +33,7 @@
 	border-radius: 6px;
 	cursor: pointer;
 	background: #e8edfa;
-	color: #333;
+	color: var(--modal-text);
 	border: 3px solid #abbbd3;
 	font-size: 13px;
 	display: flex;
@@ -44,7 +44,7 @@
 }
 
 .caseItem:hover {
-  background: #4a90d9;
+  background: var(--blue-background);
   color: #fff;
 }
 

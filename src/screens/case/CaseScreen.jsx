@@ -586,7 +586,7 @@ const CaseScreen = () => {
         title="Start Session"
       >
         {!editStudentNumber ? (
-          <div>
+          <div className={styles.startModal}>
             <p style={{ marginBottom: 16 }}>
               You are moving to assign the students to their rows and tables.
             </p>
@@ -594,16 +594,9 @@ const CaseScreen = () => {
               Currently this case is set for {activeCase.studentNumber}
             </p>
             <p style={{ marginBottom: 16 }}>Is this correct?</p>
-            <div
-              style={{
-                display: "flex",
-                gap: 12,
-                justifyContent: "center",
-                marginBottom: 8,
-              }}
-            >
-              <button onClick={handleStart}>Yes</button>
-              <button onClick={() => setEditStudentNumber(true)}>No</button>
+            <div className={styles.startModalButtons}>
+              <button onClick={handleStart} className={styles.confirm}>Yes</button>
+              <button onClick={() => setEditStudentNumber(true)} className={styles.decline}>No</button>
             </div>
           </div>
         ) : (
@@ -622,12 +615,12 @@ const CaseScreen = () => {
                 placeholder="e.g. 30"
               />
             </div>
-            <button onClick={() => handleNumberOfStudentsChange()}>
+            <button onClick={() => handleNumberOfStudentsChange()} className={styles.confirm}>
               Confirm
             </button>
             <button
               onClick={() => setEditStudentNumber(false)}
-              style={{ marginLeft: 8 }}
+              className={styles.decline}
             >
               Cancel
             </button>
