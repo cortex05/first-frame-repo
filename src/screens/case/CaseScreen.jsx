@@ -355,7 +355,7 @@ const CaseScreen = () => {
         </Link>
       )}
 
-      {/* Add Question Modal */}
+      {/* Add/Edit Question Modal */}
       <Modal
         isOpen={questionModal}
         onClose={closeQuestionModal}
@@ -373,7 +373,7 @@ const CaseScreen = () => {
           <label style={{ fontSize: 13, fontWeight: 600, color: "#444" }}>
             Question Text
           </label>
-          <input
+          <textarea
             className={styles.inputStyle}
             type="text"
             value={questionForm.text}
@@ -427,7 +427,7 @@ const CaseScreen = () => {
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                 <span style={{ minWidth: 52, fontSize: 14, fontWeight: 600 }}>{String(opt.label)}</span>
                 <input
-				  className={styles.inputStyle}
+				          className={styles.inputStyle}
                   style={{ width: 80 }}
                   type="number"
                   value={opt.value}
@@ -455,7 +455,7 @@ const CaseScreen = () => {
             {questionForm.options.map((opt, i) => (
               <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
                 <input
-				  className={styles.inputStyle}
+				          className={styles.inputStyle}
                   style={{ flex: 1 }}
                   type="text"
                   value={opt.label}
@@ -463,7 +463,7 @@ const CaseScreen = () => {
                   placeholder={`Option ${i + 1}`}
                 />
                 <input
-				  className={styles.inputStyle}
+				          className={styles.inputStyle}
                   style={{ width: 80 }}
                   type="number"
                   value={opt.value}
