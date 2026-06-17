@@ -39,18 +39,18 @@ const Home = () => {
           Create New Case
         </Link>
 
-        <button
+        <div
           onClick={() => setModalOpen(true)}
           className={styles.linkButton}
         >
-          Access Existing Case
-        </button>
+          <span>Access Existing Case</span>
+        </div>
       </div>
 
       <Modal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        title="Access Existing Case"
+        title="Access Existing Case" 
       >
         <div className={styles.modalContent}>
           {storedCases.length === 0 ? (

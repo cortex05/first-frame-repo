@@ -17,14 +17,21 @@
   padding: 16px 32px;
   font-size: 18px;
   font-weight: 600;
-  background: #4a90d9;
-  color: #fff;
+  background: var(--light-blue-background);
+	color: var(--modal-text);
   border-radius: 8px;
   text-decoration: none;
+  border: 3px solid var(--blue-background);
+  transition: background 0.5s ease, color 0.5s ease;
+}
+
+.linkButton:hover {
+  background: var(--blue-background);
+  color: #fff;
 }
 
 .modalContent {
-  margin: 20px 0px;
+  margin: 40px 0px;
 }
 
 .caseItem {
