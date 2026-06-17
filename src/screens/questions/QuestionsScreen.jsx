@@ -40,7 +40,7 @@ const QuestionsScreen = () => {
     const answers = activeCase.answers || {};
     return Object.values(answers).reduce((sum, qAnswers) => {
       return sum + ((qAnswers[studentId] || {}).value || 0);
-    }, 0);
+    }, 0); 
   };
 
   // ── score colour (gradient: #5BF527 low → #F54927 high) ────────
