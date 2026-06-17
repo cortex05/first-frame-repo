@@ -52,6 +52,7 @@
 	border-radius: 6px;
 	cursor: pointer;
 	transition: box-shadow 0.5s ease, color 0.5s ease;
+	text-decoration: none;
 }
 
 .startModalButtons button:hover {

@@ -49,7 +49,10 @@ const CaseScreen = () => {
 
   const persistCaseUpdate = (updatedCase) => {
     updateCase(updatedCase);
-    localStorage.setItem("cases", JSON.stringify(useCaseStore.getState().cases));
+    localStorage.setItem(
+      "cases",
+      JSON.stringify(useCaseStore.getState().cases),
+    );
   };
 
   const openQuestionModal = () => {
@@ -83,8 +86,12 @@ const CaseScreen = () => {
         ],
       });
     } else {
-      const trueOption = question.options.find((opt) => opt.label === true || opt.label === "true");
-      const falseOption = question.options.find((opt) => opt.label === false || opt.label === "false");
+      const trueOption = question.options.find(
+        (opt) => opt.label === true || opt.label === "true",
+      );
+      const falseOption = question.options.find(
+        (opt) => opt.label === false || opt.label === "false",
+      );
       setQuestionForm({
         text: question.text || "",
         type: QuestionType.TRUE_FALSE,
@@ -107,7 +114,10 @@ const CaseScreen = () => {
   const handleOptionChange = (index, field, value) => {
     setQuestionForm((prev) => {
       const options = [...prev.options];
-      options[index] = { ...options[index], [field]: field === 'value' ? Number(value) : value };
+      options[index] = {
+        ...options[index],
+        [field]: field === "value" ? Number(value) : value,
+      };
       return { ...prev, options };
     });
   };
@@ -133,7 +143,10 @@ const CaseScreen = () => {
       activeCase._id,
       options,
     );
-    persistCaseUpdate({ ...activeCase, questions: [...activeCase.questions, q] });
+    persistCaseUpdate({
+      ...activeCase,
+      questions: [...activeCase.questions, q],
+    });
     closeQuestionModal();
   };
 
@@ -161,7 +174,9 @@ const CaseScreen = () => {
   const handleDeleteQuestion = () => {
     if (!deleteQuestionId) return;
 
-    const updatedQuestions = activeCase.questions.filter((q) => q.id !== deleteQuestionId);
+    const updatedQuestions = activeCase.questions.filter(
+      (q) => q.id !== deleteQuestionId,
+    );
     const updatedAnswers = { ...(activeCase.answers || {}) };
     delete updatedAnswers[deleteQuestionId];
 
@@ -173,7 +188,6 @@ const CaseScreen = () => {
 
     setDeleteQuestionId(null);
   };
-
 
   return (
     <div style={{ maxWidth: 640, margin: "0 auto", padding: 32 }}>
@@ -200,13 +214,11 @@ const CaseScreen = () => {
       </Link>
 
       {/* Basic Info */}
-      <section 
-        style={{ marginBottom: 32 }}
-        className={styles.infoSection}>
+      <section style={{ marginBottom: 32 }} className={styles.infoSection}>
         <p className={styles.value}>Owner: {activeCase.author || "—"}</p>
         <p className={styles.value}>Location: {activeCase.location || "—"}</p>
         <p className={styles.value}>
-            Number of Students: {activeCase.studentNumber || "—"}
+          Number of Students: {activeCase.studentNumber || "—"}
         </p>
         <div>
           <p className={styles.value}>
@@ -424,10 +436,20 @@ const CaseScreen = () => {
               Point Values
             </label>
             {questionForm.tfValues.map((opt, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                <span style={{ minWidth: 52, fontSize: 14, fontWeight: 600 }}>{String(opt.label)}</span>
+              <div
+                key={i}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  marginBottom: 8,
+                }}
+              >
+                <span style={{ minWidth: 52, fontSize: 14, fontWeight: 600 }}>
+                  {String(opt.label)}
+                </span>
                 <input
-				          className={styles.inputStyle}
+                  className={styles.inputStyle}
                   style={{ width: 80 }}
                   type="number"
                   value={opt.value}
@@ -453,21 +475,25 @@ const CaseScreen = () => {
               Options (up to 4)
             </label>
             {questionForm.options.map((opt, i) => (
-              <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+              <div key={i} style={{ display: "flex", gap: 8, marginBottom: 8 }}>
                 <input
-				          className={styles.inputStyle}
+                  className={styles.inputStyle}
                   style={{ flex: 1 }}
                   type="text"
                   value={opt.label}
-                  onChange={(e) => handleOptionChange(i, 'label', e.target.value)}
+                  onChange={(e) =>
+                    handleOptionChange(i, "label", e.target.value)
+                  }
                   placeholder={`Option ${i + 1}`}
                 />
                 <input
-				          className={styles.inputStyle}
+                  className={styles.inputStyle}
                   style={{ width: 80 }}
                   type="number"
                   value={opt.value}
-                  onChange={(e) => handleOptionChange(i, 'value', e.target.value)}
+                  onChange={(e) =>
+                    handleOptionChange(i, "value", e.target.value)
+                  }
                   placeholder="Points"
                 />
               </div>
@@ -545,7 +571,14 @@ const CaseScreen = () => {
         <p style={{ marginBottom: 20 }}>
           Are you sure you want to remove this question from this case?
         </p>
-        <div style={{ display: "flex", justifyContent: "space-between", gap: 12, marginBottom: 8 }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            gap: 12,
+            marginBottom: 8,
+          }}
+        >
           <button
             onClick={handleDeleteQuestion}
             style={{
@@ -595,8 +628,15 @@ const CaseScreen = () => {
             </p>
             <p style={{ marginBottom: 16 }}>Is this correct?</p>
             <div className={styles.startModalButtons}>
-              <button onClick={handleStart} className={styles.confirm}>Yes</button>
-              <button onClick={() => setEditStudentNumber(true)} className={styles.decline}>No</button>
+              <button onClick={handleStart} className={styles.confirm}>
+                Yes
+              </button>
+              <button
+                onClick={() => setEditStudentNumber(true)}
+                className={styles.decline}
+              >
+                No
+              </button>
             </div>
           </div>
         ) : (
@@ -616,15 +656,18 @@ const CaseScreen = () => {
               />
             </div>
             <div className={styles.startModalButtons}>
-              <button onClick={() => handleNumberOfStudentsChange()} className={styles.confirm}>
-              Confirm
-            </button>
-            <button
-              onClick={() => setEditStudentNumber(false)}
-              className={styles.decline}
-            >
-              Cancel
-            </button>
+              <button
+                onClick={() => handleNumberOfStudentsChange()}
+                className={styles.confirm}
+              >
+                Confirm
+              </button>
+              <button
+                onClick={() => setEditStudentNumber(false)}
+                className={styles.decline}
+              >
+                Cancel
+              </button>
             </div>
           </div>
         )}
