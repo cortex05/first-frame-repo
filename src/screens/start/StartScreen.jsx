@@ -183,13 +183,13 @@ const StartScreen = () => {
         gap: 12,
         overflowY: "auto",
       }}>
-        <h2 style={{ margin: 0, fontSize: 16, color: "#2c6fad" }}>Assign Students</h2>
+        <h2 style={{ margin: 0, fontSize: 24, color: "#2c6fad" }}>Assign Students</h2>
 
-        <p style={{ margin: 0, fontSize: 14, color: "#555" }}>
+        <p style={{ margin: 0, fontSize: 16, color: "#555" }}>
           Remaining: <strong>{students.length}</strong> / {activeCase.studentNumber}
         </p>
 
-        <p style={{ margin: 0, fontSize: 12, color: "#888" }}>
+        <p style={{ margin: 0, fontSize: 16, color: "#555" }}>
           {rows} × {cols} = {totalCells} cells
           {students.length < totalCells && students.length > 0
             ? ` (${students.length} filled, ${totalCells - students.length} empty)`
@@ -197,7 +197,14 @@ const StartScreen = () => {
         </p>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-          <label style={{ fontSize: 13, fontWeight: 600, color: "#444" }}>Rows</label>
+          <label style={{ fontSize: 13, fontWeight: 600, color: "#444", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <line x1="3" y1="9" x2="21" y2="9"/>
+              <line x1="3" y1="15" x2="21" y2="15"/>
+            </svg>
+            <span style={{ lineHeight: 1 }}>Rows</span>
+          </label>
           <input
             style={inputStyle}
             type="number"
@@ -208,7 +215,16 @@ const StartScreen = () => {
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-          <label style={{ fontSize: 13, fontWeight: 600, color: "#444" }}>Columns</label>
+          <div>
+            <label style={{ fontSize: 13, fontWeight: 600, color: "#444", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <line x1="9" y1="3" x2="9" y2="21"/>
+                <line x1="15" y1="3" x2="15" y2="21"/>
+              </svg>
+              <span style={{ lineHeight: 1 }}>Columns</span>
+            </label>
+          </div>
           <input
             style={inputStyle}
             type="number"
@@ -216,6 +232,7 @@ const StartScreen = () => {
             value={colInput}
             onChange={(e) => setColInput(e.target.value)}
           />
+          
         </div>
 
         <button
