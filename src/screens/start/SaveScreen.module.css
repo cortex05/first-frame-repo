@@ -1,25 +1,3 @@
-.selectedQuestion {
-	padding: 10px 12px;
-	border: 3px solid #c5d8f5;
-	margin-bottom: 6px;
-	border-radius: 6px;
-	background-color: #d0dcfc;
-}
-
-.questionCard {
-	padding: 10px 12px;
-	margin-bottom: 6px;
-	border-radius: 6px;
-	cursor: pointer;
-	background: #fff;
-	color: #333;
-	border: 1px solid #c5d8f5;
-	font-size: 13px;
-	display: flex;
-	align-items: center;
-	gap: 8px;
-}
-
 .saveModalButtons {
 	display: flex;
 	gap: 12px;

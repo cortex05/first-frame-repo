@@ -778,7 +778,7 @@ const QuestionsScreen = () => {
 					fontWeight: 500,
 					maxWidth: 400,
 				}}>
-          You have unsaved changes to the seating chart that will be lost if you
+          Unsaved changes to the seating chart will be lost if you
           leave this page.
         </h3>
         <div className={styles.saveModalButtons}>

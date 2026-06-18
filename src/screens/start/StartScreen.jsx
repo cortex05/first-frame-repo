@@ -2,13 +2,16 @@ import React, { useState, useRef, useEffect } from "react";
 import { Stage, Layer, Rect, Circle, Text, Group } from "react-konva";
 import "../../App.css";
 import useCaseStore from "../../store/useCaseStore";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { initialStudentGeneration } from "../../utilities/studentUtilities";
+
+import Modal from "../../components/modal/Modal";
+import styles from "./SaveScreen.module.css";
 
 const SIDEBAR_W = 260;
 const CIRCLE_R = 24;
 const CELL_PAD = 8;
-const CELL_SIZE = CIRCLE_R * 2 + CELL_PAD; // 
+const CELL_SIZE = CIRCLE_R * 2 + CELL_PAD; //
 
 const SCALE_MIN = 0.1;
 const SCALE_MAX = 5;
@@ -28,7 +31,7 @@ function getRectSize(rows, cols) {
 function getCircleRelPos(idx, rows, cols) {
   const col = idx % cols;
   const gridRow = Math.floor(idx / cols); // 0 = bottom row
-  const screenRow = rows - 1 - gridRow;  // 0 = top on screen
+  const screenRow = rows - 1 - gridRow; // 0 = top on screen
   return {
     x: CELL_PAD / 2 + col * CELL_SIZE + CIRCLE_R,
     y: CELL_PAD / 2 + screenRow * CELL_SIZE + CIRCLE_R,
@@ -38,12 +41,15 @@ function getCircleRelPos(idx, rows, cols) {
 const StartScreen = () => {
   const { caseId } = useParams();
   const navigate = useNavigate();
-  const activeCase = useCaseStore((state) => state.cases.find((c) => c._id === caseId));
+  const activeCase = useCaseStore((state) =>
+    state.cases.find((c) => c._id === caseId),
+  );
   const updateCase = useCaseStore((state) => state.updateCase);
 
   const [rects, setRects] = useState([]);
   const [students, setStudents] = useState([]);
   const [displayedStudents, setDisplayedStudents] = useState([]);
+  const [saveWarning, setSaveWarning] = useState(false);
 
   const [rowInput, setRowInput] = useState(2);
   const [colInput, setColInput] = useState(3);
@@ -104,7 +110,10 @@ const StartScreen = () => {
       students: displayedStudents,
       seated: true,
     });
-    localStorage.setItem("cases", JSON.stringify(useCaseStore.getState().cases));
+    localStorage.setItem(
+      "cases",
+      JSON.stringify(useCaseStore.getState().cases),
+    );
     navigate(`/questions/${activeCase._id}`);
   };
 
@@ -114,13 +123,19 @@ const StartScreen = () => {
     const stage = stageRef.current;
     const oldScale = stage.scaleX();
     const newScale = clampScale(oldScale * factor);
-    const center = { x: (window.innerWidth - SIDEBAR_W) / 2, y: window.innerHeight / 2 };
+    const center = {
+      x: (window.innerWidth - SIDEBAR_W) / 2,
+      y: window.innerHeight / 2,
+    };
     const pointTo = {
       x: (center.x - stage.x()) / oldScale,
       y: (center.y - stage.y()) / oldScale,
     };
     setScale(newScale);
-    setStagePos({ x: center.x - pointTo.x * newScale, y: center.y - pointTo.y * newScale });
+    setStagePos({
+      x: center.x - pointTo.x * newScale,
+      y: center.y - pointTo.y * newScale,
+    });
   };
 
   const handleWheel = (e) => {
@@ -132,9 +147,14 @@ const StartScreen = () => {
       x: (pointer.x - stage.x()) / oldScale,
       y: (pointer.y - stage.y()) / oldScale,
     };
-    const newScale = clampScale(e.evt.deltaY < 0 ? oldScale * SCALE_STEP : oldScale / SCALE_STEP);
+    const newScale = clampScale(
+      e.evt.deltaY < 0 ? oldScale * SCALE_STEP : oldScale / SCALE_STEP,
+    );
     setScale(newScale);
-    setStagePos({ x: pointer.x - pointTo.x * newScale, y: pointer.y - pointTo.y * newScale });
+    setStagePos({
+      x: pointer.x - pointTo.x * newScale,
+      y: pointer.y - pointTo.y * newScale,
+    });
   };
 
   const handleTouchMove = (e) => {
@@ -143,16 +163,25 @@ const StartScreen = () => {
     e.evt.preventDefault();
     const [t1, t2] = [touches[0], touches[1]];
     const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
-    if (lastPinchDist.current === 0) { lastPinchDist.current = dist; return; }
+    if (lastPinchDist.current === 0) {
+      lastPinchDist.current = dist;
+      return;
+    }
     const stage = stageRef.current;
     const oldScale = stage.scaleX();
     const midX = (t1.clientX + t2.clientX) / 2;
     const midY = (t1.clientY + t2.clientY) / 2;
-    const pointTo = { x: (midX - stage.x()) / oldScale, y: (midY - stage.y()) / oldScale };
+    const pointTo = {
+      x: (midX - stage.x()) / oldScale,
+      y: (midY - stage.y()) / oldScale,
+    };
     const newScale = clampScale(oldScale * (dist / lastPinchDist.current));
     lastPinchDist.current = dist;
     setScale(newScale);
-    setStagePos({ x: midX - pointTo.x * newScale, y: midY - pointTo.y * newScale });
+    setStagePos({
+      x: midX - pointTo.x * newScale,
+      y: midY - pointTo.y * newScale,
+    });
   };
 
   const handleTouchEnd = (e) => {
@@ -170,23 +199,27 @@ const StartScreen = () => {
 
   return (
     <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
-
       {/* ── Sidebar ── */}
-      <div style={{
-        width: SIDEBAR_W,
-        flexShrink: 0,
-        background: "#f5f8ff",
-        borderRight: "1px solid #c5d8f5",
-        display: "flex",
-        flexDirection: "column",
-        padding: 16,
-        gap: 12,
-        overflowY: "auto",
-      }}>
-        <h2 style={{ margin: 0, fontSize: 24, color: "#2c6fad" }}>Assign Students</h2>
+      <div
+        style={{
+          width: SIDEBAR_W,
+          flexShrink: 0,
+          background: "#f5f8ff",
+          borderRight: "1px solid #c5d8f5",
+          display: "flex",
+          flexDirection: "column",
+          padding: 16,
+          gap: 12,
+          overflowY: "auto",
+        }}
+      >
+        <h2 style={{ margin: 0, fontSize: 24, color: "#2c6fad" }}>
+          Assign Students
+        </h2>
 
         <p style={{ margin: 0, fontSize: 16, color: "#555" }}>
-          Remaining: <strong>{students.length}</strong> / {activeCase.studentNumber}
+          Remaining: <strong>{students.length}</strong> /{" "}
+          {activeCase.studentNumber}
         </p>
 
         <p style={{ margin: 0, fontSize: 16, color: "#555" }}>
@@ -197,11 +230,29 @@ const StartScreen = () => {
         </p>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-          <label style={{ fontSize: 13, fontWeight: 600, color: "#444", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <rect x="3" y="3" width="18" height="18" rx="2"/>
-              <line x1="3" y1="9" x2="21" y2="9"/>
-              <line x1="3" y1="15" x2="21" y2="15"/>
+          <label
+            style={{
+              fontSize: 13,
+              fontWeight: 600,
+              color: "#444",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+            }}
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+            >
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <line x1="3" y1="9" x2="21" y2="9" />
+              <line x1="3" y1="15" x2="21" y2="15" />
             </svg>
             <span style={{ lineHeight: 1 }}>Rows</span>
           </label>
@@ -216,11 +267,29 @@ const StartScreen = () => {
 
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           <div>
-            <label style={{ fontSize: 13, fontWeight: 600, color: "#444", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <rect x="3" y="3" width="18" height="18" rx="2"/>
-                <line x1="9" y1="3" x2="9" y2="21"/>
-                <line x1="15" y1="3" x2="15" y2="21"/>
+            <label
+              style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: "#444",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+              }}
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              >
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <line x1="9" y1="3" x2="9" y2="21" />
+                <line x1="15" y1="3" x2="15" y2="21" />
               </svg>
               <span style={{ lineHeight: 1 }}>Columns</span>
             </label>
@@ -232,7 +301,6 @@ const StartScreen = () => {
             value={colInput}
             onChange={(e) => setColInput(e.target.value)}
           />
-          
         </div>
 
         <button
@@ -242,7 +310,7 @@ const StartScreen = () => {
             padding: "10px 0",
             fontSize: 14,
             fontWeight: 600,
-            background: students.length > 0 ? "#4a90d9" : "#aaa",
+            background: students.length > 0 ? "var(--confirm)" : "#aaa",
             color: "#fff",
             border: "none",
             borderRadius: 6,
@@ -250,6 +318,22 @@ const StartScreen = () => {
           }}
         >
           + Add Row
+        </button>
+        <button
+          onClick={() => setSaveWarning(true)}
+          disabled={students.length === 0}
+          style={{
+            padding: "10px 0",
+            fontSize: 14,
+            fontWeight: 600,
+            background: "#2c6fad",
+            color: "#fff",
+            border: "none",
+            borderRadius: 6,
+            cursor: students.length > 0 ? "pointer" : "not-allowed",
+          }}
+        >
+          Back to Case
         </button>
 
         {students.length === 0 && displayedStudents.length > 0 && (
@@ -270,7 +354,15 @@ const StartScreen = () => {
           </button>
         )}
 
-        <p style={{ marginTop: "auto", fontSize: 11, color: "#aaa", borderTop: "1px solid #c5d8f5", paddingTop: 12 }}>
+        <p
+          style={{
+            marginTop: "auto",
+            fontSize: 16,
+            color: "#555",
+            borderTop: "1px solid #c5d8f5",
+            paddingTop: 12,
+          }}
+        >
           Drag rows to reposition. Scroll or pinch to zoom.
         </p>
       </div>
@@ -303,8 +395,8 @@ const StartScreen = () => {
                     prev.map((rect) =>
                       rect.id === r.id
                         ? { ...rect, x: node.x(), y: node.y() }
-                        : rect
-                    )
+                        : rect,
+                    ),
                   );
                 }}
               >
@@ -344,27 +436,117 @@ const StartScreen = () => {
         </Stage>
 
         {/* Zoom controls */}
-        <div style={{
-          position: "absolute",
-          bottom: 16,
-          left: 16,
-          zIndex: 100,
-          display: "flex",
-          alignItems: "center",
-          gap: 6,
-          background: "rgba(255,255,255,0.92)",
-          borderRadius: 8,
-          padding: "6px 10px",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-          userSelect: "none",
-        }}>
-          <button onClick={() => zoomBy(1 / SCALE_STEP)} style={{ width: 28, height: 28, fontSize: 18, lineHeight: 1, border: "1px solid #ccc", borderRadius: 4, cursor: "pointer", background: "#f5f5f5" }}>−</button>
-          <span style={{ minWidth: 52, textAlign: "center", fontSize: 14, fontFamily: "monospace" }}>{Math.round(scale * 100)}%</span>
-          <button onClick={() => zoomBy(SCALE_STEP)} style={{ width: 28, height: 28, fontSize: 18, lineHeight: 1, border: "1px solid #ccc", borderRadius: 4, cursor: "pointer", background: "#f5f5f5" }}>+</button>
-          <button onClick={() => { setScale(1); setStagePos({ x: 0, y: 0 }); }} style={{ height: 28, padding: "0 8px", fontSize: 12, border: "1px solid #ccc", borderRadius: 4, cursor: "pointer", background: "#f5f5f5", marginLeft: 4 }}>Reset</button>
+        <div
+          style={{
+            position: "absolute",
+            bottom: 16,
+            left: 16,
+            zIndex: 100,
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            background: "rgba(255,255,255,0.92)",
+            borderRadius: 8,
+            padding: "6px 10px",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+            userSelect: "none",
+          }}
+        >
+          <button
+            onClick={() => zoomBy(1 / SCALE_STEP)}
+            style={{
+              width: 28,
+              height: 28,
+              fontSize: 18,
+              lineHeight: 1,
+              border: "1px solid #ccc",
+              borderRadius: 4,
+              cursor: "pointer",
+              background: "#f5f5f5",
+            }}
+          >
+            −
+          </button>
+          <span
+            style={{
+              minWidth: 52,
+              textAlign: "center",
+              fontSize: 14,
+              fontFamily: "monospace",
+            }}
+          >
+            {Math.round(scale * 100)}%
+          </span>
+          <button
+            onClick={() => zoomBy(SCALE_STEP)}
+            style={{
+              width: 28,
+              height: 28,
+              fontSize: 18,
+              lineHeight: 1,
+              border: "1px solid #ccc",
+              borderRadius: 4,
+              cursor: "pointer",
+              background: "#f5f5f5",
+            }}
+          >
+            +
+          </button>
+          <button
+            onClick={() => {
+              setScale(1);
+              setStagePos({ x: 0, y: 0 });
+            }}
+            style={{
+              height: 28,
+              padding: "0 8px",
+              fontSize: 12,
+              border: "1px solid #ccc",
+              borderRadius: 4,
+              cursor: "pointer",
+              background: "#f5f5f5",
+              marginLeft: 4,
+            }}
+          >
+            Reset
+          </button>
         </div>
       </div>
 
+      {/* Save Warning modal */}
+      <Modal
+        isOpen={saveWarning}
+        hideDefaultClose
+        onClickOutside={() => setSaveWarning(false)}
+        title="Are you sure?"
+      >
+        <h3
+          style={{
+            color: `var(--modal-text)`,
+            fontWeight: 500,
+            maxWidth: 400,
+          }}
+        >
+         Unsaved changes to the seating chart will be lost if you
+          leave this page.
+        </h3>
+        <div className={styles.saveModalButtons}>
+          <button className={styles.confirm}>
+            <Link
+              to={`/case/${activeCase._id}`}
+              style={{ textDecoration: "none", color: "inherit" }}
+            >
+              Back to Case
+            </Link>
+          </button>
+          <button
+            className={styles.decline}
+            onClick={() => setSaveWarning(false)}
+          >
+            Cancel
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 };

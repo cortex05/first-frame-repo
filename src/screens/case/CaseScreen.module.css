@@ -60,12 +60,12 @@
 }
 
 .confirm {
-	background: #009b00;
+	background: var(--confirm);
 	color: #fff;
 }
 
 .decline {
-	background: #d9534f;
+	background: var(--decline);
 	color: #fff;
 }
 
