@@ -1,4 +1,4 @@
-import { QuestionType } from "../types/ENUMS";
+import { QuestionType, CrimeTypes } from "../types/ENUMS";
 
 export const EMPTY_QUESTION_FORM = {
   text: "",
@@ -14,3 +14,8 @@ export const EMPTY_QUESTION_FORM = {
     { label: false, value: 0 },
   ],
 };
+
+export const EMPTY_CRIME_TYPE_FORM = {
+  text: "",
+  type: CrimeTypes.DWI
+}

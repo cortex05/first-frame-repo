@@ -216,6 +216,7 @@ const CaseScreen = () => {
       {/* Basic Info */}
       <section style={{ marginBottom: 32 }} className={styles.infoSection}>
         <p className={styles.value}>Owner: {activeCase.author || "—"}</p>
+        <p className={styles.value}>Crime Type: {activeCase.crimeType || "—"}</p>
         <p className={styles.value}>Location: {activeCase.location || "—"}</p>
         <p className={styles.value}>
           Number of Students: {activeCase.studentNumber || "—"}

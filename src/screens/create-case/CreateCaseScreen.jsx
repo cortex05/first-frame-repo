@@ -8,9 +8,9 @@ import useCaseStore from "../../store/useCaseStore";
 
 import Question from "../../types/polls/Question";
 import Case from "../../types/Case";
-import { QuestionType } from "../../types/ENUMS";
+import { QuestionType, CrimeTypes } from "../../types/ENUMS";
 
-import { EMPTY_QUESTION_FORM } from "../../utils/formUtils";
+import { EMPTY_QUESTION_FORM, EMPTY_CRIME_TYPE_FORM } from "../../utils/formUtils";
 
 import styles from "./CreateCaseScreen.module.css";
 
@@ -19,6 +19,9 @@ const CreateCaseScreen = () => {
   const [caseId] = useState(() => uuidv4());
   const [name, setName] = useState("");
 	const [author, setAuthor] = useState("");
+  const [crimeType, setCrimeType] = useState("");
+  const [crimeForm, setCrimeForm] = useState(EMPTY_CRIME_TYPE_FORM);
+
   const [location, setLocation] = useState("");
 	const [numberOfStudents, setNumberOfStudents] = useState("");
 	const [dateTime, setDateTime] = useState("");
@@ -71,7 +74,7 @@ const CreateCaseScreen = () => {
   };
 
   const handleSubmit = () => {
-    const createdCase = new Case(caseId, name, author, location, numberOfStudents, dateTime, questions);
+    const createdCase = new Case(caseId, name, author, crimeForm.type, location, numberOfStudents, dateTime, questions);
     const casesArray = JSON.parse(localStorage.getItem('cases')) || [];
     casesArray.push(createdCase);
 
@@ -111,6 +114,22 @@ const CreateCaseScreen = () => {
             onChange={(e) => setAuthor(e.target.value)}
             placeholder="Your name"
           />
+        </div>
+
+        <div className={styles.fieldStyle}>
+          <label className={styles.labelStyle}>Crime Type</label>
+          <select
+            className={styles.inputStyle}
+            value={crimeForm.type}
+            onChange={(e) =>
+              setCrimeForm((prev) => ({ ...prev, type: e.target.value }))
+            }
+          >
+            <option value={CrimeTypes.DWI}>DWI</option>
+            <option value={CrimeTypes.HOMICIDE}>Homicide</option>
+            <option value={CrimeTypes.THEFT}>Theft</option>
+            <option value={CrimeTypes.ASSAULT}>Assault</option>
+          </select>
         </div>
 
         <div className={styles.fieldStyle}>
@@ -175,7 +194,7 @@ const CreateCaseScreen = () => {
             <span style={{ fontWeight: 600, color: "#2c6fad", minWidth: 24 }}>
               {i + 1}.
             </span>
-            <span style={{ flex: 1 }}>{q.text}</span>
+            <span style={{ flex: 1, color: "var(--modal-text)" }}>{q.text}</span>
             <span
               style={{
                 fontSize: 11,
@@ -341,12 +360,15 @@ const CreateCaseScreen = () => {
         onClose={() => setPreviewModal(false)}
         title="Case Summary"
       >
-        <div style={{ fontSize: 14, marginBottom: 16, lineHeight: 1.8 }}>
+        <div style={{ fontSize: 14, marginBottom: 16, lineHeight: 1.8, color: "var(--modal-text)" }}>
           <div>
             <strong>Name:</strong> {name || "—"}
           </div>
           <div>
             <strong>Author:</strong> {author || "—"}
+          </div>
+          <div>
+            <strong>Crime Type:</strong> {crimeForm.type || "—"}
           </div>
           <div>
             <strong>Location:</strong> {location || "—"}
