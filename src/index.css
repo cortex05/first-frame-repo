@@ -24,6 +24,8 @@
   --confirm: #009b00;
   --decline: #d9534f;
 
+  --light-text: #fff;
+  --label-light: #d8d8d8;
   --modal-text: #333;
 
   /* Backward-compatible aliases for existing styles */

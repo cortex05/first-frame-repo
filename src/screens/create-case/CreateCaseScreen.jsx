@@ -1,25 +1,27 @@
 import React, { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-import styles from "./CreateCaseScreen.module.css";
 import { useNavigate } from "react-router-dom";
 
 import Modal from "../../components/modal/Modal";
+
 import useCaseStore from "../../store/useCaseStore";
 
 import Question from "../../types/polls/Question";
 import Case from "../../types/Case";
 import { QuestionType } from "../../types/ENUMS";
+
 import { EMPTY_QUESTION_FORM } from "../../utils/formUtils";
+
+import styles from "./CreateCaseScreen.module.css";
 
 const CreateCaseScreen = () => {
 	const navigate = useNavigate();
-  	const [caseId] = useState(() => uuidv4());
-
-  	const [name, setName] = useState("");
-  	const [author, setAuthor] = useState("");
-  	const [location, setLocation] = useState("");
-  	const [numberOfStudents, setNumberOfStudents] = useState("");
-  	const [dateTime, setDateTime] = useState("");
+  const [caseId] = useState(() => uuidv4());
+  const [name, setName] = useState("");
+	const [author, setAuthor] = useState("");
+  const [location, setLocation] = useState("");
+	const [numberOfStudents, setNumberOfStudents] = useState("");
+	const [dateTime, setDateTime] = useState("");
 
   const [questions, setQuestions] = useState([]);
   const [questionModal, setQuestionModal] = useState(false);
@@ -82,8 +84,8 @@ const CreateCaseScreen = () => {
   };
 
   return (
-    <div style={{ maxWidth: 640, margin: "0 auto", padding: 32 }}>
-      <h1 style={{ marginBottom: 24 }}>Create New Case</h1>
+    <div className={styles.container}>
+      <h1>Create New Case</h1>
 
       {/* Basic Info */}
       <section style={{ marginBottom: 32 }}>
@@ -197,7 +199,7 @@ const CreateCaseScreen = () => {
             marginTop: 8,
             padding: "10px 20px",
             fontSize: 15,
-            background: "#4a90d9",
+            background: "var(--confirm)",
             color: "#fff",
             border: "none",
             borderRadius: 6,
@@ -234,7 +236,7 @@ const CreateCaseScreen = () => {
         <div className={styles.fieldStyle}>
           <label className={styles.labelStyle}>Question Text</label>
           <textarea
-            className={styles.inputStyle}
+            className={styles.textAreaStyle}
             type="textarea"
             value={questionForm.text}
             onChange={(e) =>
@@ -267,8 +269,11 @@ const CreateCaseScreen = () => {
               Point Values
             </label>
             {questionForm.tfValues.map((opt, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                <span style={{ minWidth: 52, fontSize: 14, fontWeight: 600 }}>{String(opt.label)}</span>
+              <div 
+                key={i} 
+                className={styles.trueFalseValueDisplay}
+              >
+                <span>{String(opt.label)}</span>
                 <input
                   className={styles.inputStyle}
                   type="number"
@@ -318,7 +323,7 @@ const CreateCaseScreen = () => {
             padding: "12px 0",
             fontSize: 15,
             fontWeight: 600,
-            background: questionForm.text.trim() ? "#4a90d9" : "#aaa",
+            background: questionForm.text.trim() ? "var(--confirm)" : "#aaa",
             color: "#fff",
             border: "none",
             borderRadius: 6,

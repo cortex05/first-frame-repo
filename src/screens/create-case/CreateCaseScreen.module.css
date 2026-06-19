@@ -1,28 +1,42 @@
+.container { 
+  width: 100%;
+  max-width: 50%;
+  margin: 0 auto;
+  padding: 32px;
+  color: var(--light-text);
+}
+
+.container h1 {
+  margin-bottom: 24px;
+}
+
+
 .linkButton {
-    display: inline-block;
-    padding: 16px 32px;
-    font-size: 18px;
-    font-weight: 600;
-    background: #4a90d9;
-    color: #fff;
-    border-radius: 8px;
-    text-decoration: none;
-    cursor: pointer;
+  display: inline-block;
+  padding: 16px 32px;
+  font-size: 18px;
+  font-weight: 600;
+  background: #4a90d9;
+  color: #fff;
+  border-radius: 8px;
+  text-decoration: none;
+  cursor: pointer;
 }
 
 .labelStyle {
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 600;
-  color: #444;
+  color: var(--modal-text);
 }
 
 .inputStyle {
-  padding: 10px 12px;
-  font-size: 15px;
+  padding: 2px 12px;
+  font-size: 18px;
   border: 1px solid #ccc;
   border-radius: 6px;
   width: 100%;
   box-sizing: border-box;
+  height: 50px;
 }
 
 .fieldStyle {
@@ -30,4 +44,27 @@
   flex-direction: column;
   gap: 4px;
   margin-bottom: 16px;
-};
+}
+
+.textAreaStyle {
+  font-size: 18px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+}
+
+.trueFalseValueDisplay { 
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  color: var(--modal-text);
+}
+
+.trueFalseValueDisplay span { 
+  min-width: 52px; 
+  font-size: 14px; 
+  font-weight: 600; 
+}
