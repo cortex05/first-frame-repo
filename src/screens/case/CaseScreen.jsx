@@ -436,7 +436,8 @@ const CaseScreen = () => {
             >
               Point Values
             </label>
-            {questionForm.tfValues.map((opt, i) => (
+            <div style={{display: 'flex', flexDirection: "row"}}>
+              {questionForm.tfValues.map((opt, i) => (
               <div
                 key={i}
                 style={{
@@ -447,7 +448,7 @@ const CaseScreen = () => {
                 }}
               >
                 <span style={{ minWidth: 52, fontSize: 14, fontWeight: 600 }}>
-                  {String(opt.label)}
+                  {String(opt.label)}:
                 </span>
                 <input
                   className={styles.inputStyle}
@@ -459,6 +460,8 @@ const CaseScreen = () => {
                 />
               </div>
             ))}
+            </div>
+            
           </div>
         )}
 
@@ -511,7 +514,7 @@ const CaseScreen = () => {
               padding: "12px 0",
               fontSize: 15,
               fontWeight: 600,
-              background: questionForm.text.trim() ? "#4a90d9" : "#aaa",
+              background: questionForm.text.trim() ? "var(--confirm)" : "#aaa",
               color: "#fff",
               border: "none",
               borderRadius: 6,
