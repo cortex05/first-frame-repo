@@ -16,7 +16,7 @@
   padding: 16px 32px;
   font-size: 18px;
   font-weight: 600;
-  background: #4a90d9;
+  background: var(--confirm);
   color: #fff;
   border-radius: 8px;
   text-decoration: none;
