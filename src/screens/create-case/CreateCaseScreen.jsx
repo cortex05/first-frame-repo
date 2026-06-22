@@ -360,7 +360,7 @@ const CreateCaseScreen = () => {
         onClose={() => setPreviewModal(false)}
         title="Case Summary"
       >
-        <div style={{ fontSize: 14, marginBottom: 16, lineHeight: 1.8, color: "var(--modal-text)" }}>
+        <div style={{ fontSize: 20, marginBottom: 16, lineHeight: 1.8, color: "var(--modal-text)" }}>
           <div>
             <strong>Name:</strong> {name || "—"}
           </div>
@@ -383,18 +383,22 @@ const CreateCaseScreen = () => {
             <strong>Questions ({questions.length}):</strong>
           </div>
           {questions.length === 0 && <div style={{ color: "#888" }}>None</div>}
-          {questions.map((q, i) => (
-            <div key={q.id} style={{ marginLeft: 12, color: "#333" }}>
-              {i + 1}. [{q.type === QuestionType.TRUE_FALSE ? "T/F" : "MC"}]{" "}
-              {q.text}
-              {q.options.length > 0 && (
-                  <span style={{ color: "#666" }}>
-                    {" "}
-                    — {q.options.map((o) => `${o.label} (${o.value}pts)`).join(", ")}
-                  </span>
-                )}
-            </div>
-          ))}
+          <div style={{marginBottom: 20}}>
+            {questions.map((q, i) => (
+              <div key={q.id} style={{ marginLeft: 12, color: "#333", margin: "4px 0" }}>
+                <span style={{ fontWeight: 500, fontSize: 18, maxWidth: 500, display: "inline-block", whiteSpace: "wrap" }} >
+                  {i + 1}.{" "}
+                  {q.text}
+                  {q.options.length > 0 && (
+                      <span style={{ color: "#666" }}>
+                        {" "}
+                        — {q.options.map((o) => `${o.label} (${o.value}pts)`).join(", ")}
+                      </span>
+                    )}
+                </span>
+              </div>
+            ))}
+          </div>
           <button onClick={() => handleSubmit()} className={styles.linkButton}>
             Create Case
           </button>
