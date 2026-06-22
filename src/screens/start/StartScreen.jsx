@@ -50,6 +50,7 @@ const StartScreen = () => {
   const [students, setStudents] = useState([]);
   const [displayedStudents, setDisplayedStudents] = useState([]);
   const [saveWarning, setSaveWarning] = useState(false);
+  const [saveCheck, setSaveCheck] = useState(false);
 
   const [rowInput, setRowInput] = useState(2);
   const [colInput, setColInput] = useState(3);
@@ -319,9 +320,8 @@ const StartScreen = () => {
         >
           + Add Row
         </button>
-        <button
+        <button 
           onClick={() => setSaveWarning(true)}
-          disabled={students.length === 0}
           style={{
             padding: "10px 0",
             fontSize: 14,
@@ -330,7 +330,7 @@ const StartScreen = () => {
             color: "#fff",
             border: "none",
             borderRadius: 6,
-            cursor: students.length > 0 ? "pointer" : "not-allowed",
+            cursor: "pointer" 
           }}
         >
           Back to Case
@@ -338,7 +338,7 @@ const StartScreen = () => {
 
         {students.length === 0 && displayedStudents.length > 0 && (
           <button
-            onClick={saveChart}
+            onClick={() => setSaveCheck(true)}
             style={{
               padding: "12px 0",
               fontSize: 15,
@@ -538,6 +538,38 @@ const StartScreen = () => {
             >
               Back to Case
             </Link>
+          </button>
+          <button
+            className={styles.decline}
+            onClick={() => setSaveWarning(false)}
+          >
+            Cancel
+          </button>
+        </div>
+      </Modal>
+
+      {/* Save confirmation modal */}
+      <Modal
+        isOpen={saveCheck}
+        hideDefaultClose
+        onClickOutside={() => setSaveWarning(false)}
+        title="Are you sure?"
+      >
+        <h3
+          style={{
+            color: `var(--modal-text)`,
+            fontWeight: 500,
+            maxWidth: 400,
+          }}
+        >
+         Seating cannot be changed after saving. Do you want to proceed?
+        </h3>
+        <div className={styles.saveModalButtons}>
+          <button 
+            className={styles.confirm}
+            onClick={saveChart}
+          >
+            Proceed
           </button>
           <button
             className={styles.decline}
