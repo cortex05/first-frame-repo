@@ -82,7 +82,7 @@ const QuestionsScreen = () => {
   const getStudentTextColor = (studentId) => {
     if (showScores)
       return getScoreColor(studentId) === "#F54927" ? "#fff" : "#2E2E2D";
-    return getStudentFill(studentId) === "#fff" ? "#2c6fad" : "#fff";
+    return getStudentFill(studentId) === "#fff" ? "#000" : "#fff";
   };
 
   // ── question selection ─────────────────────────────────────────
@@ -778,7 +778,7 @@ const QuestionsScreen = () => {
 					fontWeight: 500,
 					maxWidth: 400,
 				}}>
-          Unsaved changes to the seating chart will be lost if you
+          Unsaved changes to the seating chart  will be lost if you
           leave this page.
         </h3>
         <div className={styles.saveModalButtons}>
@@ -827,8 +827,8 @@ const QuestionsScreen = () => {
                     <Rect
                       width={r.width}
                       height={r.height}
-                      fill="#4a90d9"
-                      stroke="#2c6fad"
+                      fill="#bfbfbf"
+                      stroke="#000"
                       strokeWidth={2}
                       cornerRadius={4}
                     />
@@ -848,7 +848,7 @@ const QuestionsScreen = () => {
                       <Circle
                         radius={CIRCLE_R}
                         fill={getStudentFill(s.id)}
-                        stroke="#2c6fad"
+                        stroke="#000"
                         strokeWidth={1.5}
                       />
                       <Text
@@ -856,6 +856,7 @@ const QuestionsScreen = () => {
                         y={-CIRCLE_R}
                         width={CIRCLE_R * 2}
                         height={CIRCLE_R * 2}
+												color={'#000'}
                         text={
                           showScores
                             ? `#${s.id} - ${getStudentScore(s.id)}`

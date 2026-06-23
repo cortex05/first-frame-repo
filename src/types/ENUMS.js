@@ -8,4 +8,6 @@ export const CrimeTypes = {
   HOMICIDE: 'HOMICIDE',
   THEFT: 'THEFT',
   ASSAULT: 'ASSAULT',
+  DIVORCE: 'DIVORCE',
+  CUSTODY: 'CUSTODY',
 }
