@@ -41,6 +41,18 @@ const QuestionsScreen = () => {
   const selectedQuestion =
     activeCase.questions.find((q) => q.id === selectedQuestionId) || null;
 
+  const getAllSeatedStudents = () => rects.flatMap((r) => r.assignedStudents);
+
+  const getDefaultFalseAnswers = (question) => {
+    const falseOpt = question.options.find((o) => o.label === false);
+    if (!falseOpt) return {};
+    const defaults = {};
+    getAllSeatedStudents().forEach((s) => {
+      defaults[s.id] = falseOpt;
+    });
+    return defaults;
+  };
+
   // ── score helper ──────────────────────────────────────────────
   const getStudentScore = (studentId) => {
     const answers = activeCase.answers || {};
@@ -71,7 +83,7 @@ const QuestionsScreen = () => {
     const answer = currentAnswers[studentId];
     if (answer === undefined) return "#fff";
     if (selectedQuestion.type === QuestionType.TRUE_FALSE) {
-      return answer.label === true ? "#4caf50" : "#f44336";
+      return answer.label === true ? "#000" : "#fff";
     }
     const idx = selectedQuestion.options.findIndex(
       (o) => o.label === answer.label,
@@ -82,27 +94,49 @@ const QuestionsScreen = () => {
   const getStudentTextColor = (studentId) => {
     if (showScores)
       return getScoreColor(studentId) === "#F54927" ? "#fff" : "#2E2E2D";
+    if (selectedQuestion?.type === QuestionType.TRUE_FALSE) {
+      const answer = currentAnswers[studentId];
+      return answer?.label === true ? "#fff" : "#000";
+    }
     return getStudentFill(studentId) === "#fff" ? "#000" : "#fff";
+  };
+
+  const getStudentStrokeWidth = (studentId) => {
+    if (selectedQuestion?.type !== QuestionType.TRUE_FALSE) return 1.5;
+    const answer = currentAnswers[studentId];
+    return answer?.label === true ? 3 : 1.5;
   };
 
   // ── question selection ─────────────────────────────────────────
   const handleSelectQuestion = (questionId) => {
     if (selectedQuestionId !== questionId) {
+      const question = activeCase.questions.find((q) => q.id === questionId);
+      const savedAnswers = (activeCase.answers || {})[questionId] || {};
       setSelectedQuestionId(questionId);
       setActiveOptionIndex(null);
-      setCurrentAnswers((activeCase.answers || {})[questionId] || {});
+      if (question?.type === QuestionType.TRUE_FALSE) {
+        if (!question.firstPoll) {
+          setCurrentAnswers(getDefaultFalseAnswers(question));
+          const updatedQuestions = activeCase.questions.map((q) =>
+            q.id === questionId ? { ...q, firstPoll: true } : q,
+          );
+          updateCase({ ...activeCase, questions: updatedQuestions });
+          localStorage.setItem(
+            "cases",
+            JSON.stringify(useCaseStore.getState().cases),
+          );
+        } else {
+          setCurrentAnswers(
+            Object.keys(savedAnswers).length > 0
+              ? savedAnswers
+              : getDefaultFalseAnswers(question),
+          );
+        }
+      } else {
+        setCurrentAnswers(savedAnswers);
+      }
       setShowScores(false);
     }
-  };
-
-  // ── T/F set all ────────────────────────────────────────────────
-  const handleSetAllTF = (optionObj) => {
-    const all = rects.flatMap((r) => r.assignedStudents);
-    const answers = {};
-    all.forEach((s) => {
-      answers[s.id] = optionObj;
-    });
-    setCurrentAnswers(answers);
   };
 
   // ── student tap ────────────────────────────────────────────────
@@ -115,9 +149,10 @@ const QuestionsScreen = () => {
     if (selectedQuestion.type === QuestionType.TRUE_FALSE) {
       const trueOpt = selectedQuestion.options.find((o) => o.label === true);
       const falseOpt = selectedQuestion.options.find((o) => o.label === false);
+      if (!trueOpt || !falseOpt) return;
       setCurrentAnswers((prev) => ({
         ...prev,
-        [studentId]: prev[studentId].label === true ? falseOpt : trueOpt,
+        [studentId]: prev[studentId]?.label === true ? falseOpt : trueOpt,
       }));
     } else {
       if (activeOptionIndex === null) return;
@@ -392,68 +427,16 @@ const QuestionsScreen = () => {
                         </p>
 
                         {selectedQuestion.type === QuestionType.TRUE_FALSE ? (
-                          <div
+                          <p
                             style={{
-                              display: "flex",
-                              gap: 8,
+                              fontSize: 14,
+                              color: "#363535",
                               marginBottom: 12,
                             }}
                           >
-                            <button
-                              onClick={() =>
-                                handleSetAllTF(
-                                  selectedQuestion.options.find(
-                                    (o) => o.label === true,
-                                  ),
-                                )
-                              }
-                              style={{
-                                flex: 1,
-                                padding: "10px 0",
-                                fontSize: 14,
-                                fontWeight: 600,
-                                background: "#4caf50",
-                                color: "#fff",
-                                border: "none",
-                                borderRadius: 6,
-                                cursor: "pointer",
-                              }}
-                            >
-                              All True |{" "}
-                              {
-                                selectedQuestion.options.find(
-                                  (o) => o.label === true,
-                                ).value
-                              }
-                            </button>
-                            <button
-                              onClick={() =>
-                                handleSetAllTF(
-                                  selectedQuestion.options.find(
-                                    (o) => o.label === false,
-                                  ),
-                                )
-                              }
-                              style={{
-                                flex: 1,
-                                padding: "10px 0",
-                                fontSize: 14,
-                                fontWeight: 600,
-                                background: "#f44336",
-                                color: "#fff",
-                                border: "none",
-                                borderRadius: 6,
-                                cursor: "pointer",
-                              }}
-                            >
-                              All False |{" "}
-                              {
-                                selectedQuestion.options.find(
-                                  (o) => o.label === false,
-                                ).value
-                              }
-                            </button>
-                          </div>
+                            All students start as false (white). Tap a circle to
+                            set true (black with X).
+                          </p>
                         ) : (
                           <div
                             style={{
@@ -506,7 +489,7 @@ const QuestionsScreen = () => {
                           }}
                         >
                           {selectedQuestion.type === QuestionType.TRUE_FALSE
-                            ? "Tap a student circle to toggle their answer."
+                            ? "Tap again to switch true circles back to false."
                             : activeOptionIndex !== null
                               ? `Tap students to assign "${selectedQuestion.options[activeOptionIndex].label}".`
                               : "Select an option above."}
@@ -849,18 +832,21 @@ const QuestionsScreen = () => {
                         radius={CIRCLE_R}
                         fill={getStudentFill(s.id)}
                         stroke="#000"
-                        strokeWidth={1.5}
+                        strokeWidth={getStudentStrokeWidth(s.id)}
                       />
                       <Text
                         x={-CIRCLE_R}
                         y={-CIRCLE_R}
                         width={CIRCLE_R * 2}
                         height={CIRCLE_R * 2}
-												color={'#000'}
                         text={
                           showScores
                             ? `#${s.id} - ${getStudentScore(s.id)}`
-                            : String(s.id)
+                            : selectedQuestion?.type === QuestionType.TRUE_FALSE
+                              ? currentAnswers[s.id]?.label === true
+                                ? "X"
+                                : String(s.id)
+                              : String(s.id)
                         }
                         fontSize={showScores ? 9 : 12}
                         fill={getStudentTextColor(s.id)}
