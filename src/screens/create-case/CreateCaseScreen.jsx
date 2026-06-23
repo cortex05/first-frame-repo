@@ -125,10 +125,11 @@ const CreateCaseScreen = () => {
               setCrimeForm((prev) => ({ ...prev, type: e.target.value }))
             }
           >
-            <option value={CrimeTypes.DWI}>DWI</option>
-            <option value={CrimeTypes.HOMICIDE}>Homicide</option>
-            <option value={CrimeTypes.THEFT}>Theft</option>
-            <option value={CrimeTypes.ASSAULT}>Assault</option>
+            {Object.values(CrimeTypes).map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
           </select>
         </div>
 

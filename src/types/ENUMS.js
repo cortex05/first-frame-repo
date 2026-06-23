@@ -5,9 +5,9 @@ export const QuestionType = {
 
 export const CrimeTypes = {
   DWI: 'DWI',
-  HOMICIDE: 'HOMICIDE',
-  THEFT: 'THEFT',
-  ASSAULT: 'ASSAULT',
-  DIVORCE: 'DIVORCE',
-  CUSTODY: 'CUSTODY',
+  HOMICIDE: 'Homicide',
+  THEFT: 'Theft',
+  ASSAULT: 'Assault',
+  DIVORCE: 'Divorce',
+  CUSTODY: 'Custody',
 }
