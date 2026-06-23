@@ -434,8 +434,8 @@ const QuestionsScreen = () => {
                               marginBottom: 12,
                             }}
                           >
-                            All students start as false (white). Tap a circle to
-                            set true (black with X).
+                            All students start as false (white) and a point value of {selectedQuestion.options.find((o) => o.label === false).value}. Tap a circle to
+                            set true (black with X) and a value of {selectedQuestion.options.find((o) => o.label === true).value}.
                           </p>
                         ) : (
                           <div
