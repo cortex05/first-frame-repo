@@ -21,7 +21,7 @@
 }
 
 .inactiveAfterFirstPoll {
-	background: #eef4ff;
+	background: #eef4ff; /* FOR the answered questions */
 	border-color: #d9e5fa;
 }
 
