@@ -40,6 +40,10 @@ const QuestionsScreen = () => {
   const rects = (activeCase.chartData || {}).rects || [];
   const selectedQuestion =
     activeCase.questions.find((q) => q.id === selectedQuestionId) || null;
+  const selectedQuestionOrder =
+    selectedQuestionId === null
+      ? null
+      : activeCase.questions.findIndex((q) => q.id === selectedQuestionId) + 1;
 
   const getAllSeatedStudents = () => rects.flatMap((r) => r.assignedStudents);
 
@@ -379,11 +383,15 @@ const QuestionsScreen = () => {
             {activeCase.questions.map((q) => (
               <div
                 key={q.id}
-                className={
+                className={`${
                   selectedQuestionId === q.id
-                    ? `${styles.selectedQuestion}`
-                    : `${styles.questionCard}`
-                }
+                    ? styles.selectedQuestion
+                    : styles.questionCard
+                } ${
+                  q.firstPoll && selectedQuestionId !== q.id
+                    ? styles.inactiveAfterFirstPoll
+                    : ""
+                }`}
                 onClick={() => handleSelectQuestion(q.id)}
               >
                 {selectedQuestionId !== q.id && (
@@ -423,20 +431,33 @@ const QuestionsScreen = () => {
                             marginBottom: 12,
                           }}
                         >
+                          <span
+                            style={{
+                              display: "block",
+                              fontSize: 40,
+                              fontWeight: 700,
+                              color: "#456b96",
+                              marginBottom: 6,
+                            }}
+                          >
+                            {selectedQuestionOrder}/{activeCase.questions.length}
+                          </span>
                           {selectedQuestion.text}
                         </p>
 
                         {selectedQuestion.type === QuestionType.TRUE_FALSE ? (
-                          <p
-                            style={{
-                              fontSize: 14,
-                              color: "#363535",
-                              marginBottom: 12,
-                            }}
-                          >
-                            All students start as false (white) and a point value of {selectedQuestion.options.find((o) => o.label === false).value}. Tap a circle to
-                            set true (black with X) and a value of {selectedQuestion.options.find((o) => o.label === true).value}.
-                          </p>
+                          // <p
+                          //   style={{
+                          //     fontSize: 14,
+                          //     color: "#363535",
+                          //     marginBottom: 12,
+                          //   }}
+                          // >
+                          //   All students start as false (white) and a point value of {selectedQuestion.options.find((o) => o.label === false).value}. Tap a circle to
+                          //   set true (black with X) and a value of {selectedQuestion.options.find((o) => o.label === true).value}.
+                          // </p>
+                          <React.Fragment>
+                          </React.Fragment>
                         ) : (
                           <div
                             style={{

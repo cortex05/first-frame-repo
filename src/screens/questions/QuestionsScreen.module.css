@@ -20,6 +20,11 @@
 	gap: 8px;
 }
 
+.inactiveAfterFirstPoll {
+	background: #eef4ff;
+	border-color: #d9e5fa;
+}
+
 .saveModalButtons {
 	display: flex;
 	gap: 12px;
