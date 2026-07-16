@@ -257,7 +257,7 @@ const QuestionsScreen = () => {
         style={{
           width: SIDEBAR_W,
           flexShrink: 0,
-          background: "#f5f8ff",
+          background: "#f5f8ff", // mod this color
           borderRight: "1px solid #c5d8f5",
           display: "flex",
           flexDirection: "column",
@@ -388,7 +388,7 @@ const QuestionsScreen = () => {
               >
                 {selectedQuestionId !== q.id && (
                   <React.Fragment>
-                    <span style={{ flex: 1 }}>{q.text}</span>
+                    <span style={{ flex: 1, fontSize: 20 }}>{q.text}</span>
                     <span
                       style={{
                         fontSize: 10,
@@ -417,7 +417,7 @@ const QuestionsScreen = () => {
                       <div style={{ borderTop: "1px solid #c5d8f5" }}>
                         <p
                           style={{
-                            fontSize: 20,
+                            fontSize: 30,
                             fontWeight: 600,
                             color: "#333",
                             marginBottom: 12,
