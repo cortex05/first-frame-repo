@@ -1,4 +1,4 @@
 export const AUTH_API = {
-  LOGIN: "/api/login",
-  REGISTER: "/api/register",
+  LOGIN: "/auth/login",
+  REGISTER: "/auth/register",
 }
