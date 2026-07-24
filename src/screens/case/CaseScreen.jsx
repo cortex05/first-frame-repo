@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import useCaseStore from "../../store/useCaseStore";
 import Modal from "../../components/modal/Modal";
+import TopNavbar from "../../components/top-navbar/TopNavbar";
 import Question from "../../types/polls/Question";
 import { QuestionType } from "../../types/ENUMS";
 import { EMPTY_QUESTION_FORM } from "../../utils/formUtils";
@@ -190,28 +191,11 @@ const CaseScreen = () => {
   };
 
   return (
-    <div style={{ maxWidth: 640, margin: "0 auto", padding: 32 }}>
-      <h1 style={{ marginBottom: 32 }}>{activeCase.name}</h1>
-      <Link
-        to="/"
-        style={{
-          position: "fixed",
-          top: 16,
-          right: 16,
-          zIndex: 200,
-          padding: "12px 28px",
-          fontSize: 16,
-          fontWeight: 600,
-          background: "#2e7d32",
-          color: "#fff",
-          border: "none",
-          borderRadius: 8,
-          cursor: "pointer",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
-        }}
-      >
-        Home
-      </Link>
+    <React.Fragment>
+      <TopNavbar />
+
+      <div style={{ maxWidth: 640, margin: "0 auto", padding: 32 }}>
+        <h1 style={{ marginBottom: 32 }}>{activeCase.name}</h1>
 
       {/* Basic Info */}
       <section style={{ marginBottom: 32 }} className={styles.infoSection}>
@@ -616,67 +600,68 @@ const CaseScreen = () => {
         </div>
       </Modal>
 
-      {/* Start Session Modal */}
-      <Modal
-        isOpen={startModal}
-        onClose={() => setStartModal(false)}
-        title="Start Session"
-      >
-        {!editStudentNumber ? (
-          <div className={styles.startModal}>
-            <p style={{ marginBottom: 16 }}>
-              You are moving to assign the students to their rows and tables.
-            </p>
-            <p style={{ marginBottom: 24 }}>
-              Currently this case is set for {activeCase.studentNumber}
-            </p>
-            <p style={{ marginBottom: 16 }}>Is this correct?</p>
-            <div className={styles.startModalButtons}>
-              <button onClick={handleStart} className={styles.confirm}>
-                Yes
-              </button>
-              <button
-                onClick={() => setEditStudentNumber(true)}
-                className={styles.decline}
-              >
-                No
-              </button>
+        {/* Start Session Modal */}
+        <Modal
+          isOpen={startModal}
+          onClose={() => setStartModal(false)}
+          title="Start Session"
+        >
+          {!editStudentNumber ? (
+            <div className={styles.startModal}>
+              <p style={{ marginBottom: 16 }}>
+                You are moving to assign the students to their rows and tables.
+              </p>
+              <p style={{ marginBottom: 24 }}>
+                Currently this case is set for {activeCase.studentNumber}
+              </p>
+              <p style={{ marginBottom: 16 }}>Is this correct?</p>
+              <div className={styles.startModalButtons}>
+                <button onClick={handleStart} className={styles.confirm}>
+                  Yes
+                </button>
+                <button
+                  onClick={() => setEditStudentNumber(true)}
+                  className={styles.decline}
+                >
+                  No
+                </button>
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className={styles.startModal}>
-            <p style={{ marginBottom: 8 }}>
-              How many students are in this case?
-            </p>
-            <div className={styles.fieldStyle}>
-              <label className={styles.labelStyle}>Number of Students:</label>
-              <input
-                className={styles.inputStyle}
-                type="number"
-                min={1}
-                value={numberOfStudents}
-                onChange={(e) => setNumberOfStudents(e.target.value)}
-                placeholder="e.g. 30"
-              />
+          ) : (
+            <div className={styles.startModal}>
+              <p style={{ marginBottom: 8 }}>
+                How many students are in this case?
+              </p>
+              <div className={styles.fieldStyle}>
+                <label className={styles.labelStyle}>Number of Students:</label>
+                <input
+                  className={styles.inputStyle}
+                  type="number"
+                  min={1}
+                  value={numberOfStudents}
+                  onChange={(e) => setNumberOfStudents(e.target.value)}
+                  placeholder="e.g. 30"
+                />
+              </div>
+              <div className={styles.startModalButtons}>
+                <button
+                  onClick={() => handleNumberOfStudentsChange()}
+                  className={styles.confirm}
+                >
+                  Confirm
+                </button>
+                <button
+                  onClick={() => setEditStudentNumber(false)}
+                  className={styles.decline}
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
-            <div className={styles.startModalButtons}>
-              <button
-                onClick={() => handleNumberOfStudentsChange()}
-                className={styles.confirm}
-              >
-                Confirm
-              </button>
-              <button
-                onClick={() => setEditStudentNumber(false)}
-                className={styles.decline}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        )}
-      </Modal>
-    </div>
+          )}
+        </Modal>
+      </div>
+    </React.Fragment>
   );
 };
 

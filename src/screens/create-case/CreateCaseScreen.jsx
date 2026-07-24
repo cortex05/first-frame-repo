@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { useNavigate } from "react-router-dom";
 
 import Modal from "../../components/modal/Modal";
+import TopNavbar from "../../components/top-navbar/TopNavbar";
 
 import useCaseStore from "../../store/useCaseStore";
 
@@ -87,8 +88,11 @@ const CreateCaseScreen = () => {
   };
 
   return (
-    <div className={styles.container}>
-      <h1>Create New Case</h1>
+    <React.Fragment>
+      <TopNavbar />
+
+      <div className={styles.container}>
+        <h1>Create New Case</h1>
 
       {/* Basic Info */}
       <section style={{ marginBottom: 32 }}>
@@ -356,56 +360,57 @@ const CreateCaseScreen = () => {
       </Modal>
 
       {/* Preview / Submit Modal */}
-      <Modal
-        isOpen={previewModal}
-        onClose={() => setPreviewModal(false)}
-        title="Case Summary"
-      >
-        <div style={{ fontSize: 20, marginBottom: 16, lineHeight: 1.8, color: "var(--modal-text)" }}>
-          <div>
-            <strong>Name:</strong> {name || "—"}
+        <Modal
+          isOpen={previewModal}
+          onClose={() => setPreviewModal(false)}
+          title="Case Summary"
+        >
+          <div style={{ fontSize: 20, marginBottom: 16, lineHeight: 1.8, color: "var(--modal-text)" }}>
+            <div>
+              <strong>Name:</strong> {name || "—"}
+            </div>
+            <div>
+              <strong>Author:</strong> {author || "—"}
+            </div>
+            <div>
+              <strong>Crime Type:</strong> {crimeForm.type || "—"}
+            </div>
+            <div>
+              <strong>Location:</strong> {location || "—"}
+            </div>
+            <div>
+              <strong>Students:</strong> {numberOfStudents || "—"}
+            </div>
+            <div>
+              <strong>Date / Time:</strong> {dateTime ? new Date(dateTime).toLocaleString() : "—"}
+            </div>
+            <div style={{ marginTop: 12 }}>
+              <strong>Questions ({questions.length}):</strong>
+            </div>
+            {questions.length === 0 && <div style={{ color: "#888" }}>None</div>}
+            <div style={{marginBottom: 20}}>
+              {questions.map((q, i) => (
+                <div key={q.id} style={{ marginLeft: 12, color: "#333", margin: "4px 0" }}>
+                  <span style={{ fontWeight: 500, fontSize: 18, maxWidth: 500, display: "inline-block", whiteSpace: "wrap" }} >
+                    {i + 1}.{" "}
+                    {q.text}
+                    {q.options.length > 0 && (
+                        <span style={{ color: "#666" }}>
+                          {" "}
+                          — {q.options.map((o) => `${o.label} (${o.value}pts)`).join(", ")}
+                        </span>
+                      )}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <button onClick={() => handleSubmit()} className={styles.linkButton}>
+              Create Case
+            </button>
           </div>
-          <div>
-            <strong>Author:</strong> {author || "—"}
-          </div>
-          <div>
-            <strong>Crime Type:</strong> {crimeForm.type || "—"}
-          </div>
-          <div>
-            <strong>Location:</strong> {location || "—"}
-          </div>
-          <div>
-            <strong>Students:</strong> {numberOfStudents || "—"}
-          </div>
-          <div>
-            <strong>Date / Time:</strong> {dateTime ? new Date(dateTime).toLocaleString() : "—"}
-          </div>
-          <div style={{ marginTop: 12 }}>
-            <strong>Questions ({questions.length}):</strong>
-          </div>
-          {questions.length === 0 && <div style={{ color: "#888" }}>None</div>}
-          <div style={{marginBottom: 20}}>
-            {questions.map((q, i) => (
-              <div key={q.id} style={{ marginLeft: 12, color: "#333", margin: "4px 0" }}>
-                <span style={{ fontWeight: 500, fontSize: 18, maxWidth: 500, display: "inline-block", whiteSpace: "wrap" }} >
-                  {i + 1}.{" "}
-                  {q.text}
-                  {q.options.length > 0 && (
-                      <span style={{ color: "#666" }}>
-                        {" "}
-                        — {q.options.map((o) => `${o.label} (${o.value}pts)`).join(", ")}
-                      </span>
-                    )}
-                </span>
-              </div>
-            ))}
-          </div>
-          <button onClick={() => handleSubmit()} className={styles.linkButton}>
-            Create Case
-          </button>
+        </Modal>
         </div>
-      </Modal>
-    </div>
+    </React.Fragment>
   );
 };
 
