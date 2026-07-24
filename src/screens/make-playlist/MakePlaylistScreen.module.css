@@ -1,0 +1,33 @@
+.container {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+.value {
+  font-size: 15px;
+  color: #c0bdbd;
+  margin-bottom: 16px;
+}
+
+.inputStyle {
+  padding: 10px 12px;
+  font-size: 15px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 18px 0;
+}
+
+.fieldStyle {
+  margin-bottom: 16px;
+}
+
+.labelStyle {
+  font-size: 13px;
+  font-weight: 600;
+  color: #888;
+  margin-bottom: 2px;
+  display: block;
+}

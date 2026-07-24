@@ -239,6 +239,30 @@ const CaseScreen = () => {
         </div>
       </section>
 
+      {/* Playlists*/}
+      <section style={{ marginBottom: 32 }}>
+        <h2 style={{ marginBottom: 12 }}>Question Playlists</h2>
+        <p className={styles.value} style={{ marginBottom: 12 }}>
+          Build a reusable playlist of questions from scratch and attach it to this case later.
+        </p>
+        <button
+          onClick={() => navigate(`/make-playlist?caseId=${activeCase._id}`)}
+          style={{
+            display: "inline-block",
+            padding: "12px 28px",
+            fontSize: 16,
+            fontWeight: 600,
+            background: "#2c6fad",
+            color: "#fff",
+            borderRadius: 8,
+            border: "none",
+            cursor: "pointer",
+          }}
+        >
+          Make Playlist
+        </button>
+      </section>
+
       {/* Questions */}
       <section style={{ marginBottom: 32 }}>
         <h2 style={{ marginBottom: 12 }}>Questions</h2>

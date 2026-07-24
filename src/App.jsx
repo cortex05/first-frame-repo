@@ -10,6 +10,7 @@ import Start from './screens/start/StartScreen';
 import CreateCaseScreen from './screens/create-case/CreateCaseScreen';
 import CaseScreen from './screens/case/CaseScreen';
 import QuestionsScreen from './screens/questions/QuestionsScreen';
+import MakePlaylistScreen from './screens/make-playlist/MakePlaylistScreen';
 import LoginScreen from './screens/auth/login/LoginScreen';
 import RegisterScreen from './screens/auth/register/RegisterScreen';
 
@@ -63,6 +64,7 @@ function App() {
 					<Route path="/start/:caseId" element={<Start />} />
 					<Route path="/create-case" element={<CreateCaseScreen />} />
 					<Route path="/case/:id" element={<CaseScreen />} />
+					<Route path="/make-playlist" element={<MakePlaylistScreen />} />
 					<Route path="/questions/:caseId" element={<QuestionsScreen />} />
 				</Route>
       		</Routes>

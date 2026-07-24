@@ -7,3 +7,8 @@ export const CASE_API = {
   CREATE: "/cases",
   UPDATE: (id) => `/cases/${id}`,
 };
+
+export const PLAYLIST_API = {
+  CREATE: "/playlists",
+  UPDATE: (id) => `/playlists/${id}`,
+};

@@ -1,0 +1,586 @@
+import React, { useMemo, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { v4 as uuidv4 } from 'uuid';
+
+import Modal from '../../components/modal/Modal';
+import TopNavbar from '../../components/top-navbar/TopNavbar';
+
+import useAuthStore from '../../store/useAuthStore';
+
+import Question from '../../types/polls/Question';
+import { QuestionType } from '../../types/ENUMS';
+import { EMPTY_QUESTION_FORM } from '../../utils/formUtils';
+
+import { createPlaylist } from '../../api/playlist';
+
+import styles from './MakePlaylistScreen.module.css';
+
+const MakePlaylistScreen = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const fromCaseId = searchParams.get('caseId');
+
+  const userInfo = useAuthStore((state) => state.userInfo);
+
+  const [title, setTitle] = useState('');
+  const [questions, setQuestions] = useState([]);
+
+  const [questionModal, setQuestionModal] = useState(false);
+  const [questionForm, setQuestionForm] = useState(EMPTY_QUESTION_FORM);
+  const [editingQuestionId, setEditingQuestionId] = useState(null);
+  const [deleteQuestionId, setDeleteQuestionId] = useState(null);
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+
+  const editingQuestion = useMemo(
+    () => questions.find((q) => q.id === editingQuestionId) || null,
+    [questions, editingQuestionId]
+  );
+
+  const openQuestionModal = () => {
+    setQuestionForm(EMPTY_QUESTION_FORM);
+    setEditingQuestionId(null);
+    setQuestionModal(true);
+  };
+
+  const closeQuestionModal = () => {
+    setQuestionModal(false);
+    setEditingQuestionId(null);
+    setQuestionForm(EMPTY_QUESTION_FORM);
+  };
+
+  const openEditQuestionModal = (question) => {
+    if (question.type === QuestionType.MULTIPLE_CHOICE) {
+      const mcOptions = question.options.map((opt) => ({
+        label: opt.label || '',
+        value: Number(opt.value) || 0,
+      }));
+
+      while (mcOptions.length < 4) {
+        mcOptions.push({ label: '', value: 0 });
+      }
+
+      setQuestionForm({
+        text: question.text || '',
+        type: QuestionType.MULTIPLE_CHOICE,
+        options: mcOptions.slice(0, 4),
+        tfValues: [
+          { label: true, value: 3 },
+          { label: false, value: 0 },
+        ],
+      });
+    } else {
+      const trueOption = question.options.find(
+        (opt) => opt.label === true || opt.label === 'true'
+      );
+      const falseOption = question.options.find(
+        (opt) => opt.label === false || opt.label === 'false'
+      );
+
+      setQuestionForm({
+        text: question.text || '',
+        type: QuestionType.TRUE_FALSE,
+        options: [
+          { label: '', value: 0 },
+          { label: '', value: 0 },
+          { label: '', value: 0 },
+          { label: '', value: 0 },
+        ],
+        tfValues: [
+          { label: true, value: Number(trueOption?.value) || 0 },
+          { label: false, value: Number(falseOption?.value) || 0 },
+        ],
+      });
+    }
+
+    setEditingQuestionId(question.id);
+    setQuestionModal(true);
+  };
+
+  const handleOptionChange = (index, field, value) => {
+    setQuestionForm((prev) => {
+      const options = [...prev.options];
+      options[index] = {
+        ...options[index],
+        [field]: field === 'value' ? Number(value) : value,
+      };
+      return { ...prev, options };
+    });
+  };
+
+  const handleTFValueChange = (index, value) => {
+    setQuestionForm((prev) => {
+      const tfValues = [...prev.tfValues];
+      tfValues[index] = { ...tfValues[index], value: Number(value) };
+      return { ...prev, tfValues };
+    });
+  };
+
+  const handleAddQuestion = () => {
+    if (!questionForm.text.trim()) return;
+
+    const options =
+      questionForm.type === QuestionType.MULTIPLE_CHOICE
+        ? questionForm.options.filter((o) => o.label.trim() !== '')
+        : questionForm.tfValues;
+
+    const q = new Question(
+      uuidv4(),
+      questionForm.text.trim(),
+      questionForm.type,
+      fromCaseId || null,
+      options
+    );
+
+    setQuestions((prev) => [...prev, q]);
+    closeQuestionModal();
+  };
+
+  const handleSaveEditedQuestion = () => {
+    if (!questionForm.text.trim() || !editingQuestionId) return;
+
+    const options =
+      questionForm.type === QuestionType.MULTIPLE_CHOICE
+        ? questionForm.options.filter((o) => o.label.trim() !== '')
+        : questionForm.tfValues;
+
+    const updatedQuestions = questions.map((q) => {
+      if (q.id !== editingQuestionId) return q;
+      return {
+        ...q,
+        text: questionForm.text.trim(),
+        type: questionForm.type,
+        options,
+      };
+    });
+
+    setQuestions(updatedQuestions);
+    closeQuestionModal();
+  };
+
+  const handleDeleteQuestion = () => {
+    if (!deleteQuestionId) return;
+    setQuestions((prev) => prev.filter((q) => q.id !== deleteQuestionId));
+    setDeleteQuestionId(null);
+  };
+
+  const handleCreatePlaylist = async () => {
+    if (!userInfo?.token) {
+      setSubmitError('You must be logged in to create a playlist.');
+      return;
+    }
+
+    if (!title.trim()) {
+      setSubmitError('Please provide a playlist title.');
+      return;
+    }
+
+    setSubmitError('');
+    setIsSubmitting(true);
+
+    const playlistPayload = {
+      title: title.trim(),
+      questions: questions.map((q) => ({
+        id: q.id,
+        text: String(q.text || '').trim(),
+        type: q.type,
+        caseId: q.caseId || fromCaseId || null,
+        options: (q.options || []).map((opt) => ({
+          label:
+            typeof opt.label === 'boolean'
+              ? String(opt.label)
+              : String(opt.label || '').trim(),
+          value: Number(opt.value) || 0,
+        })),
+        firstPoll: Boolean(q.firstPoll),
+      })),
+    };
+
+    try {
+      await createPlaylist(playlistPayload, userInfo.token);
+      if (fromCaseId) {
+        navigate(`/case/${fromCaseId}`);
+      } else {
+        navigate('/home');
+      }
+    } catch (requestError) {
+      setSubmitError(
+        requestError?.response?.data?.message ||
+          'Unable to create playlist. Please try again.'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <React.Fragment>
+      <TopNavbar />
+
+      <div className={styles.container}>
+        <h1 style={{ marginBottom: 32 }}>Make Question Playlist</h1>
+
+        <section style={{ marginBottom: 32 }}>
+          <label className={styles.labelStyle}>Title</label>
+          <input
+            className={styles.inputStyle}
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Playlist title"
+            maxLength={80}
+          />
+        </section>
+
+        <section style={{ marginBottom: 32 }}>
+          <h2 style={{ marginBottom: 12 }}>Questions</h2>
+
+          {questions.length === 0 && (
+            <p style={{ color: '#888', fontSize: 14, marginBottom: 12 }}>
+              No questions added yet.
+            </p>
+          )}
+
+          {questions.map((q, i) => (
+            <div
+              key={q.id}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                padding: '8px 12px',
+                marginBottom: 8,
+                background: '#f5f8ff',
+                border: '1px solid #c5d8f5',
+                borderRadius: 6,
+                fontSize: 14,
+              }}
+            >
+              <span style={{ fontWeight: 600, color: '#2c6fad', minWidth: 24 }}>
+                {i + 1}.
+              </span>
+              <span style={{ flex: 1 }}>{q.text}</span>
+
+              <button
+                onClick={() => openEditQuestionModal(q)}
+                style={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  padding: '4px 8px',
+                  background: '#f0ad4e',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 4,
+                  cursor: 'pointer',
+                }}
+              >
+                Edit
+              </button>
+
+              <button
+                onClick={() => setDeleteQuestionId(q.id)}
+                style={{
+                  width: 22,
+                  height: 22,
+                  fontSize: 13,
+                  fontWeight: 700,
+                  padding: 0,
+                  background: '#d9534f',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 4,
+                  cursor: 'pointer',
+                  lineHeight: 1,
+                }}
+                aria-label="Delete question"
+              >
+                X
+              </button>
+
+              <span
+                style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  padding: '2px 8px',
+                  background:
+                    q.type === QuestionType.TRUE_FALSE ? '#e6f4ea' : '#fff3cd',
+                  color:
+                    q.type === QuestionType.TRUE_FALSE ? '#2e7d32' : '#856404',
+                  borderRadius: 12,
+                }}
+              >
+                {q.type === QuestionType.TRUE_FALSE ? 'T/F' : 'MC'}
+              </span>
+            </div>
+          ))}
+
+          <button
+            onClick={openQuestionModal}
+            style={{
+              marginTop: 8,
+              padding: '10px 20px',
+              fontSize: 15,
+              background: '#4a90d9',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 6,
+              cursor: 'pointer',
+            }}
+          >
+            + Add Question
+          </button>
+        </section>
+
+        {submitError && (
+          <p style={{ color: '#d9534f', fontSize: 14, marginBottom: 12 }}>
+            {submitError}
+          </p>
+        )}
+
+        <button
+          onClick={handleCreatePlaylist}
+          disabled={isSubmitting}
+          style={{
+            display: 'inline-block',
+            padding: '14px 36px',
+            fontSize: 17,
+            fontWeight: 600,
+            background: '#2c6fad',
+            color: '#fff',
+            borderRadius: 8,
+            textDecoration: 'none',
+            border: 'none',
+            cursor: isSubmitting ? 'not-allowed' : 'pointer',
+            opacity: isSubmitting ? 0.75 : 1,
+          }}
+        >
+          {isSubmitting ? 'Creating Playlist...' : 'Create Playlist'}
+        </button>
+      </div>
+
+      <Modal
+        isOpen={questionModal}
+        onClose={closeQuestionModal}
+        title={editingQuestion ? 'Edit Question' : 'Add Question'}
+        hideDefaultClose={Boolean(editingQuestion)}
+      >
+        <div className={styles.fieldStyle}>
+          <label className={styles.labelStyle}>Question Text</label>
+          <textarea
+            className={styles.inputStyle}
+            type="text"
+            value={questionForm.text}
+            onChange={(e) =>
+              setQuestionForm((prev) => ({ ...prev, text: e.target.value }))
+            }
+            placeholder="Enter question..."
+            autoFocus
+          />
+        </div>
+
+        <div className={styles.fieldStyle}>
+          <label className={styles.labelStyle}>Type</label>
+          <select
+            className={styles.inputStyle}
+            value={questionForm.type}
+            onChange={(e) =>
+              setQuestionForm((prev) => ({ ...prev, type: e.target.value }))
+            }
+          >
+            <option value={QuestionType.TRUE_FALSE}>True / False</option>
+            <option value={QuestionType.MULTIPLE_CHOICE}>Multiple Choice</option>
+          </select>
+        </div>
+
+        {questionForm.type === QuestionType.TRUE_FALSE && (
+          <div style={{ marginBottom: 16 }}>
+            <label
+              style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: '#444',
+                display: 'block',
+                marginBottom: 8,
+              }}
+            >
+              Point Values
+            </label>
+            <div style={{ display: 'flex', flexDirection: 'row' }}>
+              {questionForm.tfValues.map((opt, i) => (
+                <div
+                  key={i}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    marginBottom: 8,
+                  }}
+                >
+                  <span style={{ minWidth: 52, fontSize: 14, fontWeight: 600 }}>
+                    {String(opt.label)}:
+                  </span>
+                  <input
+                    className={styles.inputStyle}
+                    style={{ width: 80 }}
+                    type="number"
+                    value={opt.value}
+                    onChange={(e) => handleTFValueChange(i, e.target.value)}
+                    placeholder="Points"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {questionForm.type === QuestionType.MULTIPLE_CHOICE && (
+          <div style={{ marginBottom: 16 }}>
+            <label
+              style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: '#444',
+                display: 'block',
+                marginBottom: 8,
+              }}
+            >
+              Options (up to 4)
+            </label>
+            {questionForm.options.map((opt, i) => (
+              <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                <input
+                  className={styles.inputStyle}
+                  style={{ flex: 1 }}
+                  type="text"
+                  value={opt.label}
+                  onChange={(e) => handleOptionChange(i, 'label', e.target.value)}
+                  placeholder={`Option ${i + 1}`}
+                />
+                <input
+                  className={styles.inputStyle}
+                  style={{ width: 80 }}
+                  type="number"
+                  value={opt.value}
+                  onChange={(e) => handleOptionChange(i, 'value', e.target.value)}
+                  placeholder="Points"
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {!editingQuestion && (
+          <button
+            onClick={handleAddQuestion}
+            disabled={!questionForm.text.trim()}
+            style={{
+              width: '100%',
+              padding: '12px 0',
+              fontSize: 15,
+              fontWeight: 600,
+              background: questionForm.text.trim() ? 'var(--confirm)' : '#aaa',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 6,
+              marginBottom: 8,
+              cursor: questionForm.text.trim() ? 'pointer' : 'not-allowed',
+            }}
+          >
+            Add Question
+          </button>
+        )}
+
+        {editingQuestion && (
+          <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+            <button
+              onClick={handleSaveEditedQuestion}
+              disabled={!questionForm.text.trim()}
+              style={{
+                flex: 1,
+                padding: '12px 0',
+                fontSize: 15,
+                fontWeight: 600,
+                background: questionForm.text.trim() ? '#4a90d9' : '#aaa',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 6,
+                cursor: questionForm.text.trim() ? 'pointer' : 'not-allowed',
+              }}
+            >
+              Save
+            </button>
+            <button
+              onClick={closeQuestionModal}
+              style={{
+                flex: 1,
+                padding: '12px 0',
+                fontSize: 15,
+                fontWeight: 600,
+                background: '#f0f0f0',
+                color: '#333',
+                border: '1px solid #ccc',
+                borderRadius: 6,
+                cursor: 'pointer',
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+      </Modal>
+
+      <Modal
+        isOpen={Boolean(deleteQuestionId)}
+        onClose={() => setDeleteQuestionId(null)}
+        title="Remove Question"
+        hideDefaultClose
+      >
+        <p style={{ marginBottom: 20 }}>
+          Are you sure you want to remove this question from this playlist?
+        </p>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            gap: 12,
+            marginBottom: 8,
+          }}
+        >
+          <button
+            onClick={handleDeleteQuestion}
+            style={{
+              flex: 1,
+              padding: '10px 0',
+              fontWeight: 600,
+              background: '#d9534f',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 6,
+              cursor: 'pointer',
+            }}
+          >
+            Yes
+          </button>
+          <button
+            onClick={() => setDeleteQuestionId(null)}
+            style={{
+              flex: 1,
+              padding: '10px 0',
+              fontWeight: 600,
+              background: '#f0f0f0',
+              color: '#333',
+              border: '1px solid #ccc',
+              borderRadius: 6,
+              cursor: 'pointer',
+            }}
+          >
+            No
+          </button>
+        </div>
+      </Modal>
+    </React.Fragment>
+  );
+};
+
+export default MakePlaylistScreen;
