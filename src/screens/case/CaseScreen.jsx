@@ -2,8 +2,10 @@ import React, { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import useCaseStore from "../../store/useCaseStore";
+import useAuthStore from "../../store/useAuthStore";
 import Modal from "../../components/modal/Modal";
 import TopNavbar from "../../components/top-navbar/TopNavbar";
+import { saveCase } from "../../api/case";
 import Question from "../../types/polls/Question";
 import { QuestionType } from "../../types/ENUMS";
 import { EMPTY_QUESTION_FORM } from "../../utils/formUtils";
@@ -19,6 +21,7 @@ const CaseScreen = () => {
   );
   const setActiveCase = useCaseStore((state) => state.setActiveCase);
   const updateCase = useCaseStore((state) => state.updateCase);
+  const userInfo = useAuthStore((state) => state.userInfo);
 
   const [questionModal, setQuestionModal] = useState(false);
   const [questionForm, setQuestionForm] = useState(EMPTY_QUESTION_FORM);
@@ -30,6 +33,8 @@ const CaseScreen = () => {
   const [numberOfStudents, setNumberOfStudents] = useState(
     activeCase ? activeCase.studentNumber : 0,
   );
+  const [isSavingCase, setIsSavingCase] = useState(false);
+  const [saveError, setSaveError] = useState("");
 
   if (!activeCase) return <p>Case not found.</p>;
 
@@ -151,8 +156,16 @@ const CaseScreen = () => {
     closeQuestionModal();
   };
 
-  const handleSaveEditedQuestion = () => {
+  const handleSaveEditedQuestion = async () => {
     if (!questionForm.text.trim() || !editingQuestionId) return;
+    if (!userInfo?.token) {
+      setSaveError("You must be logged in to save case changes.");
+      return;
+    }
+
+    setSaveError("");
+    setIsSavingCase(true);
+
     const options =
       questionForm.type === QuestionType.MULTIPLE_CHOICE
         ? questionForm.options.filter((o) => o.label.trim() !== "")
@@ -168,8 +181,19 @@ const CaseScreen = () => {
       };
     });
 
-    persistCaseUpdate({ ...activeCase, questions: updatedQuestions });
-    closeQuestionModal();
+    const updatedCasePayload = { ...activeCase, questions: updatedQuestions };
+
+    try {
+      const savedCase = await saveCase(activeCase._id, updatedCasePayload, userInfo.token);
+      persistCaseUpdate(savedCase || updatedCasePayload);
+      closeQuestionModal();
+    } catch (requestError) {
+      setSaveError(
+        requestError?.response?.data?.message || "Unable to save case changes."
+      );
+    } finally {
+      setIsSavingCase(false);
+    }
   };
 
   const handleDeleteQuestion = () => {
@@ -514,7 +538,7 @@ const CaseScreen = () => {
           <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
             <button
               onClick={handleSaveEditedQuestion}
-              disabled={!questionForm.text.trim()}
+              disabled={!questionForm.text.trim() || isSavingCase}
               style={{
                 flex: 1,
                 padding: "12px 0",
@@ -524,10 +548,13 @@ const CaseScreen = () => {
                 color: "#fff",
                 border: "none",
                 borderRadius: 6,
-                cursor: questionForm.text.trim() ? "pointer" : "not-allowed",
+                cursor:
+                  questionForm.text.trim() && !isSavingCase
+                    ? "pointer"
+                    : "not-allowed",
               }}
             >
-              Save
+              {isSavingCase ? "Saving..." : "Save"}
             </button>
             <button
               onClick={closeQuestionModal}
@@ -546,6 +573,12 @@ const CaseScreen = () => {
               Cancel
             </button>
           </div>
+        )}
+
+        {saveError && (
+          <p style={{ color: "#d9534f", fontSize: 14, margin: "4px 0 0" }}>
+            {saveError}
+          </p>
         )}
       </Modal>
 

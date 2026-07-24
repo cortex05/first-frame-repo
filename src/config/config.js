@@ -5,4 +5,5 @@ export const AUTH_API = {
 
 export const CASE_API = {
   CREATE: "/cases",
+  UPDATE: (id) => `/cases/${id}`,
 };
