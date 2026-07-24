@@ -6,9 +6,10 @@ import Modal from "../../components/modal/Modal";
 import TopNavbar from "../../components/top-navbar/TopNavbar";
 
 import useCaseStore from "../../store/useCaseStore";
+import useAuthStore from "../../store/useAuthStore";
+import { createCase } from "../../api/case";
 
 import Question from "../../types/polls/Question";
-import Case from "../../types/Case";
 import { QuestionType, CrimeTypes } from "../../types/ENUMS";
 
 import { EMPTY_QUESTION_FORM, EMPTY_CRIME_TYPE_FORM } from "../../utils/formUtils";
@@ -20,7 +21,6 @@ const CreateCaseScreen = () => {
   const [caseId] = useState(() => uuidv4());
   const [name, setName] = useState("");
 	const [author, setAuthor] = useState("");
-  const [crimeType, setCrimeType] = useState("");
   const [crimeForm, setCrimeForm] = useState(EMPTY_CRIME_TYPE_FORM);
 
   const [location, setLocation] = useState("");
@@ -32,9 +32,12 @@ const CreateCaseScreen = () => {
   const [questionForm, setQuestionForm] = useState(EMPTY_QUESTION_FORM);
 
   const [previewModal, setPreviewModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const addCase = useCaseStore((state) => state.addCase);
   const setActiveCase = useCaseStore((state) => state.setActiveCase);
+  const userInfo = useAuthStore((state) => state.userInfo);
 
   const openQuestionModal = () => {
     setQuestionForm(EMPTY_QUESTION_FORM);
@@ -74,17 +77,55 @@ const CreateCaseScreen = () => {
     setQuestionModal(false);
   };
 
-  const handleSubmit = () => {
-    const createdCase = new Case(caseId, name, author, crimeForm.type, location, numberOfStudents, dateTime, questions);
-    const casesArray = JSON.parse(localStorage.getItem('cases')) || [];
-    casesArray.push(createdCase);
+  const handleSubmit = async () => {
+    if (!userInfo?.token) {
+      setSubmitError("You must be logged in to create a case.");
+      return;
+    }
 
-    localStorage.setItem('cases', JSON.stringify(casesArray));
-	  
-    addCase(createdCase);
-	  setActiveCase(caseId);
-    setPreviewModal(false);
-    navigate(`/case/${caseId}`);
+    if (!name.trim() || !location.trim() || !numberOfStudents || !dateTime) {
+      setSubmitError("Please complete all required case details before creating the case.");
+      return;
+    }
+
+    setSubmitError("");
+    setIsSubmitting(true);
+
+    const normalizedQuestions = questions.map((q) => ({
+      id: q.id,
+      text: String(q.text || "").trim(),
+      type: q.type,
+      caseId: q.caseId || caseId,
+      options: (q.options || []).map((opt) => ({
+        label: typeof opt.label === "boolean" ? String(opt.label) : String(opt.label || "").trim(),
+        value: Number(opt.value) || 0,
+      })),
+      firstPoll: Boolean(q.firstPoll),
+    }));
+
+    const casePayload = {
+      name: name.trim(),
+      author: author.trim() || userInfo.username,
+      crimeType: crimeForm.type,
+      location: location.trim(),
+      studentNumber: Number(numberOfStudents),
+      caseDate: dateTime ? new Date(dateTime).toISOString() : null,
+      questions: normalizedQuestions,
+    };
+
+    try {
+      const createdCase = await createCase(casePayload, userInfo.token);
+      addCase(createdCase);
+      setActiveCase(createdCase._id);
+      setPreviewModal(false);
+      navigate(`/case/${createdCase._id}`);
+    } catch (requestError) {
+      setSubmitError(
+        requestError?.response?.data?.message || "Unable to create case. Please try again."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -404,8 +445,17 @@ const CreateCaseScreen = () => {
                 </div>
               ))}
             </div>
-            <button onClick={() => handleSubmit()} className={styles.linkButton}>
-              Create Case
+            {submitError && (
+              <p style={{ color: "#d9534f", fontSize: 16, marginBottom: 12 }}>{submitError}</p>
+            )}
+
+            <button
+              onClick={() => handleSubmit()}
+              className={styles.linkButton}
+              disabled={isSubmitting}
+              style={{ opacity: isSubmitting ? 0.75 : 1, cursor: isSubmitting ? "not-allowed" : "pointer" }}
+            >
+              {isSubmitting ? "Creating..." : "Create Case"}
             </button>
           </div>
         </Modal>
