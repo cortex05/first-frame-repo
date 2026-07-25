@@ -4,6 +4,7 @@ export const AUTH_API = {
 }
 
 export const CASE_API = {
+  GET_ALL: "/cases",
   CREATE: "/cases",
   UPDATE: (id) => `/cases/${id}`,
 };

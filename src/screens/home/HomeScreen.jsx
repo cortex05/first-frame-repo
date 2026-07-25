@@ -1,30 +1,32 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Modal from "../../components/modal/Modal";
 import TopNavbar from "../../components/top-navbar/TopNavbar";
 import styles from "./HomeScreen.module.css";
 
 import useCaseStore from "../../store/useCaseStore";
+import useAuthStore from "../../store/useAuthStore";
 
 const Home = () => {
   const [modalOpen, setModalOpen] = useState(false);
-  const [storedCases, setStoredCases] = useState([]);
+  const cases = useCaseStore((state) => state.cases);
+  const fetchUserCases = useCaseStore((state) => state.fetchUserCases);
   const setActiveCase = useCaseStore((state) => state.setActiveCase);
+  const userInfo = useAuthStore((state) => state.userInfo);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (userInfo?.token) {
+      fetchUserCases(userInfo.token);
+    }
+  }, [userInfo?.token]);
 
   const handleSelectCase = (caseId) => {
     setActiveCase(caseId);
     setModalOpen(false);
     navigate(`/case/${caseId}`);
   };
-
-  useEffect(() => {
-    const cases = localStorage.getItem("cases");
-    if (cases) {
-      setStoredCases(JSON.parse(cases));
-    }
-  }, []);
 
   return (
     <React.Fragment>
@@ -57,13 +59,13 @@ const Home = () => {
           title="Access Existing Case"
         >
           <div className={styles.modalContent}>
-            {storedCases.length === 0 ? (
+            {cases.length === 0 ? (
               <p>No existing cases found.</p>
             ) : (
               <div>
-                {storedCases.map((c, i) => (
+                {cases.map((c) => (
                   <div
-                    key={i}
+                    key={c._id}
                     onClick={() => handleSelectCase(c._id)}
                     className={styles.caseItem}
                   >

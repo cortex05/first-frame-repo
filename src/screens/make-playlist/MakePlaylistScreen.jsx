@@ -22,6 +22,7 @@ const MakePlaylistScreen = () => {
   const fromCaseId = searchParams.get('caseId');
 
   const userInfo = useAuthStore((state) => state.userInfo);
+  const fetchUserPlaylists = useAuthStore((state) => state.fetchUserPlaylists);
 
   const [title, setTitle] = useState('');
   const [questions, setQuestions] = useState([]);
@@ -193,6 +194,8 @@ const MakePlaylistScreen = () => {
 
     try {
       await createPlaylist(playlistPayload, userInfo.token);
+      await fetchUserPlaylists(userInfo.token);
+
       if (fromCaseId) {
         navigate(`/case/${fromCaseId}`);
       } else {

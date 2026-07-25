@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
+import { getUserCases } from '../api/case';
 
 const useCaseStore = create(devtools((set) => ({
   cases: [],
@@ -7,6 +8,17 @@ const useCaseStore = create(devtools((set) => ({
 
   getAllCases: (casesArray) =>
 	set((state) => ({ cases: casesArray })),
+
+  fetchUserCases: async (token) => {
+    if (!token) {
+      set(() => ({ cases: [] }));
+      return [];
+    }
+
+    const userCases = await getUserCases(token);
+    set(() => ({ cases: Array.isArray(userCases) ? userCases : [] }));
+    return userCases;
+  },
 
   addCase: (newCase) =>
     set((state) => ({ cases: [...state.cases, newCase] })),

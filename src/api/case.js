@@ -2,6 +2,26 @@ import axiosInstance from './axiosInstance';
 import { CASE_API } from '../config/config';
 import { normalizeCaseQuestionsPayload } from '../utils/questionNormalization';
 
+export const getUserCases = async (token) => {
+  const res = await axiosInstance.get(CASE_API.GET_ALL, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const rawCases =
+    res.data?.data?.cases ??
+    res.data?.data ??
+    res.data?.cases ??
+    [];
+
+  if (!Array.isArray(rawCases)) {
+    return [];
+  }
+
+  return rawCases.map((singleCase) => normalizeCaseQuestionsPayload(singleCase));
+};
+
 export const createCase = async (casePayload, token) => {
   const normalizedPayload = normalizeCaseQuestionsPayload(casePayload);
 

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 import { login } from '../../../api/auth';
 import useAuthStore from '../../../store/useAuthStore';
+import useCaseStore from '../../../store/useCaseStore';
 
 import styles from './LoginScreen.module.css';
 
@@ -10,6 +11,7 @@ const LoginScreen = () => {
   const navigate = useNavigate();
   const setUserInfo = useAuthStore((state) => state.setUserInfo);
   const fetchUserPlaylists = useAuthStore((state) => state.fetchUserPlaylists);
+  const fetchUserCases = useCaseStore((state) => state.fetchUserCases);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -24,7 +26,10 @@ const LoginScreen = () => {
     try {
       const userInfo = await login({ email: email.trim(), password });
       setUserInfo(userInfo);
-      await fetchUserPlaylists(userInfo.token);
+      await Promise.all([
+        fetchUserPlaylists(userInfo.token),
+        fetchUserCases(userInfo.token),
+      ]);
       navigate('/home', { replace: true });
     } catch (requestError) {
       setError(

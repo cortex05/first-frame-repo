@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 import { register } from '../../../api/auth';
 import useAuthStore from '../../../store/useAuthStore';
+import useCaseStore from '../../../store/useCaseStore';
 
 import styles from './RegisterScreen.module.css';
 
@@ -10,6 +11,7 @@ const RegisterScreen = () => {
   const navigate = useNavigate();
   const setUserInfo = useAuthStore((state) => state.setUserInfo);
   const fetchUserPlaylists = useAuthStore((state) => state.fetchUserPlaylists);
+  const fetchUserCases = useCaseStore((state) => state.fetchUserCases);
 
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -38,7 +40,10 @@ const RegisterScreen = () => {
 
       if (userInfo?.token && userInfo?.userId && userInfo?.username) {
         setUserInfo(userInfo);
-        await fetchUserPlaylists(userInfo.token);
+        await Promise.all([
+          fetchUserPlaylists(userInfo.token),
+          fetchUserCases(userInfo.token),
+        ]);
         navigate('/home', { replace: true });
       } else {
         navigate('/login', { replace: true });
