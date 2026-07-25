@@ -15,6 +15,9 @@ const SCALE_STEP = 1.2;
 const SIDEBAR_W = 300;
 const MC_COLORS = ["#4caf50", "#f44336", "#ff9800", "#009688"];
 
+const isTrueLabel = (label) => label === true || label === "true";
+const isFalseLabel = (label) => label === false || label === "false";
+
 const QuestionsScreen = () => {
   const { caseId } = useParams();
   const activeCase = useCaseStore((state) =>
@@ -48,7 +51,7 @@ const QuestionsScreen = () => {
   const getAllSeatedStudents = () => rects.flatMap((r) => r.assignedStudents);
 
   const getDefaultFalseAnswers = (question) => {
-    const falseOpt = question.options.find((o) => o.label === false);
+    const falseOpt = question.options.find((o) => isFalseLabel(o.label));
     if (!falseOpt) return {};
     const defaults = {};
     getAllSeatedStudents().forEach((s) => {
@@ -87,7 +90,7 @@ const QuestionsScreen = () => {
     const answer = currentAnswers[studentId];
     if (answer === undefined) return "#fff";
     if (selectedQuestion.type === QuestionType.TRUE_FALSE) {
-      return answer.label === true ? "#000" : "#fff";
+      return isTrueLabel(answer.label) ? "#000" : "#fff";
     }
     const idx = selectedQuestion.options.findIndex(
       (o) => o.label === answer.label,
@@ -100,7 +103,7 @@ const QuestionsScreen = () => {
       return getScoreColor(studentId) === "#F54927" ? "#fff" : "#2E2E2D";
     if (selectedQuestion?.type === QuestionType.TRUE_FALSE) {
       const answer = currentAnswers[studentId];
-      return answer?.label === true ? "#fff" : "#000";
+      return isTrueLabel(answer?.label) ? "#fff" : "#000";
     }
     return getStudentFill(studentId) === "#fff" ? "#000" : "#fff";
   };
@@ -108,7 +111,7 @@ const QuestionsScreen = () => {
   const getStudentStrokeWidth = (studentId) => {
     if (selectedQuestion?.type !== QuestionType.TRUE_FALSE) return 1.5;
     const answer = currentAnswers[studentId];
-    return answer?.label === true ? 3 : 1.5;
+    return isTrueLabel(answer?.label) ? 3 : 1.5;
   };
 
   // ── question selection ─────────────────────────────────────────
@@ -151,12 +154,12 @@ const QuestionsScreen = () => {
     }
     if (!selectedQuestion) return;
     if (selectedQuestion.type === QuestionType.TRUE_FALSE) {
-      const trueOpt = selectedQuestion.options.find((o) => o.label === true);
-      const falseOpt = selectedQuestion.options.find((o) => o.label === false);
+      const trueOpt = selectedQuestion.options.find((o) => isTrueLabel(o.label));
+      const falseOpt = selectedQuestion.options.find((o) => isFalseLabel(o.label));
       if (!trueOpt || !falseOpt) return;
       setCurrentAnswers((prev) => ({
         ...prev,
-        [studentId]: prev[studentId]?.label === true ? falseOpt : trueOpt,
+        [studentId]: isTrueLabel(prev[studentId]?.label) ? falseOpt : trueOpt,
       }));
     } else {
       if (activeOptionIndex === null) return;
@@ -864,7 +867,7 @@ const QuestionsScreen = () => {
                           showScores
                             ? `#${s.id} - ${getStudentScore(s.id)}`
                             : selectedQuestion?.type === QuestionType.TRUE_FALSE
-                              ? currentAnswers[s.id]?.label === true
+                              ? isTrueLabel(currentAnswers[s.id]?.label)
                                 ? "X"
                                 : String(s.id)
                               : String(s.id)

@@ -1,5 +1,6 @@
 import axiosInstance from './axiosInstance';
 import { PLAYLIST_API } from '../config/config';
+import { normalizeQuestions } from '../utils/questionNormalization';
 
 export const getUserPlaylists = async (token) => {
   const res = await axiosInstance.get(PLAYLIST_API.GET_ALL, {
@@ -18,15 +19,29 @@ export const getPlaylistById = async (playlistId, token) => {
     },
   });
 
-  return res.data?.data ?? res.data?.playlist ?? res.data ?? null;
+  const playlist = res.data?.data ?? res.data?.playlist ?? res.data ?? null;
+  if (!playlist) return null;
+
+  return {
+    ...playlist,
+    questions: normalizeQuestions(playlist.questions),
+  };
 };
 
 export const createPlaylist = async (playlistPayload, token) => {
-  const res = await axiosInstance.post(PLAYLIST_API.CREATE, playlistPayload, {
+  const normalizedPayload = {
+    ...playlistPayload,
+    questions: normalizeQuestions(playlistPayload.questions),
+  };
+
+  const res = await axiosInstance.post(PLAYLIST_API.CREATE, normalizedPayload, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   }); 
 
-  return res.data.data;
+  return {
+    ...res.data.data,
+    questions: normalizeQuestions(res.data?.data?.questions),
+  };
 };

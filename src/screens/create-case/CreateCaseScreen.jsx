@@ -11,6 +11,7 @@ import { createCase } from "../../api/case";
 
 import Question from "../../types/polls/Question";
 import { QuestionType, CrimeTypes } from "../../types/ENUMS";
+import { normalizeQuestion } from "../../utils/questionNormalization";
 
 import { EMPTY_QUESTION_FORM, EMPTY_CRIME_TYPE_FORM } from "../../utils/formUtils";
 
@@ -91,17 +92,13 @@ const CreateCaseScreen = () => {
     setSubmitError("");
     setIsSubmitting(true);
 
-    const normalizedQuestions = questions.map((q) => ({
-      id: q.id,
-      text: String(q.text || "").trim(),
-      type: q.type,
-      caseId: q.caseId || caseId,
-      options: (q.options || []).map((opt) => ({
-        label: typeof opt.label === "boolean" ? String(opt.label) : String(opt.label || "").trim(),
-        value: Number(opt.value) || 0,
-      })),
-      firstPoll: Boolean(q.firstPoll),
-    }));
+    const normalizedQuestions = questions.map((q) =>
+      normalizeQuestion({
+        ...q,
+        caseId: q.caseId || caseId,
+        firstPoll: Boolean(q.firstPoll),
+      }),
+    );
 
     const casePayload = {
       name: name.trim(),

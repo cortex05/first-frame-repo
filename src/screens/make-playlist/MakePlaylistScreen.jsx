@@ -10,6 +10,7 @@ import useAuthStore from '../../store/useAuthStore';
 import Question from '../../types/polls/Question';
 import { QuestionType } from '../../types/ENUMS';
 import { EMPTY_QUESTION_FORM } from '../../utils/formUtils';
+import { normalizeQuestion } from '../../utils/questionNormalization';
 
 import { createPlaylist } from '../../api/playlist';
 
@@ -181,20 +182,13 @@ const MakePlaylistScreen = () => {
 
     const playlistPayload = {
       title: title.trim(),
-      questions: questions.map((q) => ({
-        id: q.id,
-        text: String(q.text || '').trim(),
-        type: q.type,
-        caseId: q.caseId || fromCaseId || null,
-        options: (q.options || []).map((opt) => ({
-          label:
-            typeof opt.label === 'boolean'
-              ? String(opt.label)
-              : String(opt.label || '').trim(),
-          value: Number(opt.value) || 0,
-        })),
-        firstPoll: Boolean(q.firstPoll),
-      })),
+      questions: questions.map((q) =>
+        normalizeQuestion({
+          ...q,
+          caseId: q.caseId || fromCaseId || null,
+          firstPoll: Boolean(q.firstPoll),
+        }),
+      ),
     };
 
     try {

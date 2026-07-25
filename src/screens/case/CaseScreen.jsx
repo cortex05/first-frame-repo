@@ -10,6 +10,7 @@ import { getPlaylistById } from "../../api/playlist";
 import Question from "../../types/polls/Question";
 import { QuestionType } from "../../types/ENUMS";
 import { EMPTY_QUESTION_FORM } from "../../utils/formUtils";
+import { normalizeQuestion } from "../../utils/questionNormalization";
 
 import styles from "./CaseScreen.module.css";
 
@@ -63,17 +64,20 @@ const CaseScreen = () => {
     return savedCase || updatedCase;
   };
 
-  const normalizeQuestionForCase = (question) =>
-    new Question(
+  const normalizeQuestionForCase = (question) => {
+    const normalized = normalizeQuestion(question);
+
+    return new Question(
       uuidv4(),
-      question.text,
-      question.type,
+      normalized.text,
+      normalized.type,
       activeCase._id,
-      (question.options || []).map((option) => ({
+      (normalized.options || []).map((option) => ({
         label: option.label,
         value: Number(option.value) || 0,
       })),
     );
+  };
 
   const handleStart = async () => {
     try {
