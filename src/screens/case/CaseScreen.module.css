@@ -72,3 +72,29 @@
 .inputStyle {
 	margin: 18px 0px;
 }
+
+.caseItem {
+	padding: 10px 12px;
+	margin-bottom: 6px;
+	border-radius: 6px;
+	cursor: pointer;
+	background: #e8edfa;
+	color: var(--modal-text);
+	border: 3px solid #abbbd3;
+	font-size: 13px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	transition: background 0.5s ease, color 0.5s ease;
+}
+
+.caseItem:hover {
+	background: var(--blue-background);
+	color: #fff;
+}
+
+.caseItem span {
+	font-size: 18px;
+	font-weight: 450;
+}

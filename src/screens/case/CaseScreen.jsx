@@ -383,7 +383,7 @@ const CaseScreen = () => {
                 color: "#fff",
                 borderRadius: 8,
                 border: "none",
-                cursor: "pointer",
+                cursor: "pointer",   
               }}
             >
               Access Playlists
@@ -852,6 +852,7 @@ const CaseScreen = () => {
           )}
         </Modal>
 
+        {/* playlist modal */}
         <Modal
           isOpen={playlistModalOpen}
           onClose={() => {
@@ -869,18 +870,10 @@ const CaseScreen = () => {
                   <div
                     key={playlist._id}
                     onClick={() => handleSelectPlaylist(playlist)}
-                    style={{
-                      padding: "10px 12px",
-                      marginBottom: 8,
-                      borderRadius: 6,
-                      border: "1px solid #c5d8f5",
-                      background: "#f5f8ff",
-                      cursor: "pointer",
-                      fontWeight: 600,
-                      opacity: isLoadingPlaylistDetails ? 0.7 : 1,
-                    }}
+                    className={styles.caseItem}
+                    style={{ opacity: isLoadingPlaylistDetails ? 0.7 : 1 }}
                   >
-                    {playlist.title}
+                    <span>{playlist.title}</span>
                   </div>
                 ))
               )}
@@ -897,17 +890,7 @@ const CaseScreen = () => {
                 {(selectedPlaylist.questions || []).map((question, index) => (
                   <div
                     key={`${selectedPlaylist._id}-${question.id || index}`}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 10,
-                      padding: "8px 12px",
-                      marginBottom: 8,
-                      background: "#f5f8ff",
-                      border: "1px solid #c5d8f5",
-                      borderRadius: 6,
-                      fontSize: 14,
-                    }}
+                    className={styles.caseItem}
                   >
                     <span style={{ fontWeight: 600, color: "#2c6fad", minWidth: 24 }}>
                       {index + 1}.
@@ -917,7 +900,7 @@ const CaseScreen = () => {
                 ))}
               </div>
 
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
                 <button
                   onClick={handleLoadPlaylist}
                   disabled={isLoadingPlaylist}

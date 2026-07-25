@@ -2,6 +2,8 @@ import React, { useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Stage, Layer, Rect, Circle, Text, Group } from "react-konva";
 import useCaseStore from "../../store/useCaseStore";
+import useAuthStore from "../../store/useAuthStore";
+import { saveCase } from "../../api/case";
 import { QuestionType } from "../../types/ENUMS";
 
 import Modal from "../../components/modal/Modal";
@@ -24,6 +26,7 @@ const QuestionsScreen = () => {
     state.cases.find((c) => c._id === caseId),
   );
   const updateCase = useCaseStore((state) => state.updateCase);
+  const userInfo = useAuthStore((state) => state.userInfo);
 
   const [selectedQuestionId, setSelectedQuestionId] = useState(null);
   const [currentAnswers, setCurrentAnswers] = useState({});
@@ -32,6 +35,7 @@ const QuestionsScreen = () => {
   const [sortModal, setSortModal] = useState(null); // 'high' | 'low' | null
   const [studentReport, setStudentReport] = useState(null); // studentId | null
   const [saveWarning, setSaveWarning] = useState(false); // boolean
+  const [isSavingAnswers, setIsSavingAnswers] = useState(false);
 
   const [scale, setScale] = useState(1);
   const [stagePos, setStagePos] = useState({ x: 0, y: 0 });
@@ -171,18 +175,56 @@ const QuestionsScreen = () => {
   };
 
   // ── save answers ───────────────────────────────────────────────
-  const handleSaveAnswers = () => {
+  const handleSaveAnswers = async () => {
     if (!selectedQuestion) return;
+
+    if (!userInfo?.token) {
+      alert("You must be logged in to save answers.");
+      return;
+    }
+
+    setIsSavingAnswers(true);
+
     const newAnswers = {
       ...(activeCase.answers || {}),
       [selectedQuestionId]: currentAnswers,
     };
-    updateCase({ ...activeCase, answers: newAnswers });
-    localStorage.setItem(
-      "cases",
-      JSON.stringify(useCaseStore.getState().cases),
+
+    const questionAnswersAsStrings = Object.fromEntries(
+      Object.entries(currentAnswers).map(([studentId, answer]) => [
+        studentId,
+        answer?.label === undefined || answer?.label === null
+          ? ""
+          : String(answer.label),
+      ]),
     );
-    alert("Answers saved!");
+
+    const updatedQuestions = activeCase.questions.map((q) =>
+      q.id === selectedQuestionId ? { ...q, answers: questionAnswersAsStrings } : q,
+    );
+
+    const updatedCasePayload = {
+      ...activeCase,
+      answers: newAnswers,
+      questions: updatedQuestions,
+    };
+
+    try {
+      const savedCase = await saveCase(activeCase._id, updatedCasePayload, userInfo.token);
+      updateCase(savedCase || updatedCasePayload);
+      localStorage.setItem(
+        "cases",
+        JSON.stringify(useCaseStore.getState().cases),
+      );
+      alert("Answers saved!");
+    } catch (requestError) {
+      alert(
+        requestError?.response?.data?.message ||
+          "Unable to save answers. Please try again.",
+      );
+    } finally {
+      setIsSavingAnswers(false);
+    }
   };
 
   // ── zoom / pan ─────────────────────────────────────────────────
@@ -521,6 +563,7 @@ const QuestionsScreen = () => {
 
                         <button
                           onClick={handleSaveAnswers}
+                          disabled={isSavingAnswers}
                           style={{
                             width: "100%",
                             padding: "12px 0",
@@ -530,11 +573,12 @@ const QuestionsScreen = () => {
                             color: "#fff",
                             border: "none",
                             borderRadius: 6,
-                            cursor: "pointer",
+                            cursor: isSavingAnswers ? "not-allowed" : "pointer",
+                            opacity: isSavingAnswers ? 0.75 : 1,
                             marginBottom: 16,
                           }}
                         >
-                          Save Answers
+                          {isSavingAnswers ? "Saving..." : "Save Answers"}
                         </button>
                       </div>
                     )}
