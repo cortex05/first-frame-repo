@@ -9,6 +9,8 @@ export const CASE_API = {
 };
 
 export const PLAYLIST_API = {
+  GET_ALL: "/playlists",
+  GET_BY_ID: (id) => `/playlists/${id}`,
   CREATE: "/playlists",
   UPDATE: (id) => `/playlists/${id}`,
 };

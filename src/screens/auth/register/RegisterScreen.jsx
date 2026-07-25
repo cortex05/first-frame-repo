@@ -9,6 +9,7 @@ import styles from './RegisterScreen.module.css';
 const RegisterScreen = () => {
   const navigate = useNavigate();
   const setUserInfo = useAuthStore((state) => state.setUserInfo);
+  const fetchUserPlaylists = useAuthStore((state) => state.fetchUserPlaylists);
 
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -37,6 +38,7 @@ const RegisterScreen = () => {
 
       if (userInfo?.token && userInfo?.userId && userInfo?.username) {
         setUserInfo(userInfo);
+        await fetchUserPlaylists(userInfo.token);
         navigate('/home', { replace: true });
       } else {
         navigate('/login', { replace: true });

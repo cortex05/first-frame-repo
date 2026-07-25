@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { getUserPlaylists } from '../api/playlist';
 
 const USER_INFO_STORAGE_KEY = 'userInfo';
 
@@ -30,6 +31,22 @@ const safeReadStoredUserInfo = () => {
 
 const useAuthStore = create((set) => ({
   userInfo: safeReadStoredUserInfo(),
+  playlists: [],
+
+  setPlaylists: (nextPlaylists) => {
+    set({ playlists: Array.isArray(nextPlaylists) ? nextPlaylists : [] });
+  },
+
+  fetchUserPlaylists: async (token) => {
+    if (!token) {
+      set({ playlists: [] });
+      return [];
+    }
+
+    const playlists = await getUserPlaylists(token);
+    set({ playlists: Array.isArray(playlists) ? playlists : [] });
+    return playlists;
+  },
 
   setUserInfo: (nextUserInfo) => {
     const normalized = {
@@ -40,17 +57,17 @@ const useAuthStore = create((set) => ({
 
     if (!normalized.token || !normalized.userId || !normalized.username) {
       window.localStorage.removeItem(USER_INFO_STORAGE_KEY);
-      set({ userInfo: null });
+      set({ userInfo: null, playlists: [] });
       return;
     }
 
     window.localStorage.setItem(USER_INFO_STORAGE_KEY, JSON.stringify(normalized));
-    set({ userInfo: normalized });
+    set({ userInfo: normalized, playlists: [] });
   },
 
   clearUserInfo: () => {
     window.localStorage.removeItem(USER_INFO_STORAGE_KEY);
-    set({ userInfo: null });
+    set({ userInfo: null, playlists: [] });
   },
 }));
 

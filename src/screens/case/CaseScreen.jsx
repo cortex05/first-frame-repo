@@ -6,6 +6,7 @@ import useAuthStore from "../../store/useAuthStore";
 import Modal from "../../components/modal/Modal";
 import TopNavbar from "../../components/top-navbar/TopNavbar";
 import { saveCase } from "../../api/case";
+import { getPlaylistById } from "../../api/playlist";
 import Question from "../../types/polls/Question";
 import { QuestionType } from "../../types/ENUMS";
 import { EMPTY_QUESTION_FORM } from "../../utils/formUtils";
@@ -22,6 +23,7 @@ const CaseScreen = () => {
   const setActiveCase = useCaseStore((state) => state.setActiveCase);
   const updateCase = useCaseStore((state) => state.updateCase);
   const userInfo = useAuthStore((state) => state.userInfo);
+  const playlists = useAuthStore((state) => state.playlists);
 
   const [questionModal, setQuestionModal] = useState(false);
   const [questionForm, setQuestionForm] = useState(EMPTY_QUESTION_FORM);
@@ -35,30 +37,67 @@ const CaseScreen = () => {
   );
   const [isSavingCase, setIsSavingCase] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const [playlistModalOpen, setPlaylistModalOpen] = useState(false);
+  const [selectedPlaylist, setSelectedPlaylist] = useState(null);
+  const [isLoadingPlaylist, setIsLoadingPlaylist] = useState(false);
+  const [isLoadingPlaylistDetails, setIsLoadingPlaylistDetails] = useState(false);
 
   if (!activeCase) return <p>Case not found.</p>;
 
-  const handleStart = () => {
-    setStartModal(false);
-    setActiveCase(activeCase._id);
-    navigate(`/start/${activeCase._id}`);
-  };
+  const persistCaseUpdate = async (updatedCase) => {
+    if (!userInfo?.token) {
+      updateCase(updatedCase);
+      localStorage.setItem(
+        "cases",
+        JSON.stringify(useCaseStore.getState().cases),
+      );
+      return updatedCase;
+    }
 
-  const handleNumberOfStudentsChange = () => {
-    updateCase({ ...activeCase, studentNumber: Number(numberOfStudents) });
+    const savedCase = await saveCase(activeCase._id, updatedCase, userInfo.token);
+    updateCase(savedCase || updatedCase);
     localStorage.setItem(
       "cases",
       JSON.stringify(useCaseStore.getState().cases),
     );
-    setEditStudentNumber(false);
+    return savedCase || updatedCase;
   };
 
-  const persistCaseUpdate = (updatedCase) => {
-    updateCase(updatedCase);
-    localStorage.setItem(
-      "cases",
-      JSON.stringify(useCaseStore.getState().cases),
+  const normalizeQuestionForCase = (question) =>
+    new Question(
+      uuidv4(),
+      question.text,
+      question.type,
+      activeCase._id,
+      (question.options || []).map((option) => ({
+        label: option.label,
+        value: Number(option.value) || 0,
+      })),
     );
+
+  const handleStart = async () => {
+    try {
+      await persistCaseUpdate(activeCase);
+      setStartModal(false);
+      setActiveCase(activeCase._id);
+      navigate(`/start/${activeCase._id}`);
+    } catch (requestError) {
+      setSaveError(
+        requestError?.response?.data?.message ||
+          "Unable to save case before starting session.",
+      );
+    }
+  };
+
+  const handleNumberOfStudentsChange = async () => {
+    try {
+      await persistCaseUpdate({ ...activeCase, studentNumber: Number(numberOfStudents) });
+      setEditStudentNumber(false);
+    } catch (requestError) {
+      setSaveError(
+        requestError?.response?.data?.message || "Unable to save student count.",
+      );
+    }
   };
 
   const openQuestionModal = () => {
@@ -136,7 +175,7 @@ const CaseScreen = () => {
     });
   };
 
-  const handleAddQuestion = () => {
+  const handleAddQuestion = async () => {
     if (!questionForm.text.trim()) return;
     const options =
       questionForm.type === QuestionType.MULTIPLE_CHOICE
@@ -149,11 +188,17 @@ const CaseScreen = () => {
       activeCase._id,
       options,
     );
-    persistCaseUpdate({
-      ...activeCase,
-      questions: [...activeCase.questions, q],
-    });
-    closeQuestionModal();
+    try {
+      await persistCaseUpdate({
+        ...activeCase,
+        questions: [...activeCase.questions, q],
+      });
+      closeQuestionModal();
+    } catch (requestError) {
+      setSaveError(
+        requestError?.response?.data?.message || "Unable to save the new question.",
+      );
+    }
   };
 
   const handleSaveEditedQuestion = async () => {
@@ -181,22 +226,23 @@ const CaseScreen = () => {
       };
     });
 
-    const updatedCasePayload = { ...activeCase, questions: updatedQuestions };
-
     try {
-      const savedCase = await saveCase(activeCase._id, updatedCasePayload, userInfo.token);
-      persistCaseUpdate(savedCase || updatedCasePayload);
+      const savedCase = await persistCaseUpdate({
+        ...activeCase,
+        questions: updatedQuestions,
+      });
+      updateCase(savedCase || { ...activeCase, questions: updatedQuestions });
       closeQuestionModal();
     } catch (requestError) {
       setSaveError(
-        requestError?.response?.data?.message || "Unable to save case changes."
+        requestError?.response?.data?.message || "Unable to save case changes.",
       );
     } finally {
       setIsSavingCase(false);
     }
   };
 
-  const handleDeleteQuestion = () => {
+  const handleDeleteQuestion = async () => {
     if (!deleteQuestionId) return;
 
     const updatedQuestions = activeCase.questions.filter(
@@ -205,13 +251,70 @@ const CaseScreen = () => {
     const updatedAnswers = { ...(activeCase.answers || {}) };
     delete updatedAnswers[deleteQuestionId];
 
-    persistCaseUpdate({
-      ...activeCase,
-      questions: updatedQuestions,
-      answers: updatedAnswers,
-    });
+    try {
+      await persistCaseUpdate({
+        ...activeCase,
+        questions: updatedQuestions,
+        answers: updatedAnswers,
+      });
+      setDeleteQuestionId(null);
+    } catch (requestError) {
+      setSaveError(
+        requestError?.response?.data?.message || "Unable to delete the question.",
+      );
+    }
+  };
 
-    setDeleteQuestionId(null);
+  const handleOpenPlaylistModal = () => {
+    setSelectedPlaylist(null);
+    setPlaylistModalOpen(true);
+  };
+
+  const handleSelectPlaylist = async (playlist) => {
+    if (!userInfo?.token) {
+      setSaveError("You must be logged in to access playlists.");
+      return;
+    }
+
+    setSaveError("");
+    setIsLoadingPlaylistDetails(true);
+
+    try {
+      const playlistDetails = await getPlaylistById(playlist._id, userInfo.token);
+      setSelectedPlaylist(playlistDetails);
+    } catch (requestError) {
+      setSaveError(
+        requestError?.response?.data?.message || "Unable to load playlist details.",
+      );
+    } finally {
+      setIsLoadingPlaylistDetails(false);
+    }
+  };
+
+  const handleLoadPlaylist = async () => {
+    if (!selectedPlaylist) return;
+
+    setIsLoadingPlaylist(true);
+
+    try {
+      const loadedQuestions = (selectedPlaylist.questions || []).map((question) =>
+        normalizeQuestionForCase(question),
+      );
+
+      await persistCaseUpdate({
+        ...activeCase,
+        questions: [...activeCase.questions, ...loadedQuestions],
+      });
+
+      setPlaylistModalOpen(false);
+      setSelectedPlaylist(null);
+    } catch (requestError) {
+      setSaveError(
+        requestError?.response?.data?.message || "Unable to load playlist.",
+      );
+    } finally {
+      setIsLoadingPlaylist(false);
+    }
   };
 
   return (
@@ -221,169 +324,170 @@ const CaseScreen = () => {
       <div style={{ maxWidth: 640, margin: "0 auto", padding: 32 }}>
         <h1 style={{ marginBottom: 32 }}>{activeCase.name}</h1>
 
-      {/* Basic Info */}
-      <section style={{ marginBottom: 32 }} className={styles.infoSection}>
-        <p className={styles.value}>Owner: {activeCase.author || "—"}</p>
-        <p className={styles.value}>Crime Type: {activeCase.crimeType || "—"}</p>
-        <p className={styles.value}>Location: {activeCase.location || "—"}</p>
-        <p className={styles.value}>
-          Number of Students: {activeCase.studentNumber || "—"}
-        </p>
-        <div>
+        {/* Basic Info */}
+        <section style={{ marginBottom: 32 }} className={styles.infoSection}>
+          <p className={styles.value}>Owner: {activeCase.author || "—"}</p>
           <p className={styles.value}>
-            Date & Time:{" "}
-            {activeCase.caseDate
-              ? new Date(activeCase.caseDate).toLocaleString()
-              : "—"}
+            Crime Type: {activeCase.crimeType || "—"}
           </p>
-        </div>
-      </section>
-
-      {/* Playlists*/}
-      <section style={{ marginBottom: 32 }}>
-        <h2 style={{ marginBottom: 12 }}>Question Playlists</h2>
-        <p className={styles.value} style={{ marginBottom: 12 }}>
-          Build a reusable playlist of questions from scratch and attach it to this case later.
-        </p>
-        <button
-          onClick={() => navigate(`/make-playlist?caseId=${activeCase._id}`)}
-          style={{
-            display: "inline-block",
-            padding: "12px 28px",
-            fontSize: 16,
-            fontWeight: 600,
-            background: "#2c6fad",
-            color: "#fff",
-            borderRadius: 8,
-            border: "none",
-            cursor: "pointer",
-          }}
-        >
-          Make Playlist
-        </button>
-      </section>
-
-      {/* Questions */}
-      <section style={{ marginBottom: 32 }}>
-        <h2 style={{ marginBottom: 12 }}>Questions</h2>
-
-        {activeCase.questions.length === 0 && (
-          <p style={{ color: "#888", fontSize: 14, marginBottom: 12 }}>
-            No questions added yet.
+          <p className={styles.value}>Location: {activeCase.location || "—"}</p>
+          <p className={styles.value}>
+            Number of Students: {activeCase.studentNumber || "—"}
           </p>
-        )}
+          <div>
+            <p className={styles.value}>
+              Date & Time:{" "}
+              {activeCase.caseDate
+                ? new Date(activeCase.caseDate).toLocaleString()
+                : "—"}
+            </p>
+          </div>
+        </section>
 
-        {activeCase.questions.map((q, i) => (
-          <div
-            key={q.id}
+        {/* Playlists*/}
+        <section style={{ marginBottom: 32 }}>
+          <h2 style={{ marginBottom: 12 }}>Playlists</h2>
+
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <button
+              onClick={() =>
+                navigate(`/make-playlist?caseId=${activeCase._id}`)
+              }
+              style={{
+                display: "inline-block",
+                padding: "12px 28px",
+                fontSize: 16,
+                fontWeight: 600,
+                background: "#2c6fad",
+                color: "#fff",
+                borderRadius: 8,
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              Make Playlist
+            </button>
+
+            <button
+              onClick={handleOpenPlaylistModal}
+              style={{
+                display: "inline-block",
+                padding: "12px 28px",
+                fontSize: 16,
+                fontWeight: 600,
+                background: "#4a90d9",
+                color: "#fff",
+                borderRadius: 8,
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              Access Playlists
+            </button>
+          </div>
+        </section>
+
+        {/* Questions */}
+        <section style={{ marginBottom: 32 }}>
+          <h2 style={{ marginBottom: 12 }}>Questions</h2>
+
+          {activeCase.questions.length === 0 && (
+            <p style={{ color: "#888", fontSize: 14, marginBottom: 12 }}>
+              No questions added yet.
+            </p>
+          )}
+
+          {activeCase.questions.map((q, i) => (
+            <div
+              key={q.id}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                padding: "8px 12px",
+                marginBottom: 8,
+                background: "#f5f8ff",
+                border: "1px solid #c5d8f5",
+                borderRadius: 6,
+                fontSize: 14,
+              }}
+            >
+              <span style={{ fontWeight: 600, color: "#2c6fad", minWidth: 24 }}>
+                {i + 1}.
+              </span>
+              <span style={{ flex: 1 }}>{q.text}</span>
+              <button
+                onClick={() => openEditQuestionModal(q)}
+                style={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  padding: "4px 8px",
+                  background: "#f0ad4e",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: 4,
+                  cursor: "pointer",
+                }}
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => setDeleteQuestionId(q.id)}
+                style={{
+                  width: 22,
+                  height: 22,
+                  fontSize: 13,
+                  fontWeight: 700,
+                  padding: 0,
+                  background: "#d9534f",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: 4,
+                  cursor: "pointer",
+                  lineHeight: 1,
+                }}
+                aria-label="Delete question"
+              >
+                X
+              </button>
+              <span
+                style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  padding: "2px 8px",
+                  background:
+                    q.type === QuestionType.TRUE_FALSE ? "#e6f4ea" : "#fff3cd",
+                  color:
+                    q.type === QuestionType.TRUE_FALSE ? "#2e7d32" : "#856404",
+                  borderRadius: 12,
+                }}
+              >
+                {q.type === QuestionType.TRUE_FALSE ? "T/F" : "MC"}
+              </span>
+            </div>
+          ))}
+
+          <button
+            onClick={openQuestionModal}
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              padding: "8px 12px",
-              marginBottom: 8,
-              background: "#f5f8ff",
-              border: "1px solid #c5d8f5",
+              marginTop: 8,
+              padding: "10px 20px",
+              fontSize: 15,
+              background: "#4a90d9",
+              color: "#fff",
+              border: "none",
               borderRadius: 6,
-              fontSize: 14,
+              cursor: "pointer",
             }}
           >
-            <span style={{ fontWeight: 600, color: "#2c6fad", minWidth: 24 }}>
-              {i + 1}.
-            </span>
-            <span style={{ flex: 1 }}>{q.text}</span>
-            <button
-              onClick={() => openEditQuestionModal(q)}
-              style={{
-                fontSize: 11,
-                fontWeight: 700,
-                padding: "4px 8px",
-                background: "#f0ad4e",
-                color: "#fff",
-                border: "none",
-                borderRadius: 4,
-                cursor: "pointer",
-              }}
-            >
-              Edit
-            </button>
-            <button
-              onClick={() => setDeleteQuestionId(q.id)}
-              style={{
-                width: 22,
-                height: 22,
-                fontSize: 13,
-                fontWeight: 700,
-                padding: 0,
-                background: "#d9534f",
-                color: "#fff",
-                border: "none",
-                borderRadius: 4,
-                cursor: "pointer",
-                lineHeight: 1,
-              }}
-              aria-label="Delete question"
-            >
-              X
-            </button>
-            <span
-              style={{
-                fontSize: 11,
-                fontWeight: 600,
-                padding: "2px 8px",
-                background:
-                  q.type === QuestionType.TRUE_FALSE ? "#e6f4ea" : "#fff3cd",
-                color:
-                  q.type === QuestionType.TRUE_FALSE ? "#2e7d32" : "#856404",
-                borderRadius: 12,
-              }}
-            >
-              {q.type === QuestionType.TRUE_FALSE ? "T/F" : "MC"}
-            </span>
-          </div>
-        ))}
+            + Add Question
+          </button>
+        </section>
 
-        <button
-          onClick={openQuestionModal}
-          style={{
-            marginTop: 8,
-            padding: "10px 20px",
-            fontSize: 15,
-            background: "#4a90d9",
-            color: "#fff",
-            border: "none",
-            borderRadius: 6,
-            cursor: "pointer",
-          }}
-        >
-          + Add Question
-        </button>
-      </section>
-
-      {/* Start link */}
-      {!activeCase.seated && (
-        <button
-          onClick={() => setStartModal(true)}
-          style={{
-            display: "inline-block",
-            padding: "14px 36px",
-            fontSize: 17,
-            fontWeight: 600,
-            background: "#2c6fad",
-            color: "#fff",
-            borderRadius: 8,
-            textDecoration: "none",
-          }}
-        >
-          Start Session
-        </button>
-      )}
-
-      {/* questions link */}
-      {activeCase.seated && (
-        <Link to={`/questions/${activeCase._id}`}>
+        {/* Start link */}
+        {!activeCase.seated && (
           <button
-            // onClick={() => setStartModal(true)}
+            onClick={() => setStartModal(true)}
             style={{
               display: "inline-block",
               padding: "14px 36px",
@@ -395,197 +499,281 @@ const CaseScreen = () => {
               textDecoration: "none",
             }}
           >
-            Access Questions
+            Start Session
           </button>
-        </Link>
-      )}
+        )}
 
-      {/* Add/Edit Question Modal */}
-      <Modal
-        isOpen={questionModal}
-        onClose={closeQuestionModal}
-        title={editingQuestionId ? "Edit Question" : "Add Question"}
-        hideDefaultClose={Boolean(editingQuestionId)}
-      >
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 4,
-            marginBottom: 16,
-          }}
-        >
-          <label style={{ fontSize: 13, fontWeight: 600, color: "#444" }}>
-            Question Text
-          </label>
-          <textarea
-            className={styles.inputStyle}
-            type="text"
-            value={questionForm.text}
-            onChange={(e) =>
-              setQuestionForm((prev) => ({ ...prev, text: e.target.value }))
-            }
-            placeholder="Enter question..."
-            autoFocus
-          />
-        </div>
-
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 4,
-            marginBottom: 16,
-          }}
-        >
-          <label style={{ fontSize: 13, fontWeight: 600, color: "#444" }}>
-            Type
-          </label>
-          <select
-            className={styles.inputStyle}
-            value={questionForm.type}
-            onChange={(e) =>
-              setQuestionForm((prev) => ({ ...prev, type: e.target.value }))
-            }
-          >
-            <option value={QuestionType.TRUE_FALSE}>True / False</option>
-            <option value={QuestionType.MULTIPLE_CHOICE}>
-              Multiple Choice
-            </option>
-          </select>
-        </div>
-
-        {questionForm.type === QuestionType.TRUE_FALSE && (
-          <div style={{ marginBottom: 16 }}>
-            <label
+        {/* questions link */}
+        {activeCase.seated && (
+          <Link to={`/questions/${activeCase._id}`}>
+            <button
+              // onClick={() => setStartModal(true)}
               style={{
-                fontSize: 13,
+                display: "inline-block",
+                padding: "14px 36px",
+                fontSize: 17,
                 fontWeight: 600,
-                color: "#444",
-                display: "block",
-                marginBottom: 8,
+                background: "#2c6fad",
+                color: "#fff",
+                borderRadius: 8,
+                textDecoration: "none",
               }}
             >
-              Point Values
+              Access Questions
+            </button>
+          </Link>
+        )}
+
+        {/* Add/Edit Question Modal */}
+        <Modal
+          isOpen={questionModal}
+          onClose={closeQuestionModal}
+          title={editingQuestionId ? "Edit Question" : "Add Question"}
+          hideDefaultClose={Boolean(editingQuestionId)}
+        >
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 4,
+              marginBottom: 16,
+            }}
+          >
+            <label style={{ fontSize: 13, fontWeight: 600, color: "#444" }}>
+              Question Text
             </label>
-            <div style={{display: 'flex', flexDirection: "row"}}>
-              {questionForm.tfValues.map((opt, i) => (
-              <div
-                key={i}
+            <textarea
+              className={styles.inputStyle}
+              type="text"
+              value={questionForm.text}
+              onChange={(e) =>
+                setQuestionForm((prev) => ({ ...prev, text: e.target.value }))
+              }
+              placeholder="Enter question..."
+              autoFocus
+            />
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 4,
+              marginBottom: 16,
+            }}
+          >
+            <label style={{ fontSize: 13, fontWeight: 600, color: "#444" }}>
+              Type
+            </label>
+            <select
+              className={styles.inputStyle}
+              value={questionForm.type}
+              onChange={(e) =>
+                setQuestionForm((prev) => ({ ...prev, type: e.target.value }))
+              }
+            >
+              <option value={QuestionType.TRUE_FALSE}>True / False</option>
+              <option value={QuestionType.MULTIPLE_CHOICE}>
+                Multiple Choice
+              </option>
+            </select>
+          </div>
+
+          {questionForm.type === QuestionType.TRUE_FALSE && (
+            <div style={{ marginBottom: 16 }}>
+              <label
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "#444",
+                  display: "block",
                   marginBottom: 8,
                 }}
               >
-                <span style={{ minWidth: 52, fontSize: 14, fontWeight: 600 }}>
-                  {String(opt.label)}:
-                </span>
-                <input
-                  className={styles.inputStyle}
-                  style={{ width: 80 }}
-                  type="number"
-                  value={opt.value}
-                  onChange={(e) => handleTFValueChange(i, e.target.value)}
-                  placeholder="Points"
-                />
+                Point Values
+              </label>
+              <div style={{ display: "flex", flexDirection: "row" }}>
+                {questionForm.tfValues.map((opt, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      marginBottom: 8,
+                    }}
+                  >
+                    <span
+                      style={{ minWidth: 52, fontSize: 14, fontWeight: 600 }}
+                    >
+                      {String(opt.label)}:
+                    </span>
+                    <input
+                      className={styles.inputStyle}
+                      style={{ width: 80 }}
+                      type="number"
+                      value={opt.value}
+                      onChange={(e) => handleTFValueChange(i, e.target.value)}
+                      placeholder="Points"
+                    />
+                  </div>
+                ))}
               </div>
-            ))}
             </div>
-            
-          </div>
-        )}
+          )}
 
-        {questionForm.type === QuestionType.MULTIPLE_CHOICE && (
-          <div style={{ marginBottom: 16 }}>
-            <label
-              style={{
-                fontSize: 13,
-                fontWeight: 600,
-                color: "#444",
-                display: "block",
-                marginBottom: 8,
-              }}
-            >
-              Options (up to 4)
-            </label>
-            {questionForm.options.map((opt, i) => (
-              <div key={i} style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-                <input
-                  className={styles.inputStyle}
-                  style={{ flex: 1 }}
-                  type="text"
-                  value={opt.label}
-                  onChange={(e) =>
-                    handleOptionChange(i, "label", e.target.value)
-                  }
-                  placeholder={`Option ${i + 1}`}
-                />
-                <input
-                  className={styles.inputStyle}
-                  style={{ width: 80 }}
-                  type="number"
-                  value={opt.value}
-                  onChange={(e) =>
-                    handleOptionChange(i, "value", e.target.value)
-                  }
-                  placeholder="Points"
-                />
-              </div>
-            ))}
-          </div>
-        )}
+          {questionForm.type === QuestionType.MULTIPLE_CHOICE && (
+            <div style={{ marginBottom: 16 }}>
+              <label
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "#444",
+                  display: "block",
+                  marginBottom: 8,
+                }}
+              >
+                Options (up to 4)
+              </label>
+              {questionForm.options.map((opt, i) => (
+                <div
+                  key={i}
+                  style={{ display: "flex", gap: 8, marginBottom: 8 }}
+                >
+                  <input
+                    className={styles.inputStyle}
+                    style={{ flex: 1 }}
+                    type="text"
+                    value={opt.label}
+                    onChange={(e) =>
+                      handleOptionChange(i, "label", e.target.value)
+                    }
+                    placeholder={`Option ${i + 1}`}
+                  />
+                  <input
+                    className={styles.inputStyle}
+                    style={{ width: 80 }}
+                    type="number"
+                    value={opt.value}
+                    onChange={(e) =>
+                      handleOptionChange(i, "value", e.target.value)
+                    }
+                    placeholder="Points"
+                  />
+                </div>
+              ))}
+            </div>
+          )}
 
-        {!editingQuestionId && (
-          <button
-            onClick={handleAddQuestion}
-            disabled={!questionForm.text.trim()}
-            style={{
-              width: "100%",
-              padding: "12px 0",
-              fontSize: 15,
-              fontWeight: 600,
-              background: questionForm.text.trim() ? "var(--confirm)" : "#aaa",
-              color: "#fff",
-              border: "none",
-              borderRadius: 6,
-              marginBottom: 8,
-              cursor: questionForm.text.trim() ? "pointer" : "not-allowed",
-            }}
-          >
-            Add Question
-          </button>
-        )}
-
-        {editingQuestionId && (
-          <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+          {!editingQuestionId && (
             <button
-              onClick={handleSaveEditedQuestion}
-              disabled={!questionForm.text.trim() || isSavingCase}
+              onClick={handleAddQuestion}
+              disabled={!questionForm.text.trim()}
               style={{
-                flex: 1,
+                width: "100%",
                 padding: "12px 0",
                 fontSize: 15,
                 fontWeight: 600,
-                background: questionForm.text.trim() ? "#4a90d9" : "#aaa",
+                background: questionForm.text.trim()
+                  ? "var(--confirm)"
+                  : "#aaa",
                 color: "#fff",
                 border: "none",
                 borderRadius: 6,
-                cursor:
-                  questionForm.text.trim() && !isSavingCase
-                    ? "pointer"
-                    : "not-allowed",
+                marginBottom: 8,
+                cursor: questionForm.text.trim() ? "pointer" : "not-allowed",
               }}
             >
-              {isSavingCase ? "Saving..." : "Save"}
+              Add Question
             </button>
+          )}
+
+          {editingQuestionId && (
+            <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+              <button
+                onClick={handleSaveEditedQuestion}
+                disabled={!questionForm.text.trim() || isSavingCase}
+                style={{
+                  flex: 1,
+                  padding: "12px 0",
+                  fontSize: 15,
+                  fontWeight: 600,
+                  background: questionForm.text.trim() ? "#4a90d9" : "#aaa",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: 6,
+                  cursor:
+                    questionForm.text.trim() && !isSavingCase
+                      ? "pointer"
+                      : "not-allowed",
+                }}
+              >
+                {isSavingCase ? "Saving..." : "Save"}
+              </button>
+              <button
+                onClick={closeQuestionModal}
+                style={{
+                  flex: 1,
+                  padding: "12px 0",
+                  fontSize: 15,
+                  fontWeight: 600,
+                  background: "#f0f0f0",
+                  color: "#333",
+                  border: "1px solid #ccc",
+                  borderRadius: 6,
+                  cursor: "pointer",
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+
+          {saveError && (
+            <p style={{ color: "#d9534f", fontSize: 14, margin: "4px 0 0" }}>
+              {saveError}
+            </p>
+          )}
+        </Modal>
+
+        {/* Delete Question Confirmation Modal */}
+        <Modal
+          isOpen={Boolean(deleteQuestionId)}
+          onClose={() => setDeleteQuestionId(null)}
+          title="Remove Question"
+          hideDefaultClose
+        >
+          <p style={{ marginBottom: 20 }}>
+            Are you sure you want to remove this question from this case?
+          </p>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              gap: 12,
+              marginBottom: 8,
+            }}
+          >
             <button
-              onClick={closeQuestionModal}
+              onClick={handleDeleteQuestion}
               style={{
                 flex: 1,
-                padding: "12px 0",
-                fontSize: 15,
+                padding: "10px 0",
+                fontWeight: 600,
+                background: "#d9534f",
+                color: "#fff",
+                border: "none",
+                borderRadius: 6,
+                cursor: "pointer",
+              }}
+            >
+              Yes
+            </button>
+            <button
+              onClick={() => setDeleteQuestionId(null)}
+              style={{
+                flex: 1,
+                padding: "10px 0",
                 fontWeight: 600,
                 background: "#f0f0f0",
                 color: "#333",
@@ -594,68 +782,10 @@ const CaseScreen = () => {
                 cursor: "pointer",
               }}
             >
-              Cancel
+              No
             </button>
           </div>
-        )}
-
-        {saveError && (
-          <p style={{ color: "#d9534f", fontSize: 14, margin: "4px 0 0" }}>
-            {saveError}
-          </p>
-        )}
-      </Modal>
-
-      {/* Delete Question Confirmation Modal */}
-      <Modal
-        isOpen={Boolean(deleteQuestionId)}
-        onClose={() => setDeleteQuestionId(null)}
-        title="Remove Question"
-        hideDefaultClose
-      >
-        <p style={{ marginBottom: 20 }}>
-          Are you sure you want to remove this question from this case?
-        </p>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            gap: 12,
-            marginBottom: 8,
-          }}
-        >
-          <button
-            onClick={handleDeleteQuestion}
-            style={{
-              flex: 1,
-              padding: "10px 0",
-              fontWeight: 600,
-              background: "#d9534f",
-              color: "#fff",
-              border: "none",
-              borderRadius: 6,
-              cursor: "pointer",
-            }}
-          >
-            Yes
-          </button>
-          <button
-            onClick={() => setDeleteQuestionId(null)}
-            style={{
-              flex: 1,
-              padding: "10px 0",
-              fontWeight: 600,
-              background: "#f0f0f0",
-              color: "#333",
-              border: "1px solid #ccc",
-              borderRadius: 6,
-              cursor: "pointer",
-            }}
-          >
-            No
-          </button>
-        </div>
-      </Modal>
+        </Modal>
 
         {/* Start Session Modal */}
         <Modal
@@ -710,6 +840,146 @@ const CaseScreen = () => {
                 <button
                   onClick={() => setEditStudentNumber(false)}
                   className={styles.decline}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </Modal>
+
+        <Modal
+          isOpen={playlistModalOpen}
+          onClose={() => {
+            setPlaylistModalOpen(false);
+            setSelectedPlaylist(null);
+          }}
+          title="Access Playlists"
+        >
+          {!selectedPlaylist ? (
+            <div>
+              {playlists.length === 0 ? (
+                <p style={{ color: "#666" }}>No playlists found.</p>
+              ) : (
+                playlists.map((playlist) => (
+                  <div
+                    key={playlist._id}
+                    onClick={() => handleSelectPlaylist(playlist)}
+                    style={{
+                      padding: "10px 12px",
+                      marginBottom: 8,
+                      borderRadius: 6,
+                      border: "1px solid #c5d8f5",
+                      background: "#f5f8ff",
+                      cursor: "pointer",
+                      fontWeight: 600,
+                      opacity: isLoadingPlaylistDetails ? 0.7 : 1,
+                    }}
+                  >
+                    {playlist.title}
+                  </div>
+                ))
+              )}
+
+              {isLoadingPlaylistDetails && (
+                <p style={{ color: "#666", marginTop: 12 }}>Loading playlist...</p>
+              )}
+            </div>
+          ) : (
+            <div>
+              <h3 style={{ marginTop: 0, marginBottom: 12 }}>{selectedPlaylist.title}</h3>
+
+              <div style={{ marginBottom: 16 }}>
+                {(selectedPlaylist.questions || []).map((question, index) => (
+                  <div
+                    key={`${selectedPlaylist._id}-${question.id || index}`}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      padding: "8px 12px",
+                      marginBottom: 8,
+                      background: "#f5f8ff",
+                      border: "1px solid #c5d8f5",
+                      borderRadius: 6,
+                      fontSize: 14,
+                    }}
+                  >
+                    <span style={{ fontWeight: 600, color: "#2c6fad", minWidth: 24 }}>
+                      {index + 1}.
+                    </span>
+                    <span style={{ flex: 1 }}>{question.text}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <button
+                  onClick={handleLoadPlaylist}
+                  disabled={isLoadingPlaylist}
+                  style={{
+                    flex: 1,
+                    minWidth: 140,
+                    padding: "10px 0",
+                    fontWeight: 600,
+                    background: "var(--confirm)",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: 6,
+                    cursor: isLoadingPlaylist ? "not-allowed" : "pointer",
+                    opacity: isLoadingPlaylist ? 0.75 : 1,
+                  }}
+                >
+                  {isLoadingPlaylist ? "Loading..." : "Load playlist"}
+                </button>
+                <button
+                  onClick={() => {}}
+                  style={{
+                    flex: 1,
+                    minWidth: 100,
+                    padding: "10px 0",
+                    fontWeight: 600,
+                    background: "#f0ad4e",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: 6,
+                    cursor: "pointer",
+                  }}
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => {}}
+                  style={{
+                    flex: 1,
+                    minWidth: 100,
+                    padding: "10px 0",
+                    fontWeight: 600,
+                    background: "#d9534f",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: 6,
+                    cursor: "pointer",
+                  }}
+                >
+                  Delete
+                </button>
+                <button
+                  onClick={() => {
+                    setPlaylistModalOpen(false);
+                    setSelectedPlaylist(null);
+                  }}
+                  style={{
+                    flex: 1,
+                    minWidth: 100,
+                    padding: "10px 0",
+                    fontWeight: 600,
+                    background: "#f0f0f0",
+                    color: "#333",
+                    border: "1px solid #ccc",
+                    borderRadius: 6,
+                    cursor: "pointer",
+                  }}
                 >
                   Cancel
                 </button>

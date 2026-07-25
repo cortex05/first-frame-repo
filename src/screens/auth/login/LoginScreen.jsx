@@ -9,6 +9,7 @@ import styles from './LoginScreen.module.css';
 const LoginScreen = () => {
   const navigate = useNavigate();
   const setUserInfo = useAuthStore((state) => state.setUserInfo);
+  const fetchUserPlaylists = useAuthStore((state) => state.fetchUserPlaylists);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -23,6 +24,7 @@ const LoginScreen = () => {
     try {
       const userInfo = await login({ email: email.trim(), password });
       setUserInfo(userInfo);
+      await fetchUserPlaylists(userInfo.token);
       navigate('/home', { replace: true });
     } catch (requestError) {
       setError(

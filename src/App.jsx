@@ -33,6 +33,8 @@ const PublicOnlyRoutes = ({ isAuthenticated }) => {
 function App() {
 	const getAllCases = useCaseStore((state) => state.getAllCases);
 	const userInfo = useAuthStore((state) => state.userInfo);
+	const playlists = useAuthStore((state) => state.playlists);
+	const fetchUserPlaylists = useAuthStore((state) => state.fetchUserPlaylists);
 
 	const isAuthenticated = Boolean(userInfo?.token && userInfo?.userId && userInfo?.username);
 
@@ -43,6 +45,12 @@ function App() {
 		} else {
 			localStorage.setItem('cases', JSON.stringify([]));
 			getAllCases([]);
+		}
+	}, []);
+
+	useEffect(() => {
+		if (userInfo?.token && playlists.length === 0) {
+			fetchUserPlaylists(userInfo.token);
 		}
 	}, []);
 
