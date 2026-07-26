@@ -98,3 +98,28 @@
 	font-size: 18px;
 	font-weight: 450;
 }
+
+.questionActionRow {
+	display: flex;
+	justify-content: center;
+	gap: 20px;
+	flex-wrap: wrap;
+}
+
+.questionActionButton {
+	margin-top: 8px;
+	padding: 10px 20px;
+	font-size: 15px;
+	color: #fff;
+	border: none;
+	border-radius: 6px;
+	cursor: pointer;
+}
+
+.addQuestionButton {
+	background: var(--confirm);
+}
+
+.accessPlaylistsButton {
+	background: #4a90d9;
+}

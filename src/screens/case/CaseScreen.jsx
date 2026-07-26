@@ -348,49 +348,6 @@ const CaseScreen = () => {
           </div>
         </section>
 
-        {/* Playlists*/}
-        <section style={{ marginBottom: 32 }}>
-          <h2 style={{ marginBottom: 12 }}>Playlists</h2>
-
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-            <button
-              onClick={() =>
-                navigate(`/make-playlist?caseId=${activeCase._id}`)
-              }
-              style={{
-                display: "inline-block",
-                padding: "12px 28px",
-                fontSize: 16,
-                fontWeight: 600,
-                background: "#2c6fad",
-                color: "#fff",
-                borderRadius: 8,
-                border: "none",
-                cursor: "pointer",
-              }}
-            >
-              Make Playlist
-            </button>
-
-            <button
-              onClick={handleOpenPlaylistModal}
-              style={{
-                display: "inline-block",
-                padding: "12px 28px",
-                fontSize: 16,
-                fontWeight: 600,
-                background: "#4a90d9",
-                color: "#fff",
-                borderRadius: 8,
-                border: "none",
-                cursor: "pointer",   
-              }}
-            >
-              Access Playlists
-            </button>
-          </div>
-        </section>
-
         {/* Questions */}
         <section style={{ marginBottom: 32 }}>
           <h2 style={{ marginBottom: 12 }}>Questions</h2>
@@ -471,21 +428,23 @@ const CaseScreen = () => {
             </div>
           ))}
 
-          <button
-            onClick={openQuestionModal}
-            style={{
-              marginTop: 8,
-              padding: "10px 20px",
-              fontSize: 15,
-              background: "#4a90d9",
-              color: "#fff",
-              border: "none",
-              borderRadius: 6,
-              cursor: "pointer",
-            }}
-          >
-            + Add Question
-          </button>
+          <div className={styles.questionActionRow}>
+            <button
+              onClick={openQuestionModal}
+              className={`${styles.questionActionButton} ${styles.addQuestionButton}`}
+            >
+              + Add Question
+            </button>
+
+            <button
+              onClick={handleOpenPlaylistModal}
+              className={`${styles.questionActionButton} ${styles.accessPlaylistsButton}`}
+            >
+              Access Playlists
+            </button>
+          </div>
+
+        
         </section>
 
         {/* Start link */}
