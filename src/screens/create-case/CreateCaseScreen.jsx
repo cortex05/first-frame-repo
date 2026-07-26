@@ -305,7 +305,7 @@ const CreateCaseScreen = () => {
 
   return (
     <React.Fragment>
-      <TopNavbar />
+      <TopNavbar warnOnHomeNavigation />
 
       <div className={styles.container}>
         <h1>Create New Case</h1>
