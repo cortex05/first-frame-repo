@@ -40,6 +40,8 @@ const CreateCaseScreen = () => {
   const [questions, setQuestions] = useState([]);
   const [questionModal, setQuestionModal] = useState(false);
   const [questionForm, setQuestionForm] = useState(EMPTY_QUESTION_FORM);
+  const [editingQuestionId, setEditingQuestionId] = useState(null);
+  const [deleteQuestionId, setDeleteQuestionId] = useState(null);
   const [playlistModalOpen, setPlaylistModalOpen] = useState(false);
   const [selectedPlaylist, setSelectedPlaylist] = useState(null);
   const [isLoadingPlaylist, setIsLoadingPlaylist] = useState(false);
@@ -128,7 +130,62 @@ const CreateCaseScreen = () => {
   };
 
   const openQuestionModal = () => {
+    setEditingQuestionId(null);
     setQuestionForm(EMPTY_QUESTION_FORM);
+    setQuestionModal(true);
+  };
+
+  const closeQuestionModal = () => {
+    setQuestionModal(false);
+    setEditingQuestionId(null);
+    setQuestionForm(EMPTY_QUESTION_FORM);
+  };
+
+  const openEditQuestionModal = (question) => {
+    if (question.type === QuestionType.MULTIPLE_CHOICE) {
+      const mcOptions = (question.options || []).map((opt) => ({
+        label: opt.label || "",
+        value: Number(opt.value) || 0,
+      }));
+
+      while (mcOptions.length < 4) {
+        mcOptions.push({ label: "", value: 0 });
+      }
+
+      setQuestionForm({
+        text: question.text || "",
+        type: QuestionType.MULTIPLE_CHOICE,
+        options: mcOptions.slice(0, 4),
+        tfValues: [
+          { label: true, value: 3 },
+          { label: false, value: 0 },
+        ],
+      });
+    } else {
+      const trueOption = (question.options || []).find(
+        (opt) => opt.label === true || opt.label === "true",
+      );
+      const falseOption = (question.options || []).find(
+        (opt) => opt.label === false || opt.label === "false",
+      );
+
+      setQuestionForm({
+        text: question.text || "",
+        type: QuestionType.TRUE_FALSE,
+        options: [
+          { label: "", value: 0 },
+          { label: "", value: 0 },
+          { label: "", value: 0 },
+          { label: "", value: 0 },
+        ],
+        tfValues: [
+          { label: true, value: Number(trueOption?.value) || 0 },
+          { label: false, value: Number(falseOption?.value) || 0 },
+        ],
+      });
+    }
+
+    setEditingQuestionId(question.id);
     setQuestionModal(true);
   };
 
@@ -150,10 +207,12 @@ const CreateCaseScreen = () => {
 
   const handleAddQuestion = () => {
     if (!questionForm.text.trim()) return;
+
     const options =
       questionForm.type === QuestionType.MULTIPLE_CHOICE
         ? questionForm.options.filter((o) => o.label.trim() !== "")
         : questionForm.tfValues;
+
     const q = new Question(
       uuidv4(),
       questionForm.text.trim(),
@@ -161,8 +220,40 @@ const CreateCaseScreen = () => {
       caseId,
       options,
     );
+
     setQuestions((prev) => [...prev, q]);
-    setQuestionModal(false);
+    closeQuestionModal();
+  };
+
+  const handleSaveEditedQuestion = () => {
+    if (!questionForm.text.trim() || !editingQuestionId) return;
+
+    const options =
+      questionForm.type === QuestionType.MULTIPLE_CHOICE
+        ? questionForm.options.filter((o) => o.label.trim() !== "")
+        : questionForm.tfValues;
+
+    setQuestions((prev) =>
+      prev.map((q) =>
+        q.id === editingQuestionId
+          ? {
+              ...q,
+              text: questionForm.text.trim(),
+              type: questionForm.type,
+              options,
+            }
+          : q,
+      ),
+    );
+
+    closeQuestionModal();
+  };
+
+  const handleDeleteQuestion = () => {
+    if (!deleteQuestionId) return;
+
+    setQuestions((prev) => prev.filter((q) => q.id !== deleteQuestionId));
+    setDeleteQuestionId(null);
   };
 
   const handleSubmit = async () => {
@@ -325,6 +416,40 @@ const CreateCaseScreen = () => {
               {i + 1}.
             </span>
             <span style={{ flex: 1, color: "var(--modal-text)" }}>{q.text}</span>
+            <button
+              onClick={() => openEditQuestionModal(q)}
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                padding: "4px 8px",
+                background: "#f0ad4e",
+                color: "#fff",
+                border: "none",
+                borderRadius: 4,
+                cursor: "pointer",
+              }}
+            >
+              Edit
+            </button>
+            <button
+              onClick={() => setDeleteQuestionId(q.id)}
+              style={{
+                width: 22,
+                height: 22,
+                fontSize: 13,
+                fontWeight: 700,
+                padding: 0,
+                background: "#d9534f",
+                color: "#fff",
+                border: "none",
+                borderRadius: 4,
+                cursor: "pointer",
+                lineHeight: 1,
+              }}
+              aria-label="Delete question"
+            >
+              X
+            </button>
             <span
               style={{
                 fontSize: 11,
@@ -386,8 +511,9 @@ const CreateCaseScreen = () => {
       {/* Add Question Modal */}
       <Modal
         isOpen={questionModal}
-        onClose={() => setQuestionModal(false)}
-        title="Add Question"
+        onClose={closeQuestionModal}
+        title={editingQuestionId ? "Edit Question" : "Add Question"}
+        hideDefaultClose={Boolean(editingQuestionId)}
       >
         <div className={styles.fieldStyle}>
           <label className={styles.labelStyle}>Question Text</label>
@@ -471,24 +597,114 @@ const CreateCaseScreen = () => {
           </div>
         )}
 
-        <button
-          onClick={handleAddQuestion}
-          disabled={!questionForm.text.trim()}
+        {!editingQuestionId && (
+          <button
+            onClick={handleAddQuestion}
+            disabled={!questionForm.text.trim()}
+            style={{
+              width: "100%",
+              padding: "12px 0",
+              fontSize: 15,
+              fontWeight: 600,
+              background: questionForm.text.trim() ? "var(--confirm)" : "#aaa",
+              color: "#fff",
+              border: "none",
+              borderRadius: 6,
+              marginBottom: 8,
+              cursor: questionForm.text.trim() ? "pointer" : "not-allowed",
+            }}
+          >
+            Add Question
+          </button>
+        )}
+
+        {editingQuestionId && (
+          <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+            <button
+              onClick={handleSaveEditedQuestion}
+              disabled={!questionForm.text.trim()}
+              style={{
+                flex: 1,
+                padding: "12px 0",
+                fontSize: 15,
+                fontWeight: 600,
+                background: questionForm.text.trim() ? "#4a90d9" : "#aaa",
+                color: "#fff",
+                border: "none",
+                borderRadius: 6,
+                cursor: questionForm.text.trim() ? "pointer" : "not-allowed",
+              }}
+            >
+              Save
+            </button>
+            <button
+              onClick={closeQuestionModal}
+              style={{
+                flex: 1,
+                padding: "12px 0",
+                fontSize: 15,
+                fontWeight: 600,
+                background: "#f0f0f0",
+                color: "#333",
+                border: "1px solid #ccc",
+                borderRadius: 6,
+                cursor: "pointer",
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+      </Modal>
+
+      <Modal
+        isOpen={Boolean(deleteQuestionId)}
+        onClose={() => setDeleteQuestionId(null)}
+        title="Remove Question"
+        hideDefaultClose
+      >
+        <p style={{ marginBottom: 20, color: "var(--modal-text)", fontSize: 16 }}>
+          Are you sure you want to remove this question from this case?
+        </p>
+        <div
           style={{
-            width: "100%",
-            padding: "12px 0",
-            fontSize: 15,
-            fontWeight: 600,
-            background: questionForm.text.trim() ? "var(--confirm)" : "#aaa",
-            color: "#fff",
-            border: "none",
-            borderRadius: 6,
+            display: "flex",
+            justifyContent: "space-between",
+            gap: 12,
             marginBottom: 8,
-            cursor: questionForm.text.trim() ? "pointer" : "not-allowed",
           }}
         >
-          Add Question
-        </button>
+          <button
+            onClick={handleDeleteQuestion}
+            style={{
+              flex: 1,
+              padding: "10px 0",
+              fontWeight: 600,
+              background: "#d9534f",
+              color: "#fff",
+              border: "none",
+              borderRadius: 6,
+              cursor: "pointer",
+            }}
+          >
+            Yes
+          </button>
+          <button
+            onClick={() => setDeleteQuestionId(null)}
+            style={{
+              flex: 1,
+              padding: "10px 0",
+              fontWeight: 600,
+              background: "#f0f0f0",
+              color: "#333",
+              border: "1px solid #ccc",
+              borderRadius: 6,
+              cursor: "pointer",
+            }}
+          >
+            No
+          </button>
+        </div>
       </Modal>
 
       {/* Playlist Modal */}
