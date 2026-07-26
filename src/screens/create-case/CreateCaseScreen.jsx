@@ -827,9 +827,8 @@ const CreateCaseScreen = () => {
 
             <button
               onClick={() => handleSubmit()}
-              className={styles.linkButton}
+              className={styles.summaryCreateButton}
               disabled={isSubmitting}
-              style={{ opacity: isSubmitting ? 0.75 : 1, cursor: isSubmitting ? "not-allowed" : "pointer" }}
             >
               {isSubmitting ? "Creating..." : "Create Case"}
             </button>
