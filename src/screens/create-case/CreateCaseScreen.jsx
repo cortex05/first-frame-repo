@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useNavigate } from "react-router-dom";
 
@@ -8,6 +8,7 @@ import TopNavbar from "../../components/top-navbar/TopNavbar";
 import useCaseStore from "../../store/useCaseStore";
 import useAuthStore from "../../store/useAuthStore";
 import { createCase } from "../../api/case";
+import { getPlaylistById } from "../../api/playlist";
 
 import Question from "../../types/polls/Question";
 import { QuestionType, CrimeTypes } from "../../types/ENUMS";
@@ -16,6 +17,14 @@ import { normalizeQuestion } from "../../utils/questionNormalization";
 import { EMPTY_QUESTION_FORM, EMPTY_CRIME_TYPE_FORM } from "../../utils/formUtils";
 
 import styles from "./CreateCaseScreen.module.css";
+
+const getDefaultDateTimeAtEight = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}T08:00`;
+};
 
 const CreateCaseScreen = () => {
 	const navigate = useNavigate();
@@ -26,11 +35,16 @@ const CreateCaseScreen = () => {
 
   const [location, setLocation] = useState("");
 	const [numberOfStudents, setNumberOfStudents] = useState("");
-	const [dateTime, setDateTime] = useState("");
+  const [dateTime, setDateTime] = useState(() => getDefaultDateTimeAtEight());
 
   const [questions, setQuestions] = useState([]);
   const [questionModal, setQuestionModal] = useState(false);
   const [questionForm, setQuestionForm] = useState(EMPTY_QUESTION_FORM);
+  const [playlistModalOpen, setPlaylistModalOpen] = useState(false);
+  const [selectedPlaylist, setSelectedPlaylist] = useState(null);
+  const [isLoadingPlaylist, setIsLoadingPlaylist] = useState(false);
+  const [isLoadingPlaylistDetails, setIsLoadingPlaylistDetails] = useState(false);
+  const [playlistError, setPlaylistError] = useState("");
 
   const [previewModal, setPreviewModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -39,6 +53,79 @@ const CreateCaseScreen = () => {
   const addCase = useCaseStore((state) => state.addCase);
   const setActiveCase = useCaseStore((state) => state.setActiveCase);
   const userInfo = useAuthStore((state) => state.userInfo);
+  const playlists = useAuthStore((state) => state.playlists);
+  const fetchUserPlaylists = useAuthStore((state) => state.fetchUserPlaylists);
+
+  useEffect(() => {
+    if (userInfo?.token) {
+      fetchUserPlaylists(userInfo.token);
+    }
+  }, [userInfo?.token]);
+
+  const normalizeQuestionForCase = (question) => {
+    const normalized = normalizeQuestion(question);
+
+    return new Question(
+      uuidv4(),
+      normalized.text,
+      normalized.type,
+      caseId,
+      (normalized.options || []).map((option) => ({
+        label: option.label,
+        value: Number(option.value) || 0,
+      })),
+    );
+  };
+
+  const handleOpenPlaylistModal = () => {
+    setSelectedPlaylist(null);
+    setPlaylistError("");
+    setPlaylistModalOpen(true);
+  };
+
+  const handleSelectPlaylist = async (playlist) => {
+    if (!userInfo?.token) {
+      setPlaylistError("You must be logged in to access playlists.");
+      return;
+    }
+
+    setPlaylistError("");
+    setIsLoadingPlaylistDetails(true);
+
+    try {
+      const playlistDetails = await getPlaylistById(playlist._id, userInfo.token);
+      setSelectedPlaylist(playlistDetails);
+    } catch (requestError) {
+      setPlaylistError(
+        requestError?.response?.data?.message || "Unable to load playlist details.",
+      );
+    } finally {
+      setIsLoadingPlaylistDetails(false);
+    }
+  };
+
+  const handleLoadPlaylist = async () => {
+    if (!selectedPlaylist) return;
+
+    setPlaylistError("");
+    setIsLoadingPlaylist(true);
+
+    try {
+      const loadedQuestions = (selectedPlaylist.questions || []).map((question) =>
+        normalizeQuestionForCase(question),
+      );
+
+      setQuestions((prev) => [...prev, ...loadedQuestions]);
+      setPlaylistModalOpen(false);
+      setSelectedPlaylist(null);
+    } catch (requestError) {
+      setPlaylistError(
+        requestError?.response?.data?.message || "Unable to load playlist.",
+      );
+    } finally {
+      setIsLoadingPlaylist(false);
+    }
+  };
 
   const openQuestionModal = () => {
     setQuestionForm(EMPTY_QUESTION_FORM);
@@ -133,7 +220,7 @@ const CreateCaseScreen = () => {
         <h1>Create New Case</h1>
 
       {/* Basic Info */}
-      <section style={{ marginBottom: 32 }}>
+      <section style={{ marginBottom: 32,  }}>
         <h2 style={{ marginBottom: 16 }}>Basic Info</h2>
 
         <div className={styles.fieldStyle}>
@@ -270,6 +357,13 @@ const CreateCaseScreen = () => {
         >
           + Add Question
         </button>
+
+        <button
+          onClick={handleOpenPlaylistModal}
+          className={styles.playlistAccessButton}
+        >
+          Access Playlists
+        </button>
       </section>
 
       {/* Submit */}
@@ -395,6 +489,75 @@ const CreateCaseScreen = () => {
         >
           Add Question
         </button>
+      </Modal>
+
+      {/* Playlist Modal */}
+      <Modal
+        isOpen={playlistModalOpen}
+        onClose={() => {
+          setPlaylistModalOpen(false);
+          setSelectedPlaylist(null);
+          setPlaylistError("");
+        }}
+        title="Access Playlists"
+      >
+        {!selectedPlaylist ? (
+          <div>
+            {playlists.length === 0 ? (
+              <p className={styles.playlistStatusText}>You have no playlists saved.</p>
+            ) : (
+              playlists.map((playlist) => (
+                <div
+                  key={playlist._id}
+                  onClick={() => handleSelectPlaylist(playlist)}
+                  className={`${styles.playlistListItem} ${
+                    isLoadingPlaylistDetails ? styles.playlistLoadingState : ""
+                  }`}
+                >
+                  <span>{playlist.title}</span>
+                </div>
+              ))
+            )}
+
+            {isLoadingPlaylistDetails && (
+              <p className={styles.playlistStatusText}>Loading playlist...</p>
+            )}
+
+            {playlistError && (
+              <p className={styles.playlistErrorText}>{playlistError}</p>
+            )}
+          </div>
+        ) : (
+          <div>
+            <h3 className={styles.playlistTitle}>{selectedPlaylist.title}</h3>
+
+            <div className={styles.playlistQuestionsList}>
+              {(selectedPlaylist.questions || []).map((question, index) => (
+                <div
+                  key={`${selectedPlaylist._id}-${question.id || index}`}
+                  className={styles.playlistQuestionItem}
+                >
+                  <span className={styles.playlistQuestionNumber}>
+                    {index + 1}.
+                  </span>
+                  <span className={styles.playlistQuestionText}>{question.text}</span>
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={handleLoadPlaylist}
+              disabled={isLoadingPlaylist}
+              className={styles.playlistLoadButton}
+            >
+              {isLoadingPlaylist ? "Loading..." : "Load Questions"}
+            </button>
+
+            {playlistError && (
+              <p className={styles.playlistErrorText}>{playlistError}</p>
+            )}
+          </div>
+        )}
       </Modal>
 
       {/* Preview / Submit Modal */}

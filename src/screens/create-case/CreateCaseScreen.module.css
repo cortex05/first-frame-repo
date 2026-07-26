@@ -26,7 +26,7 @@
 .labelStyle {
   font-size: 16px;
   font-weight: 600;
-  color: var(--modal-text);
+	color: var(--label-light);
 }
 
 .inputStyle {
@@ -67,4 +67,94 @@
   min-width: 52px; 
   font-size: 14px; 
   font-weight: 600; 
+}
+
+.playlistAccessButton {
+  margin-top: 8px;
+  margin-left: 8px;
+  padding: 10px 20px;
+  font-size: 15px;
+  background: #4a90d9;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.playlistListItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  background: #f5f8ff;
+  border: 1px solid #c5d8f5;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--modal-text);
+}
+
+.playlistLoadingState {
+  opacity: 0.7;
+}
+
+.playlistStatusText {
+  color: #666;
+  margin-top: 12px;
+}
+
+.playlistErrorText {
+  color: #d9534f;
+  margin-top: 12px;
+}
+
+.playlistTitle {
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+.playlistQuestionsList {
+  margin-bottom: 16px;
+}
+
+.playlistQuestionItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  background: #f5f8ff;
+  border: 1px solid #c5d8f5;
+  border-radius: 6px;
+  color: var(--modal-text);
+  font-size: 14px;
+}
+
+.playlistQuestionNumber {
+  font-weight: 600;
+  color: #2c6fad;
+  min-width: 24px;
+}
+
+.playlistQuestionText {
+  flex: 1;
+}
+
+.playlistLoadButton {
+  width: 100%;
+  padding: 10px 0;
+  font-weight: 600;
+  background: var(--confirm);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+
+.playlistLoadButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.75;
 }
