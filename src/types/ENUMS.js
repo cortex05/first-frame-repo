@@ -3,11 +3,12 @@ export const QuestionType = {
   MULTIPLE_CHOICE: 'MULTIPLE_CHOICE',
 };
 
-export const CrimeTypes = {
-  DWI: 'DWI',
-  HOMICIDE: 'Homicide',
-  THEFT: 'Theft',
-  ASSAULT: 'Assault',
-  DIVORCE: 'Divorce',
-  CUSTODY: 'Custody',
-}
+export const CaseTypes = {
+  CRIMINAL: 'Criminal',
+  CIVIL: 'Civil',
+};
+
+export const ChargeOptionsByCaseType = {
+  [CaseTypes.CRIMINAL]: ['Assault', 'Battery'],
+  [CaseTypes.CIVIL]: ['Personal Injury', 'Breach of contract'],
+};

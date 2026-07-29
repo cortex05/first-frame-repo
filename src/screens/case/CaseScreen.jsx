@@ -332,7 +332,10 @@ const CaseScreen = () => {
         <section style={{ marginBottom: 32 }} className={styles.infoSection}>
           <p className={styles.value}>Attorney: {activeCase.attorney || "—"}</p>
           <p className={styles.value}>
-            Crime Type: {activeCase.crimeType || "—"}
+            Case Type: {activeCase.caseType || "—"}
+          </p>
+          <p className={styles.value}>
+            Charge/Issue: {activeCase.charge || "—"}
           </p>
           <p className={styles.value}>
             Number of Students: {activeCase.studentNumber || "—"}

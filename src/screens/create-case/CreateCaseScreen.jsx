@@ -11,10 +11,10 @@ import { createCase } from "../../api/case";
 import { getPlaylistById } from "../../api/playlist";
 
 import Question from "../../types/polls/Question";
-import { QuestionType, CrimeTypes } from "../../types/ENUMS";
+import { QuestionType, CaseTypes, ChargeOptionsByCaseType } from "../../types/ENUMS";
 import { normalizeQuestion } from "../../utils/questionNormalization";
 
-import { EMPTY_QUESTION_FORM, EMPTY_CRIME_TYPE_FORM } from "../../utils/formUtils";
+import { EMPTY_QUESTION_FORM, EMPTY_CASE_CLASSIFICATION_FORM } from "../../utils/formUtils";
 
 import styles from "./CreateCaseScreen.module.css";
 
@@ -23,7 +23,7 @@ const CreateCaseScreen = () => {
   const [caseId] = useState(() => uuidv4());
   const [clientName, setClientName] = useState("");
 	const [attorney, setAttorney] = useState("");
-  const [crimeForm, setCrimeForm] = useState(EMPTY_CRIME_TYPE_FORM);
+  const [caseClassificationForm, setCaseClassificationForm] = useState(EMPTY_CASE_CLASSIFICATION_FORM);
 
 	const [numberOfStudents, setNumberOfStudents] = useState("");
 
@@ -252,7 +252,7 @@ const CreateCaseScreen = () => {
       return;
     }
 
-    if (!clientName.trim() || !numberOfStudents) {
+    if (!clientName.trim() || !numberOfStudents || !caseClassificationForm.caseType || !caseClassificationForm.charge) {
       setSubmitError("Please complete all required case details before creating the case.");
       return;
     }
@@ -271,7 +271,8 @@ const CreateCaseScreen = () => {
     const casePayload = {
       clientName: clientName.trim(),
       attorney: attorney.trim() || userInfo.username,
-      crimeType: crimeForm.type,
+      caseType: caseClassificationForm.caseType,
+      charge: caseClassificationForm.charge,
       studentNumber: Number(numberOfStudents),
       questions: normalizedQuestions,
     };
@@ -325,21 +326,45 @@ const CreateCaseScreen = () => {
         </div>
 
         <div className={styles.fieldStyle}>
-          <label className={styles.labelStyle}>Crime Type</label>
+          <label className={styles.labelStyle}>Case Type</label>
           <select
             className={styles.inputStyle}
-            value={crimeForm.type}
-            onChange={(e) =>
-              setCrimeForm((prev) => ({ ...prev, type: e.target.value }))
-            }
+            value={caseClassificationForm.caseType}
+            onChange={(e) => {
+              const selectedCaseType = e.target.value;
+              const charges = ChargeOptionsByCaseType[selectedCaseType] || [];
+              setCaseClassificationForm({
+                caseType: selectedCaseType,
+                charge: charges[0] || "",
+              });
+            }}
           >
-            {Object.values(CrimeTypes).map((type) => (
+            {Object.values(CaseTypes).map((type) => (
               <option key={type} value={type}>
                 {type}
               </option>
             ))}
           </select>
         </div>
+
+        {caseClassificationForm.caseType && (
+          <div className={styles.fieldStyle}>
+            <label className={styles.labelStyle}>Charge/Issue</label>
+            <select
+              className={styles.inputStyle}
+              value={caseClassificationForm.charge}
+              onChange={(e) =>
+                setCaseClassificationForm((prev) => ({ ...prev, charge: e.target.value }))
+              }
+            >
+              {(ChargeOptionsByCaseType[caseClassificationForm.caseType] || []).map((charge) => (
+                <option key={charge} value={charge}>
+                  {charge}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         <div className={styles.fieldStyle}>
           <label className={styles.labelStyle}>Number of Students</label>
@@ -757,7 +782,10 @@ const CreateCaseScreen = () => {
               <strong>Attorney:</strong> {attorney || "—"}
             </div>
             <div>
-              <strong>Crime Type:</strong> {crimeForm.type || "—"}
+              <strong>Case Type:</strong> {caseClassificationForm.caseType || "—"}
+            </div>
+            <div>
+              <strong>Charge/Issue:</strong> {caseClassificationForm.charge || "—"}
             </div>
             <div>
               <strong>Students:</strong> {numberOfStudents || "—"}
