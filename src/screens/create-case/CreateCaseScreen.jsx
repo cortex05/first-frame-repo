@@ -34,6 +34,7 @@ const CreateCaseScreen = () => {
   const [deleteQuestionId, setDeleteQuestionId] = useState(null);
   const [playlistModalOpen, setPlaylistModalOpen] = useState(false);
   const [selectedPlaylist, setSelectedPlaylist] = useState(null);
+  const [selectedPlaylistQuestionIds, setSelectedPlaylistQuestionIds] = useState([]);
   const [isLoadingPlaylist, setIsLoadingPlaylist] = useState(false);
   const [isLoadingPlaylistDetails, setIsLoadingPlaylistDetails] = useState(false);
   const [playlistError, setPlaylistError] = useState("");
@@ -71,8 +72,18 @@ const CreateCaseScreen = () => {
 
   const handleOpenPlaylistModal = () => {
     setSelectedPlaylist(null);
+    setSelectedPlaylistQuestionIds([]);
     setPlaylistError("");
     setPlaylistModalOpen(true);
+  };
+
+  const getPlaylistQuestionKey = (question, index) => question.id || `index-${index}`;
+
+  const handleTogglePlaylistQuestionSelection = (question, index) => {
+    const key = getPlaylistQuestionKey(question, index);
+    setSelectedPlaylistQuestionIds((prev) =>
+      prev.includes(key) ? prev.filter((id) => id !== key) : [...prev, key],
+    );
   };
 
   const handleSelectPlaylist = async (playlist) => {
@@ -87,6 +98,7 @@ const CreateCaseScreen = () => {
     try {
       const playlistDetails = await getPlaylistById(playlist._id, userInfo.token);
       setSelectedPlaylist(playlistDetails);
+      setSelectedPlaylistQuestionIds([]);
     } catch (requestError) {
       setPlaylistError(
         requestError?.response?.data?.message || "Unable to load playlist details.",
@@ -98,18 +110,25 @@ const CreateCaseScreen = () => {
 
   const handleLoadPlaylist = async () => {
     if (!selectedPlaylist) return;
+    if (selectedPlaylistQuestionIds.length === 0) {
+      setPlaylistError("Select at least one question to load.");
+      return;
+    }
 
     setPlaylistError("");
     setIsLoadingPlaylist(true);
 
     try {
-      const loadedQuestions = (selectedPlaylist.questions || []).map((question) =>
-        normalizeQuestionForCase(question),
-      );
+      const loadedQuestions = (selectedPlaylist.questions || [])
+        .filter((question, index) =>
+          selectedPlaylistQuestionIds.includes(getPlaylistQuestionKey(question, index)),
+        )
+        .map((question) => normalizeQuestionForCase(question));
 
       setQuestions((prev) => [...prev, ...loadedQuestions]);
       setPlaylistModalOpen(false);
       setSelectedPlaylist(null);
+      setSelectedPlaylistQuestionIds([]);
     } catch (requestError) {
       setPlaylistError(
         requestError?.response?.data?.message || "Unable to load playlist.",
@@ -705,6 +724,7 @@ const CreateCaseScreen = () => {
         onClose={() => {
           setPlaylistModalOpen(false);
           setSelectedPlaylist(null);
+          setSelectedPlaylistQuestionIds([]);
           setPlaylistError("");
         }}
         title="Access Playlists"
@@ -738,12 +758,20 @@ const CreateCaseScreen = () => {
         ) : (
           <div>
             <h3 className={styles.playlistTitle}>{selectedPlaylist.title}</h3>
+            <p className={styles.playlistSelectionHint}>
+              Select one or more questions to load.
+            </p>
 
             <div className={styles.playlistQuestionsList}>
               {(selectedPlaylist.questions || []).map((question, index) => (
                 <div
                   key={`${selectedPlaylist._id}-${question.id || index}`}
-                  className={styles.playlistQuestionItem}
+                  className={`${styles.playlistQuestionItem} ${styles.playlistQuestionSelectable} ${
+                    selectedPlaylistQuestionIds.includes(getPlaylistQuestionKey(question, index))
+                      ? styles.playlistQuestionSelected
+                      : ""
+                  }`}
+                  onClick={() => handleTogglePlaylistQuestionSelection(question, index)}
                 >
                   <span className={styles.playlistQuestionNumber}>
                     {index + 1}.

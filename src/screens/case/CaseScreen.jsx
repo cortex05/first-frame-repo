@@ -40,22 +40,36 @@ const CaseScreen = () => {
   const [saveError, setSaveError] = useState("");
   const [playlistModalOpen, setPlaylistModalOpen] = useState(false);
   const [selectedPlaylist, setSelectedPlaylist] = useState(null);
+  const [selectedPlaylistQuestionIds, setSelectedPlaylistQuestionIds] = useState([]);
   const [isLoadingPlaylist, setIsLoadingPlaylist] = useState(false);
   const [isLoadingPlaylistDetails, setIsLoadingPlaylistDetails] = useState(false);
 
   if (!activeCase) return <p>Case not found.</p>;
 
   const persistCaseUpdate = async (updatedCase) => {
+    const caseUpdatePayload = { ...updatedCase };
+
+    // CaseScreen does not edit classification fields; omit these to avoid
+    // cross-field validator failures during question-only updates.
+    delete caseUpdatePayload.caseType;
+    delete caseUpdatePayload.charge;
+
     if (!userInfo?.token) {
-      updateCase(updatedCase);
+      const localUpdatedCase = {
+        ...updatedCase,
+        caseType: activeCase.caseType,
+        charge: activeCase.charge,
+      };
+
+      updateCase(localUpdatedCase);
       localStorage.setItem(
         "cases",
         JSON.stringify(useCaseStore.getState().cases),
       );
-      return updatedCase;
+      return localUpdatedCase;
     }
 
-    const savedCase = await saveCase(activeCase._id, updatedCase, userInfo.token);
+    const savedCase = await saveCase(activeCase._id, caseUpdatePayload, userInfo.token);
     updateCase(savedCase || updatedCase);
     localStorage.setItem(
       "cases",
@@ -271,7 +285,17 @@ const CaseScreen = () => {
 
   const handleOpenPlaylistModal = () => {
     setSelectedPlaylist(null);
+    setSelectedPlaylistQuestionIds([]);
     setPlaylistModalOpen(true);
+  };
+
+  const getPlaylistQuestionKey = (question, index) => question.id || `index-${index}`;
+
+  const handleTogglePlaylistQuestionSelection = (question, index) => {
+    const key = getPlaylistQuestionKey(question, index);
+    setSelectedPlaylistQuestionIds((prev) =>
+      prev.includes(key) ? prev.filter((id) => id !== key) : [...prev, key],
+    );
   };
 
   const handleSelectPlaylist = async (playlist) => {
@@ -286,6 +310,7 @@ const CaseScreen = () => {
     try {
       const playlistDetails = await getPlaylistById(playlist._id, userInfo.token);
       setSelectedPlaylist(playlistDetails);
+      setSelectedPlaylistQuestionIds([]);
     } catch (requestError) {
       setSaveError(
         requestError?.response?.data?.message || "Unable to load playlist details.",
@@ -297,13 +322,19 @@ const CaseScreen = () => {
 
   const handleLoadPlaylist = async () => {
     if (!selectedPlaylist) return;
+    if (selectedPlaylistQuestionIds.length === 0) {
+      setSaveError("Select at least one question to load.");
+      return;
+    }
 
     setIsLoadingPlaylist(true);
 
     try {
-      const loadedQuestions = (selectedPlaylist.questions || []).map((question) =>
-        normalizeQuestionForCase(question),
-      );
+      const loadedQuestions = (selectedPlaylist.questions || [])
+        .filter((question, index) =>
+          selectedPlaylistQuestionIds.includes(getPlaylistQuestionKey(question, index)),
+        )
+        .map((question) => normalizeQuestionForCase(question));
 
       await persistCaseUpdate({
         ...activeCase,
@@ -312,6 +343,8 @@ const CaseScreen = () => {
 
       setPlaylistModalOpen(false);
       setSelectedPlaylist(null);
+      setSelectedPlaylistQuestionIds([]);
+      setSaveError("");
     } catch (requestError) {
       setSaveError(
         requestError?.response?.data?.message || "Unable to load playlist.",
@@ -811,20 +844,23 @@ const CaseScreen = () => {
           onClose={() => {
             setPlaylistModalOpen(false);
             setSelectedPlaylist(null);
+            setSelectedPlaylistQuestionIds([]);
+            setSaveError("");
           }}
           title="Access Playlists"
         >
           {!selectedPlaylist ? (
             <div>
               {playlists.length === 0 ? (
-                <p style={{ color: "#666" }}>No playlists found.</p>
+                <p className={styles.playlistStatusText}>No playlists found.</p>
               ) : (
                 playlists.map((playlist) => (
                   <div
                     key={playlist._id}
                     onClick={() => handleSelectPlaylist(playlist)}
-                    className={styles.caseItem}
-                    style={{ opacity: isLoadingPlaylistDetails ? 0.7 : 1 }}
+                    className={`${styles.playlistListItem} ${
+                      isLoadingPlaylistDetails ? styles.playlistLoadingState : ""
+                    }`}
                   >
                     <span>{playlist.title}</span>
                   </div>
@@ -832,98 +868,59 @@ const CaseScreen = () => {
               )}
 
               {isLoadingPlaylistDetails && (
-                <p style={{ color: "#666", marginTop: 12 }}>Loading playlist...</p>
+                <p className={styles.playlistStatusText}>Loading playlist...</p>
               )}
             </div>
           ) : (
             <div>
-              <h3 style={{ marginTop: 0, marginBottom: 12 }}>{selectedPlaylist.title}</h3>
+              <h3 className={styles.playlistTitle}>{selectedPlaylist.title}</h3>
+              <p className={styles.playlistSelectionHint}>
+                Select one or more questions to load.
+              </p>
 
-              <div style={{ marginBottom: 16 }}>
+              <div className={styles.playlistQuestionsList}>
                 {(selectedPlaylist.questions || []).map((question, index) => (
                   <div
                     key={`${selectedPlaylist._id}-${question.id || index}`}
-                    className={styles.caseItem}
+                    className={`${styles.playlistQuestionItem} ${styles.playlistQuestionSelectable} ${
+                      selectedPlaylistQuestionIds.includes(getPlaylistQuestionKey(question, index))
+                        ? styles.playlistQuestionSelected
+                        : ""
+                    }`}
+                    onClick={() => handleTogglePlaylistQuestionSelection(question, index)}
                   >
-                    <span style={{ fontWeight: 600, color: "#2c6fad", minWidth: 24 }}>
+                    <span className={styles.playlistQuestionNumber}>
                       {index + 1}.
                     </span>
-                    <span style={{ flex: 1 }}>{question.text}</span>
+                    <span className={styles.playlistQuestionText}>{question.text}</span>
                   </div>
                 ))}
               </div>
 
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
+              <div className={styles.playlistActionRow}>
                 <button
                   onClick={handleLoadPlaylist}
                   disabled={isLoadingPlaylist}
-                  style={{
-                    flex: 1,
-                    minWidth: 140,
-                    padding: "10px 0",
-                    fontWeight: 600,
-                    background: "var(--confirm)",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: 6,
-                    cursor: isLoadingPlaylist ? "not-allowed" : "pointer",
-                    opacity: isLoadingPlaylist ? 0.75 : 1,
-                  }}
+                  className={styles.playlistLoadButton}
                 >
-                  {isLoadingPlaylist ? "Loading..." : "Load playlist"}
-                </button>
-                <button
-                  onClick={() => {}}
-                  style={{
-                    flex: 1,
-                    minWidth: 100,
-                    padding: "10px 0",
-                    fontWeight: 600,
-                    background: "#f0ad4e",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: 6,
-                    cursor: "pointer",
-                  }}
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => {}}
-                  style={{
-                    flex: 1,
-                    minWidth: 100,
-                    padding: "10px 0",
-                    fontWeight: 600,
-                    background: "#d9534f",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: 6,
-                    cursor: "pointer",
-                  }}
-                >
-                  Delete
+                  {isLoadingPlaylist ? "Loading..." : "Load Questions"}
                 </button>
                 <button
                   onClick={() => {
                     setPlaylistModalOpen(false);
                     setSelectedPlaylist(null);
+                    setSelectedPlaylistQuestionIds([]);
+                    setSaveError("");
                   }}
-                  style={{
-                    flex: 1,
-                    minWidth: 100,
-                    padding: "10px 0",
-                    fontWeight: 600,
-                    background: "#f0f0f0",
-                    color: "#333",
-                    border: "1px solid #ccc",
-                    borderRadius: 6,
-                    cursor: "pointer",
-                  }}
+                  className={styles.playlistCancelButton}
                 >
                   Cancel
                 </button>
               </div>
+
+              {saveError && (
+                <p className={styles.playlistErrorText}>{saveError}</p>
+              )}
             </div>
           )}
         </Modal>

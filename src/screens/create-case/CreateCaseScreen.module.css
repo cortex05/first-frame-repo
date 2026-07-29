@@ -132,6 +132,27 @@
   font-size: 14px;
 }
 
+.playlistQuestionSelectable {
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.playlistQuestionSelectable:hover {
+  background: #e8f1ff;
+  border-color: #7aa9df;
+}
+
+.playlistQuestionSelected {
+  background: #2c6fad;
+  border-color: #1f4f85;
+  box-shadow: 0 0 0 1px #1f4f85;
+}
+
+.playlistQuestionSelected .playlistQuestionNumber,
+.playlistQuestionSelected .playlistQuestionText {
+  color: #fff;
+}
+
 .playlistQuestionNumber {
   font-weight: 600;
   color: #2c6fad;
@@ -140,6 +161,13 @@
 
 .playlistQuestionText {
   flex: 1;
+}
+
+.playlistSelectionHint {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #666;
+  font-size: 13px;
 }
 
 .playlistLoadButton {

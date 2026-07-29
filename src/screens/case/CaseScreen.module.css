@@ -123,3 +123,128 @@
 .accessPlaylistsButton {
 	background: #4a90d9;
 }
+
+.playlistListItem {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	padding: 8px 12px;
+	margin-bottom: 8px;
+	background: #f5f8ff;
+	border: 1px solid #c5d8f5;
+	border-radius: 6px;
+	font-size: 14px;
+	cursor: pointer;
+	color: var(--modal-text);
+}
+
+.playlistLoadingState {
+	opacity: 0.7;
+}
+
+.playlistStatusText {
+	color: #666;
+	margin-top: 12px;
+}
+
+.playlistErrorText {
+	color: #d9534f;
+	margin-top: 12px;
+}
+
+.playlistTitle {
+	margin-top: 0;
+	margin-bottom: 12px;
+}
+
+.playlistSelectionHint {
+	margin-top: 0;
+	margin-bottom: 10px;
+	color: #666;
+	font-size: 13px;
+}
+
+.playlistQuestionsList {
+	margin-bottom: 16px;
+}
+
+.playlistQuestionItem {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 8px 12px;
+	margin-bottom: 8px;
+	background: #f5f8ff;
+	border: 1px solid #c5d8f5;
+	border-radius: 6px;
+	color: var(--modal-text);
+	font-size: 14px;
+}
+
+.playlistQuestionSelectable {
+	cursor: pointer;
+	transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.playlistQuestionSelectable:hover {
+	background: #e8f1ff;
+	border-color: #7aa9df;
+}
+
+.playlistQuestionSelected {
+	background: #2c6fad;
+	border-color: #1f4f85;
+	box-shadow: 0 0 0 1px #1f4f85;
+}
+
+.playlistQuestionSelected .playlistQuestionNumber,
+.playlistQuestionSelected .playlistQuestionText {
+	color: #fff;
+}
+
+.playlistQuestionNumber {
+	font-weight: 600;
+	color: #2c6fad;
+	min-width: 24px;
+}
+
+.playlistQuestionText {
+	flex: 1;
+}
+
+.playlistActionRow {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+	margin-bottom: 8px;
+}
+
+.playlistLoadButton {
+	flex: 1;
+	min-width: 140px;
+	padding: 10px 0;
+	font-weight: 600;
+	background: var(--confirm);
+	color: #fff;
+	border: none;
+	border-radius: 6px;
+	cursor: pointer;
+}
+
+.playlistLoadButton:disabled {
+	cursor: not-allowed;
+	opacity: 0.75;
+}
+
+.playlistCancelButton {
+	flex: 1;
+	min-width: 100px;
+	padding: 10px 0;
+	font-weight: 600;
+	background: #f0f0f0;
+	color: #333;
+	border: 1px solid #ccc;
+	border-radius: 6px;
+	cursor: pointer;
+}
