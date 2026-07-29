@@ -314,16 +314,7 @@ const MakePlaylistScreen = () => {
 
           <button
             onClick={openQuestionModal}
-            style={{
-              marginTop: 8,
-              padding: '10px 20px',
-              fontSize: 15,
-              background: '#4a90d9',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 6,
-              cursor: 'pointer',
-            }}
+            className={styles.addQuestionButton}
           >
             + Add Question
           </button>
@@ -335,25 +326,47 @@ const MakePlaylistScreen = () => {
           </p>
         )}
 
-        <button
-          onClick={handleCreatePlaylist}
-          disabled={isSubmitting}
-          style={{
-            display: 'inline-block',
-            padding: '14px 36px',
-            fontSize: 17,
-            fontWeight: 600,
-            background: '#2c6fad',
-            color: '#fff',
-            borderRadius: 8,
-            textDecoration: 'none',
-            border: 'none',
-            cursor: isSubmitting ? 'not-allowed' : 'pointer',
-            opacity: isSubmitting ? 0.75 : 1,
-          }}
-        >
-          {isSubmitting ? 'Creating Playlist...' : 'Create Playlist'}
-        </button>
+        
+        <div>
+          <button
+            onClick={handleCreatePlaylist}
+            disabled={isSubmitting}
+            style={{
+              display: 'inline-block',
+              padding: '14px 36px',
+              fontSize: 17,
+              fontWeight: 600,
+              background: '#2c6fad',
+              color: '#fff',
+              borderRadius: 8,
+              textDecoration: 'none',
+              border: 'none',
+              cursor: isSubmitting ? 'not-allowed' : 'pointer',
+              opacity: isSubmitting ? 0.75 : 1,
+              marginRight: 12,
+            }}
+          >
+            {isSubmitting ? 'Creating Playlist...' : 'Create Playlist'}
+          </button>
+          <button
+            onClick={() => navigate(fromCaseId ? `/case/${fromCaseId}` : '/home')}
+            style={{
+              display: 'inline-block',
+              padding: '14px 36px',
+              fontSize: 17,
+              fontWeight: 600,
+              background: 'var(--decline)',
+              color: '#fff',
+              borderRadius: 8,
+              textDecoration: 'none',
+              border: 'none',
+              cursor: isSubmitting ? 'not-allowed' : 'pointer',
+              opacity: isSubmitting ? 0.75 : 1,
+            }}
+          >
+            Cancel
+          </button>
+        </div>
       </div>
 
       <Modal
