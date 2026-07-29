@@ -5,16 +5,13 @@ class Case {
   	answers = {};
 		seated = false;
 
-  	constructor(_id, name, author, crimeType,location, studentNumber, caseDate, questions) {
+  	constructor(_id, clientName, attorney, crimeType, studentNumber, questions) {
     	this._id = _id;
-    	this.name = name;
-    	this.author = author;
+		this.clientName = clientName;
+		this.attorney = attorney;
 			this.crimeType = crimeType;
-    	this.location = location;
     	this.studentNumber = studentNumber;
-			this.caseDate = caseDate;
     	this.questions = questions;
-    	this.dateCreated = new Date();
   	}
 }
 

@@ -108,7 +108,7 @@ const Home = () => {
                     onClick={() => handleSelectCase(c._id)}
                     className={styles.caseItem}
                   >
-                    <span>{c.name}</span> by <span>{c.author}</span>
+                    <span>{c.clientName}</span> by <span>{c.attorney}</span>
                   </div>
                 ))}
               </div>

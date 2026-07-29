@@ -18,24 +18,14 @@ import { EMPTY_QUESTION_FORM, EMPTY_CRIME_TYPE_FORM } from "../../utils/formUtil
 
 import styles from "./CreateCaseScreen.module.css";
 
-const getDefaultDateTimeAtEight = () => {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}T08:00`;
-};
-
 const CreateCaseScreen = () => {
 	const navigate = useNavigate();
   const [caseId] = useState(() => uuidv4());
-  const [name, setName] = useState("");
-	const [author, setAuthor] = useState("");
+  const [clientName, setClientName] = useState("");
+	const [attorney, setAttorney] = useState("");
   const [crimeForm, setCrimeForm] = useState(EMPTY_CRIME_TYPE_FORM);
 
-  const [location, setLocation] = useState("");
 	const [numberOfStudents, setNumberOfStudents] = useState("");
-  const [dateTime, setDateTime] = useState(() => getDefaultDateTimeAtEight());
 
   const [questions, setQuestions] = useState([]);
   const [questionModal, setQuestionModal] = useState(false);
@@ -262,7 +252,7 @@ const CreateCaseScreen = () => {
       return;
     }
 
-    if (!name.trim() || !location.trim() || !numberOfStudents || !dateTime) {
+    if (!clientName.trim() || !numberOfStudents) {
       setSubmitError("Please complete all required case details before creating the case.");
       return;
     }
@@ -279,12 +269,10 @@ const CreateCaseScreen = () => {
     );
 
     const casePayload = {
-      name: name.trim(),
-      author: author.trim() || userInfo.username,
+      clientName: clientName.trim(),
+      attorney: attorney.trim() || userInfo.username,
       crimeType: crimeForm.type,
-      location: location.trim(),
       studentNumber: Number(numberOfStudents),
-      caseDate: dateTime ? new Date(dateTime).toISOString() : null,
       questions: normalizedQuestions,
     };
 
@@ -315,24 +303,24 @@ const CreateCaseScreen = () => {
         <h2 style={{ marginBottom: 16 }}>Basic Info</h2>
 
         <div className={styles.fieldStyle}>
-          <label className={styles.labelStyle}>Name</label>
+          <label className={styles.labelStyle}>Client Name</label>
           <input
             className={styles.inputStyle}
             type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Case name"
+            value={clientName}
+            onChange={(e) => setClientName(e.target.value)}
+            placeholder="Client name"
           />
         </div>
 
         <div className={styles.fieldStyle}>
-          <label className={styles.labelStyle}>Author</label>
+          <label className={styles.labelStyle}>Attorney</label>
           <input
             className={styles.inputStyle}
             type="text"
-            value={author}
-            onChange={(e) => setAuthor(e.target.value)}
-            placeholder="Your name"
+            value={attorney}
+            onChange={(e) => setAttorney(e.target.value)}
+            placeholder="Attorney name"
           />
         </div>
 
@@ -354,17 +342,6 @@ const CreateCaseScreen = () => {
         </div>
 
         <div className={styles.fieldStyle}>
-          <label className={styles.labelStyle}>Location</label>
-          <input
-            className={styles.inputStyle}
-            type="text"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            placeholder="Room / building"
-          />
-        </div>
-
-        <div className={styles.fieldStyle}>
           <label className={styles.labelStyle}>Number of Students</label>
           <input
             className={styles.inputStyle}
@@ -373,16 +350,6 @@ const CreateCaseScreen = () => {
             value={numberOfStudents}
             onChange={(e) => setNumberOfStudents(e.target.value)}
             placeholder="e.g. 30"
-          />
-        </div>
-
-        <div className={styles.fieldStyle}>
-          <label className={styles.labelStyle}>Date / Time</label>
-          <input
-            className={styles.inputStyle}
-            type="datetime-local"
-            value={dateTime}
-            onChange={(e) => setDateTime(e.target.value)}
           />
         </div>
       </section>
@@ -784,22 +751,16 @@ const CreateCaseScreen = () => {
         >
           <div style={{ fontSize: 20, marginBottom: 16, lineHeight: 1.8, color: "var(--modal-text)" }}>
             <div>
-              <strong>Name:</strong> {name || "—"}
+              <strong>Client Name:</strong> {clientName || "—"}
             </div>
             <div>
-              <strong>Author:</strong> {author || "—"}
+              <strong>Attorney:</strong> {attorney || "—"}
             </div>
             <div>
               <strong>Crime Type:</strong> {crimeForm.type || "—"}
             </div>
             <div>
-              <strong>Location:</strong> {location || "—"}
-            </div>
-            <div>
               <strong>Students:</strong> {numberOfStudents || "—"}
-            </div>
-            <div>
-              <strong>Date / Time:</strong> {dateTime ? new Date(dateTime).toLocaleString() : "—"}
             </div>
             <div style={{ marginTop: 12 }}>
               <strong>Questions ({questions.length}):</strong>
