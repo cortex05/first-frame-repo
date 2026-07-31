@@ -62,7 +62,7 @@
 .confirm {
 	background: var(--confirm);
 	color: #fff;
-}
+} 
 
 .decline {
 	background: var(--decline);
