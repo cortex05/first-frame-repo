@@ -480,16 +480,7 @@ const CreateCaseScreen = () => {
 
         <button
           onClick={openQuestionModal}
-          style={{
-            marginTop: 8,
-            padding: "10px 20px",
-            fontSize: 15,
-            background: "var(--confirm)",
-            color: "#fff",
-            border: "none",
-            borderRadius: 6,
-            cursor: "pointer",
-          }}
+          className={styles.addQuestionButton}
         >
           + Add Question
         </button>
@@ -505,18 +496,9 @@ const CreateCaseScreen = () => {
       {/* Submit */}
       <button
         onClick={() => setPreviewModal(true)}
-        style={{
-          padding: "14px 36px",
-          fontSize: 17,
-          fontWeight: 600,
-          background: "#2c6fad",
-          color: "#fff",
-          border: "none",
-          borderRadius: 8,
-          cursor: "pointer",
-        }}
+        className={styles.linkButton}
       >
-        Submit Case
+        Create Case
       </button>
 
       {/* Add Question Modal */}

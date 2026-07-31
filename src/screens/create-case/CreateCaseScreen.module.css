@@ -10,19 +10,6 @@
   margin-bottom: 24px;
 }
 
-
-.linkButton {
-  display: inline-block;
-  padding: 16px 32px;
-  font-size: 18px;
-  font-weight: 600;
-  background: var(--confirm);
-  color: #fff;
-  border-radius: 8px;
-  text-decoration: none;
-  cursor: pointer;
-}
-
 .labelStyle {
   font-size: 16px;
   font-weight: 600;
@@ -67,18 +54,6 @@
   min-width: 52px; 
   font-size: 14px; 
   font-weight: 600; 
-}
-
-.playlistAccessButton {
-  margin-top: 8px;
-  margin-left: 8px;
-  padding: 10px 20px;
-  font-size: 15px;
-  background: #4a90d9;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
 }
 
 .playlistListItem {
@@ -202,4 +177,60 @@
 .summaryCreateButton:disabled {
   opacity: 0.75;
   cursor: not-allowed;
+}
+
+.linkButton {
+  display: inline-block;
+  padding: 16px 32px;
+  font-size: 18px;
+  font-weight: 600;
+  background: var(--blue-background);
+	color: var(--light-text);
+  border-radius: 8px;
+  text-decoration: none;
+  border: 3px solid var(--blue-background);
+  transition: background 0.5s ease, color 0.5s ease;
+}
+
+.linkButton:hover {
+  background: var(--light-blue-background);
+  color: var(--modal-text);
+}
+
+.playlistAccessButton {
+  margin-top: 8px;
+  margin-left: 8px;
+  padding: 10px 20px;
+  font-size: 15px;
+  background: var(--blue-background);
+  color: #fff;
+  border: 2px solid var(--light-blue-background);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.5s ease, color 0.5s ease;
+}
+
+.playlistAccessButton:hover {
+  background: var(--light-blue-background);
+  border: 2px solid var(--blue-background);
+  color: var(--modal-text);
+}
+
+.addQuestionButton {
+  margin-top: 8px;
+  padding: 10px 20px;
+  font-size: 15px;
+  background: var(--confirm);
+  color: #fff;
+  border: 2px solid var(--confirm-hover);
+  border-radius: 6px;
+  cursor: pointer;
+  /* transition: background 0.5s ease, color 0.5s ease; */
+  transition: border 0.5s ease, box-shadow 0.5s ease;
+  text-decoration: none;
+}
+
+.addQuestionButton:hover {
+  /* background: var(--blue-background); */
+  border: 2px solid var(--light-blue-background);
 }
