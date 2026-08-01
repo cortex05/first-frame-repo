@@ -42,7 +42,7 @@ const LoginScreen = () => {
 
   return (
     <div className={styles.container}>
-      <h1>Login!</h1>
+      <h1>Login</h1>
       <p className={styles.subtitle}>Sign in to access your cases.</p>
 
       <form onSubmit={handleSubmit} className={styles.form}>
