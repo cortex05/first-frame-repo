@@ -1,4 +1,4 @@
-import { QuestionType, CaseTypes, ChargeOptionsByCaseType } from "../types/ENUMS";
+import { QuestionType } from "../types/ENUMS";
 
 export const EMPTY_QUESTION_FORM = {
   text: "",
@@ -13,9 +13,4 @@ export const EMPTY_QUESTION_FORM = {
     { label: true, value: 3 },
     { label: false, value: 0 },
   ],
-};
-
-export const EMPTY_CASE_CLASSIFICATION_FORM = {
-  caseType: CaseTypes.CRIMINAL,
-  charge: ChargeOptionsByCaseType[CaseTypes.CRIMINAL][0],
 };

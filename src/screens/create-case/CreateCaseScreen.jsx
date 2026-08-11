@@ -11,10 +11,11 @@ import { createCase } from "../../api/case";
 import { getPlaylistById } from "../../api/playlist";
 
 import Question from "../../types/polls/Question";
-import { QuestionType, CaseTypes, ChargeOptionsByCaseType } from "../../types/ENUMS";
+import { QuestionType } from "../../types/ENUMS";
+import { CASE_CATEGORIES_BY_AREA, caseCategoryLabel } from "../../types/caseCategories";
 import { normalizeQuestion } from "../../utils/questionNormalization";
 
-import { EMPTY_QUESTION_FORM, EMPTY_CASE_CLASSIFICATION_FORM } from "../../utils/formUtils";
+import { EMPTY_QUESTION_FORM } from "../../utils/formUtils";
 
 import styles from "./CreateCaseScreen.module.css";
 
@@ -23,7 +24,7 @@ const CreateCaseScreen = () => {
   const [caseId] = useState(() => uuidv4());
   const [clientName, setClientName] = useState("");
 	const [attorney, setAttorney] = useState("");
-  const [caseClassificationForm, setCaseClassificationForm] = useState(EMPTY_CASE_CLASSIFICATION_FORM);
+  const [category, setCategory] = useState("");
 
 	const [numberOfStudents, setNumberOfStudents] = useState("");
 
@@ -271,7 +272,7 @@ const CreateCaseScreen = () => {
       return;
     }
 
-    if (!clientName.trim() || !numberOfStudents || !caseClassificationForm.caseType || !caseClassificationForm.charge) {
+    if (!clientName.trim() || !numberOfStudents || !category) {
       setSubmitError("Please complete all required case details before creating the case.");
       return;
     }
@@ -290,8 +291,7 @@ const CreateCaseScreen = () => {
     const casePayload = {
       clientName: clientName.trim(),
       attorney: attorney.trim() || userInfo.username,
-      caseType: caseClassificationForm.caseType,
-      charge: caseClassificationForm.charge,
+      category,
       studentNumber: Number(numberOfStudents),
       questions: normalizedQuestions,
     };
@@ -345,45 +345,24 @@ const CreateCaseScreen = () => {
         </div>
 
         <div className={styles.fieldStyle}>
-          <label className={styles.labelStyle}>Case Type</label>
+          <label className={styles.labelStyle}>Case Category</label>
           <select
             className={styles.inputStyle}
-            value={caseClassificationForm.caseType}
-            onChange={(e) => {
-              const selectedCaseType = e.target.value;
-              const charges = ChargeOptionsByCaseType[selectedCaseType] || [];
-              setCaseClassificationForm({
-                caseType: selectedCaseType,
-                charge: charges[0] || "",
-              });
-            }}
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
           >
-            {Object.values(CaseTypes).map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
+            <option value="">Select a case category...</option>
+            {Object.entries(CASE_CATEGORIES_BY_AREA).map(([area, categories]) => (
+              <optgroup key={area} label={area}>
+                {categories.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.matter}
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </select>
         </div>
-
-        {caseClassificationForm.caseType && (
-          <div className={styles.fieldStyle}>
-            <label className={styles.labelStyle}>Charge/Issue</label>
-            <select
-              className={styles.inputStyle}
-              value={caseClassificationForm.charge}
-              onChange={(e) =>
-                setCaseClassificationForm((prev) => ({ ...prev, charge: e.target.value }))
-              }
-            >
-              {(ChargeOptionsByCaseType[caseClassificationForm.caseType] || []).map((charge) => (
-                <option key={charge} value={charge}>
-                  {charge}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
 
         <div className={styles.fieldStyle}>
           <label className={styles.labelStyle}>Number of Students</label>
@@ -792,10 +771,7 @@ const CreateCaseScreen = () => {
               <strong>Attorney:</strong> {attorney || "—"}
             </div>
             <div>
-              <strong>Case Type:</strong> {caseClassificationForm.caseType || "—"}
-            </div>
-            <div>
-              <strong>Charge/Issue:</strong> {caseClassificationForm.charge || "—"}
+              <strong>Case Category:</strong> {caseCategoryLabel(category)}
             </div>
             <div>
               <strong>Students:</strong> {numberOfStudents || "—"}

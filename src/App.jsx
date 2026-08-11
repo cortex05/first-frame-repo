@@ -4,6 +4,7 @@ import './App.css'
 
 import useCaseStore from './store/useCaseStore';
 import useAuthStore from './store/useAuthStore';
+import { upgradeLegacyCases } from './utils/caseNormalization';
 
 import Home from './screens/home/HomeScreen';
 import Start from './screens/start/StartScreen';
@@ -41,7 +42,11 @@ function App() {
 	useEffect(() => {
 		const storedCases = localStorage.getItem('cases') || [];
 		if(storedCases.length > 0) {
-			getAllCases(JSON.parse(storedCases));
+			// Cases saved before classification became a single `category` id
+			// still hold the old caseType/charge pair.
+			const upgradedCases = upgradeLegacyCases(JSON.parse(storedCases));
+			localStorage.setItem('cases', JSON.stringify(upgradedCases));
+			getAllCases(upgradedCases);
 		} else {
 			localStorage.setItem('cases', JSON.stringify([]));
 			getAllCases([]);

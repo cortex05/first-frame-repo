@@ -9,6 +9,7 @@ import { saveCase } from "../../api/case";
 import { getPlaylistById } from "../../api/playlist";
 import Question from "../../types/polls/Question";
 import { QuestionType } from "../../types/ENUMS";
+import { caseCategoryLabel } from "../../types/caseCategories";
 import { EMPTY_QUESTION_FORM } from "../../utils/formUtils";
 import { normalizeQuestion } from "../../utils/questionNormalization";
 
@@ -47,29 +48,16 @@ const CaseScreen = () => {
   if (!activeCase) return <p>Case not found.</p>;
 
   const persistCaseUpdate = async (updatedCase) => {
-    const caseUpdatePayload = { ...updatedCase };
-
-    // CaseScreen does not edit classification fields; omit these to avoid
-    // cross-field validator failures during question-only updates.
-    delete caseUpdatePayload.caseType;
-    delete caseUpdatePayload.charge;
-
     if (!userInfo?.token) {
-      const localUpdatedCase = {
-        ...updatedCase,
-        caseType: activeCase.caseType,
-        charge: activeCase.charge,
-      };
-
-      updateCase(localUpdatedCase);
+      updateCase(updatedCase);
       localStorage.setItem(
         "cases",
         JSON.stringify(useCaseStore.getState().cases),
       );
-      return localUpdatedCase;
+      return updatedCase;
     }
 
-    const savedCase = await saveCase(activeCase._id, caseUpdatePayload, userInfo.token);
+    const savedCase = await saveCase(activeCase._id, updatedCase, userInfo.token);
     updateCase(savedCase || updatedCase);
     localStorage.setItem(
       "cases",
@@ -365,10 +353,7 @@ const CaseScreen = () => {
         <section style={{ marginBottom: 32 }} className={styles.infoSection}>
           <p className={styles.value}>Attorney: {activeCase.attorney || "—"}</p>
           <p className={styles.value}>
-            Case Type: {activeCase.caseType || "—"}
-          </p>
-          <p className={styles.value}>
-            Charge/Issue: {activeCase.charge || "—"}
+            Case Category: {caseCategoryLabel(activeCase.category)}
           </p>
           <p className={styles.value}>
             Number of Students: {activeCase.studentNumber || "—"}
