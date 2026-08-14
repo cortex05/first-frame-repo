@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import useCaseStore from "../../store/useCaseStore";
@@ -18,6 +18,10 @@ import styles from "./CaseScreen.module.css";
 const CaseScreen = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [id]);
 
   const activeCase = useCaseStore((state) =>
     state.cases.find((c) => c._id === id),
