@@ -351,7 +351,7 @@ const CaseScreen = () => {
       <TopNavbar />
 
       <div style={{ maxWidth: 640, margin: "0 auto", padding: 32 }}>
-        <h1 style={{ marginBottom: 32 }}>{activeCase.clientName}</h1>
+        <h1 style={{ marginBottom: 32 }}>Client: {activeCase.clientName}</h1>
 
         {/* Basic Info */}
         <section style={{ marginBottom: 32 }} className={styles.infoSection}>
