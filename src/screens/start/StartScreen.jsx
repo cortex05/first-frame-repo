@@ -1,9 +1,10 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useMemo } from "react";
 import { Stage, Layer, Rect, Circle, Text, Group } from "react-konva";
 import "../../App.css";
 import useCaseStore from "../../store/useCaseStore";
-import { useNavigate, useParams, Link } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { initialStudentGeneration } from "../../utilities/studentUtilities";
+import useSeatingDraft from "../../hooks/useSeatingDraft";
 
 import Modal from "../../components/modal/Modal";
 import styles from "./SaveScreen.module.css";
@@ -46,39 +47,75 @@ const StartScreen = () => {
   );
   const updateCase = useCaseStore((state) => state.updateCase);
 
-  const [rects, setRects] = useState([]);
-  const [students, setStudents] = useState([]);
-  const [displayedStudents, setDisplayedStudents] = useState([]);
   const [saveWarning, setSaveWarning] = useState(false);
   const [saveCheck, setSaveCheck] = useState(false);
 
   const [rowInput, setRowInput] = useState(2);
   const [colInput, setColInput] = useState(3);
 
-  const [scale, setScale] = useState(1);
-  const [stagePos, setStagePos] = useState({ x: 0, y: 0 });
   const stageRef = useRef(null);
   const lastPinchDist = useRef(0);
 
-  useEffect(() => {
-    if (!activeCase) return;
-    setStudents(initialStudentGeneration(activeCase.studentNumber));
-  }, []);
+  const studentNumber = Number(activeCase?.studentNumber);
+  const {
+    rects,
+    view,
+    canUndo,
+    addRect,
+    moveRect,
+    clearRects,
+    undo,
+    setView,
+    discardDraft,
+  } = useSeatingDraft(caseId, studentNumber);
 
-  if (!activeCase) return <p style={{ padding: 32 }}>Case not found.</p>;
+  // The roster is regenerated from the case rather than stored, so a refresh
+  // rebuilds it; `rects` alone decides who has already been seated.
+  const roster = useMemo(
+    () =>
+      Number.isFinite(studentNumber) ? initialStudentGeneration(studentNumber) : [],
+    [studentNumber],
+  );
+
+  const seatedIds = useMemo(
+    () => new Set(rects.flatMap((r) => r.assignedStudents.map((s) => s.id))),
+    [rects],
+  );
+
+  const remaining = useMemo(
+    () => roster.filter((s) => !seatedIds.has(s.number)),
+    [roster, seatedIds],
+  );
+
+  // Distinguishes "the store has not hydrated yet" from a genuinely bad id.
+  const caseInStorage = useMemo(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem("cases") || "[]");
+      return Array.isArray(stored) && stored.some((c) => c._id === caseId);
+    } catch {
+      return false;
+    }
+  }, [caseId]);
+
+  if (!activeCase) {
+    return (
+      <p style={{ padding: 32 }}>
+        {caseInStorage ? "Loading case…" : "Case not found."}
+      </p>
+    );
+  }
 
   const rows = Math.max(1, parseInt(rowInput, 10) || 1);
   const cols = Math.max(1, parseInt(colInput, 10) || 1);
   const totalCells = rows * cols;
 
   const handleAddRect = () => {
-    if (students.length === 0) return;
-    const toAssign = students.slice(0, Math.min(totalCells, students.length));
-    const remaining = students.slice(toAssign.length);
+    if (remaining.length === 0) return;
+    const toAssign = remaining.slice(0, Math.min(totalCells, remaining.length));
     const { width, height } = getRectSize(rows, cols);
     const offset = rects.length * 24;
-    const newRect = {
-      id: "rect-" + Date.now(),
+    addRect({
+      id: `rect-${Date.now()}-${rects.length}`,
       x: 20 + offset,
       y: 20 + offset,
       width,
@@ -89,10 +126,7 @@ const StartScreen = () => {
         const pos = getCircleRelPos(i, rows, cols);
         return { id: s.number, xRel: pos.x, yRel: pos.y };
       }),
-    };
-    setRects((prev) => [...prev, newRect]);
-    setStudents(remaining);
-    setDisplayedStudents((prev) => [...prev, ...toAssign]);
+    });
   };
 
   const saveChart = () => {
@@ -105,16 +139,22 @@ const StartScreen = () => {
         y: r.y + s.yRel,
       })),
     }));
+    const seatedStudents = rects.flatMap((r) =>
+      r.assignedStudents
+        .map((s) => roster.find((student) => student.number === s.id))
+        .filter(Boolean),
+    );
     updateCase({
       ...activeCase,
       chartData: { rects: rectsForSave },
-      students: displayedStudents,
+      students: seatedStudents,
       seated: true,
     });
     localStorage.setItem(
       "cases",
       JSON.stringify(useCaseStore.getState().cases),
     );
+    discardDraft();
     navigate(`/questions/${activeCase._id}`);
   };
 
@@ -132,8 +172,8 @@ const StartScreen = () => {
       x: (center.x - stage.x()) / oldScale,
       y: (center.y - stage.y()) / oldScale,
     };
-    setScale(newScale);
-    setStagePos({
+    setView({
+      scale: newScale,
       x: center.x - pointTo.x * newScale,
       y: center.y - pointTo.y * newScale,
     });
@@ -151,8 +191,8 @@ const StartScreen = () => {
     const newScale = clampScale(
       e.evt.deltaY < 0 ? oldScale * SCALE_STEP : oldScale / SCALE_STEP,
     );
-    setScale(newScale);
-    setStagePos({
+    setView({
+      scale: newScale,
       x: pointer.x - pointTo.x * newScale,
       y: pointer.y - pointTo.y * newScale,
     });
@@ -178,8 +218,8 @@ const StartScreen = () => {
     };
     const newScale = clampScale(oldScale * (dist / lastPinchDist.current));
     lastPinchDist.current = dist;
-    setScale(newScale);
-    setStagePos({
+    setView({
+      scale: newScale,
       x: midX - pointTo.x * newScale,
       y: midY - pointTo.y * newScale,
     });
@@ -197,6 +237,17 @@ const StartScreen = () => {
     borderRadius: 6,
     boxSizing: "border-box",
   };
+
+  const secondaryButtonStyle = (enabled) => ({
+    padding: "8px 0",
+    fontSize: 13,
+    fontWeight: 600,
+    background: "#fff",
+    color: enabled ? "#2c6fad" : "#aaa",
+    border: `1px solid ${enabled ? "#c5d8f5" : "#e0e0e0"}`,
+    borderRadius: 6,
+    cursor: enabled ? "pointer" : "not-allowed",
+  });
 
   return (
     <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
@@ -219,14 +270,14 @@ const StartScreen = () => {
         </h2>
 
         <p style={{ margin: 0, fontSize: 16, color: "#555" }}>
-          Remaining: <strong>{students.length}</strong> /{" "}
+          Remaining: <strong>{remaining.length}</strong> /{" "}
           {activeCase.studentNumber}
         </p>
 
         <p style={{ margin: 0, fontSize: 16, color: "#555" }}>
           {rows} × {cols} = {totalCells} cells
-          {students.length < totalCells && students.length > 0
-            ? ` (${students.length} filled, ${totalCells - students.length} empty)`
+          {remaining.length < totalCells && remaining.length > 0
+            ? ` (${remaining.length} filled, ${totalCells - remaining.length} empty)`
             : ""}
         </p>
 
@@ -306,21 +357,39 @@ const StartScreen = () => {
 
         <button
           onClick={handleAddRect}
-          disabled={students.length === 0}
+          disabled={remaining.length === 0}
           style={{
             padding: "10px 0",
             fontSize: 14,
             fontWeight: 600,
-            background: students.length > 0 ? "var(--confirm)" : "#aaa",
+            background: remaining.length > 0 ? "var(--confirm)" : "#aaa",
             color: "#fff",
             border: "none",
             borderRadius: 6,
-            cursor: students.length > 0 ? "pointer" : "not-allowed",
+            cursor: remaining.length > 0 ? "pointer" : "not-allowed",
           }}
         >
           + Add Row
         </button>
-        <button 
+
+        <div style={{ display: "flex", gap: 8 }}>
+          <button
+            onClick={undo}
+            disabled={!canUndo}
+            style={{ ...secondaryButtonStyle(canUndo), flex: 1 }}
+          >
+            ↩ Undo
+          </button>
+          <button
+            onClick={clearRects}
+            disabled={rects.length === 0}
+            style={{ ...secondaryButtonStyle(rects.length > 0), flex: 1 }}
+          >
+            Clear All
+          </button>
+        </div>
+
+        <button
           onClick={() => setSaveWarning(true)}
           style={{
             padding: "10px 0",
@@ -336,7 +405,7 @@ const StartScreen = () => {
           Back to Case
         </button>
 
-        {students.length === 0 && displayedStudents.length > 0 && (
+        {remaining.length === 0 && rects.length > 0 && (
           <button
             onClick={() => setSaveCheck(true)}
             style={{
@@ -373,14 +442,19 @@ const StartScreen = () => {
           ref={stageRef}
           width={window.innerWidth - SIDEBAR_W}
           height={window.innerHeight}
-          scaleX={scale}
-          scaleY={scale}
-          x={stagePos.x}
-          y={stagePos.y}
+          scaleX={view.scale}
+          scaleY={view.scale}
+          x={view.x}
+          y={view.y}
           draggable
           onWheel={handleWheel}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
+          onDragEnd={(e) => {
+            // Only the stage itself — a rect drag bubbles up through here too.
+            if (e.target !== stageRef.current) return;
+            setView({ scale: view.scale, x: e.target.x(), y: e.target.y() });
+          }}
         >
           <Layer>
             {rects.map((r) => (
@@ -389,16 +463,7 @@ const StartScreen = () => {
                 x={r.x}
                 y={r.y}
                 draggable
-                onDragEnd={(e) => {
-                  const node = e.target;
-                  setRects((prev) =>
-                    prev.map((rect) =>
-                      rect.id === r.id
-                        ? { ...rect, x: node.x(), y: node.y() }
-                        : rect,
-                    ),
-                  );
-                }}
+                onDragEnd={(e) => moveRect(r.id, e.target.x(), e.target.y())}
               >
                 <Rect
                   width={r.width}
@@ -475,7 +540,7 @@ const StartScreen = () => {
               fontFamily: "monospace",
             }}
           >
-            {Math.round(scale * 100)}%
+            {Math.round(view.scale * 100)}%
           </span>
           <button
             onClick={() => zoomBy(SCALE_STEP)}
@@ -493,10 +558,7 @@ const StartScreen = () => {
             +
           </button>
           <button
-            onClick={() => {
-              setScale(1);
-              setStagePos({ x: 0, y: 0 });
-            }}
+            onClick={() => setView({ scale: 1, x: 0, y: 0 })}
             style={{
               height: 28,
               padding: "0 8px",
@@ -513,13 +575,8 @@ const StartScreen = () => {
         </div>
       </div>
 
-      {/* Save Warning modal */}
-      <Modal
-        isOpen={saveWarning}
-        hideDefaultClose
-        onClickOutside={() => setSaveWarning(false)}
-        title="Are you sure?"
-      >
+      {/* Leave-page warning modal */}
+      <Modal isOpen={saveWarning} hideDefaultClose title="Are you sure?">
         <h3
           style={{
             color: `var(--modal-text)`,
@@ -527,17 +584,15 @@ const StartScreen = () => {
             maxWidth: 400,
           }}
         >
-         Unsaved changes to the seating chart will be lost if you
-          leave this page.
+          The seating chart has not been saved to the case yet. Your progress is
+          kept and will be restored the next time you open this screen.
         </h3>
         <div className={styles.saveModalButtons}>
-          <button className={styles.confirm}>
-            <Link
-              to={`/case/${activeCase._id}`}
-              style={{ textDecoration: "none", color: "inherit" }}
-            >
-              Back to Case
-            </Link>
+          <button
+            className={styles.confirm}
+            onClick={() => navigate(`/case/${activeCase._id}`)}
+          >
+            Back to Case
           </button>
           <button
             className={styles.decline}
@@ -549,12 +604,7 @@ const StartScreen = () => {
       </Modal>
 
       {/* Save confirmation modal */}
-      <Modal
-        isOpen={saveCheck}
-        hideDefaultClose
-        onClickOutside={() => setSaveWarning(false)}
-        title="Are you sure?"
-      >
+      <Modal isOpen={saveCheck} hideDefaultClose title="Are you sure?">
         <h3
           style={{
             color: `var(--modal-text)`,
@@ -573,7 +623,7 @@ const StartScreen = () => {
           </button>
           <button
             className={styles.decline}
-            onClick={() => setSaveWarning(false)}
+            onClick={() => setSaveCheck(false)}
           >
             Cancel
           </button>
