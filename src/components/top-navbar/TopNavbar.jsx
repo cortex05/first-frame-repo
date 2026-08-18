@@ -8,6 +8,7 @@ import styles from './TopNavbar.module.css';
 
 const TopNavbar = ({ warnOnHomeNavigation = false }) => {
   const navigate = useNavigate();
+  const userInfo = useAuthStore((state) => state.userInfo);
   const clearUserInfo = useAuthStore((state) => state.clearUserInfo);
   const [logoutWarningOpen, setLogoutWarningOpen] = useState(false);
   const [homeWarningOpen, setHomeWarningOpen] = useState(false);
@@ -34,15 +35,18 @@ const TopNavbar = ({ warnOnHomeNavigation = false }) => {
   return (
     <React.Fragment>
       <header className={styles.navbar}>
-        {warnOnHomeNavigation ? (
-          <button type="button" className={styles.navButton} onClick={handleHomeClick}>
-            Home
-          </button>
-        ) : (
-          <Link to="/" className={styles.navButton}>
-            Home
-          </Link>
-        )}
+        <div> 
+          {warnOnHomeNavigation ? (
+            <button type="button" className={styles.navButton} onClick={handleHomeClick}>
+              Home
+            </button>
+          ) : (
+            <Link to="/" className={styles.navButton}>
+              Home
+            </Link>
+          )}
+          <span>   Hello {userInfo?.username}</span>
+        </div>
 
         <button
           type="button"
