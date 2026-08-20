@@ -112,11 +112,11 @@ const QuestionsScreen = () => {
     return getStudentFill(studentId) === "#fff" ? "#000" : "#fff";
   };
 
-  const getStudentStrokeWidth = (studentId) => {
-    if (selectedQuestion?.type !== QuestionType.TRUE_FALSE) return 1.5;
-    const answer = currentAnswers[studentId];
-    return isTrueLabel(answer?.label) ? 3 : 1.5;
-  };
+  // const getStudentStrokeWidth = (studentId) => {
+  //   if (selectedQuestion?.type !== QuestionType.TRUE_FALSE) return 1.5;
+  //   const answer = currentAnswers[studentId];
+  //   return isTrueLabel(answer?.label) ? 3 : 1.5;
+  // };
 
   // ── question selection ─────────────────────────────────────────
   const handleSelectQuestion = (questionId) => {
@@ -900,7 +900,10 @@ const QuestionsScreen = () => {
                         radius={CIRCLE_R}
                         fill={getStudentFill(s.id)}
                         stroke="#000"
-                        strokeWidth={getStudentStrokeWidth(s.id)}
+                        strokeWidth={
+                          // getStudentStrokeWidth(s.id)
+                          1.5
+                        }
                       />
                       <Text
                         x={-CIRCLE_R}
