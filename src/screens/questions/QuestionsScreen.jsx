@@ -758,8 +758,10 @@ const QuestionsScreen = () => {
                       studentReport
                     ];
                     let value = null;
+                    let answerText = null
                     if (answerObj !== undefined) {
                       value = answerObj.value;
+                      answerText = answerObj.label;
                     }
                     const bg = getAnswerColor(q, value);
                     const textColor = bg === "#F54927" ? "#fff" : "#2E2E2D";
@@ -780,6 +782,7 @@ const QuestionsScreen = () => {
                         <span
                           style={{
                             display: "flex",
+                            justifyContent: "space-between",
                             alignItems: "center",
                             flex: 1,
                             padding: "10px 14px",
@@ -787,7 +790,7 @@ const QuestionsScreen = () => {
                             color: "#333",
                           }}
                         >
-                          {q.text}
+                          {q.text  + " - " + answerText}
                         </span>
                         <span
                           style={{
