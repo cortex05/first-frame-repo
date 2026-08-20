@@ -878,7 +878,7 @@ const QuestionsScreen = () => {
                     <Rect
                       width={r.width}
                       height={r.height}
-                      fill="#bfbfbf"
+                      fill="#bfbfbf" 
                       stroke="#000"
                       strokeWidth={2}
                       cornerRadius={4}

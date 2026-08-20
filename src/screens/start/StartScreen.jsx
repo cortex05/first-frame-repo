@@ -468,8 +468,8 @@ const StartScreen = () => {
                 <Rect
                   width={r.width}
                   height={r.height}
-                  fill="#4a90d9"
-                  stroke="#2c6fad"
+                  fill="#bfbfbf"
+                  stroke="#000"
                   strokeWidth={2}
                   cornerRadius={4}
                 />
@@ -478,7 +478,7 @@ const StartScreen = () => {
                     <Circle
                       radius={CIRCLE_R}
                       fill="#fff"
-                      stroke="#2c6fad"
+                      stroke="#000"
                       strokeWidth={1.5}
                     />
                     <Text
@@ -488,7 +488,7 @@ const StartScreen = () => {
                       height={CIRCLE_R * 2}
                       text={String(s.id)}
                       fontSize={12}
-                      fill="#2c6fad"
+                      fill="#000"
                       align="center"
                       verticalAlign="middle"
                       listening={false}
