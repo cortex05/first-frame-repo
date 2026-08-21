@@ -1,0 +1,70 @@
+.container {
+  width: 100%;
+  max-width: 50%;
+  margin: 0 auto;
+  padding: 32px;
+  color: var(--light-text);
+}
+
+.container h1 {
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  margin-bottom: 24px;
+  font-size: 15px;
+  color: var(--label-light);
+}
+
+.sectionHeading {
+  margin-bottom: 12px;
+  text-align: left;
+}
+
+.recommendedList {
+  margin-bottom: 16px;
+}
+
+.recommendedItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  background: #f5f8ff;
+  border: 1px solid #c5d8f5;
+  border-radius: 6px;
+  color: var(--modal-text);
+  font-size: 14px;
+  text-align: left;
+}
+
+.recommendedNumber {
+  font-weight: 600;
+  color: #2c6fad;
+  min-width: 24px;
+}
+
+.recommendedCharge {
+  flex: 1;
+  font-weight: 500;
+}
+
+.emptyState {
+  padding: 24px 12px;
+  background: #f5f8ff;
+  border: 1px solid #c5d8f5;
+  border-radius: 6px;
+  color: var(--modal-text);
+  font-size: 15px;
+}
+
+.emptyStatePrompt {
+  font-weight: 600;
+  color: #2c6fad;
+}
+
+.statusText {
+  color: #666;
+  margin-top: 12px;
+}

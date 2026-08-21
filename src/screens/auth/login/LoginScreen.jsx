@@ -11,6 +11,7 @@ const LoginScreen = () => {
   const navigate = useNavigate();
   const setUserInfo = useAuthStore((state) => state.setUserInfo);
   const fetchUserPlaylists = useAuthStore((state) => state.fetchUserPlaylists);
+  const fetchRecommendedNames = useAuthStore((state) => state.fetchRecommendedNames);
   const fetchUserCases = useCaseStore((state) => state.fetchUserCases);
 
   const [email, setEmail] = useState('');
@@ -29,6 +30,8 @@ const LoginScreen = () => {
       await Promise.all([
         fetchUserPlaylists(userInfo.token),
         fetchUserCases(userInfo.token),
+        // No-ops for a non-admin; setUserInfo above is what makes isAdmin known.
+        fetchRecommendedNames(userInfo.token),
       ]);
       navigate('/home', { replace: true });
     } catch (requestError) {

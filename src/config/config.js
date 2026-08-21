@@ -15,3 +15,12 @@ export const PLAYLIST_API = {
   CREATE: "/playlists",
   UPDATE: (id) => `/playlists/${id}`,
 };
+
+export const RECOMMENDED_API = {
+  GET_ALL: "/recommended",
+  LOOKUP: "/recommended/lookup",
+  GET_BY_ID: (id) => `/recommended/${id}`,
+  CREATE: "/recommended",
+  UPDATE: (id) => `/recommended/${id}`,
+  DELETE: (id) => `/recommended/${id}`,
+};

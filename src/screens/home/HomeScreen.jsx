@@ -90,6 +90,12 @@ const Home = () => {
           >
             Access Playlists
           </button>
+
+          {userInfo?.isAdmin && (
+            <Link to="/recommended" className={styles.linkButton}>
+              Recommended Playlists
+            </Link>
+          )}
         </div>
 
         <Modal

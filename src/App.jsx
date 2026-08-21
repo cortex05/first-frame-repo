@@ -12,12 +12,21 @@ import CreateCaseScreen from './screens/create-case/CreateCaseScreen';
 import CaseScreen from './screens/case/CaseScreen';
 import QuestionsScreen from './screens/questions/QuestionsScreen';
 import MakePlaylistScreen from './screens/make-playlist/MakePlaylistScreen';
+import RecommendedScreen from './screens/recommended/RecommendedScreen';
 import LoginScreen from './screens/auth/login/LoginScreen';
 import RegisterScreen from './screens/auth/register/RegisterScreen';
 
 const ProtectedRoutes = ({ isAuthenticated }) => {
 	if (!isAuthenticated) {
 		return <Navigate to="/login" replace />;
+	}
+
+	return <Outlet />;
+};
+
+const AdminRoutes = ({ isAdmin }) => {
+	if (!isAdmin) {
+		return <Navigate to="/home" replace />;
 	}
 
 	return <Outlet />;
@@ -36,8 +45,11 @@ function App() {
 	const userInfo = useAuthStore((state) => state.userInfo);
 	const playlists = useAuthStore((state) => state.playlists);
 	const fetchUserPlaylists = useAuthStore((state) => state.fetchUserPlaylists);
+	const recommendedNames = useAuthStore((state) => state.recommendedNames);
+	const fetchRecommendedNames = useAuthStore((state) => state.fetchRecommendedNames);
 
 	const isAuthenticated = Boolean(userInfo?.token && userInfo?.userId && userInfo?.username);
+	const isAdmin = Boolean(isAuthenticated && userInfo?.isAdmin);
 
 	useEffect(() => {
 		const storedCases = localStorage.getItem('cases') || [];
@@ -59,6 +71,14 @@ function App() {
 		}
 	}, []);
 
+	// Rehydrate after a page reload -- login populates these, but a refresh
+	// restores userInfo from localStorage without going through login.
+	useEffect(() => {
+		if (isAdmin && recommendedNames.length === 0) {
+			fetchRecommendedNames(userInfo.token);
+		}
+	}, [isAdmin]);
+
   	return (
     	<BrowserRouter>
       		<Routes>
@@ -79,6 +99,10 @@ function App() {
 					<Route path="/case/:id" element={<CaseScreen />} />
 					<Route path="/make-playlist" element={<MakePlaylistScreen />} />
 					<Route path="/questions/:caseId" element={<QuestionsScreen />} />
+
+					<Route element={<AdminRoutes isAdmin={isAdmin} />}>
+						<Route path="/recommended" element={<RecommendedScreen />} />
+					</Route>
 				</Route>
       		</Routes>
     	</BrowserRouter>
