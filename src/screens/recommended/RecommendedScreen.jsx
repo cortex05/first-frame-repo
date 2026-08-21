@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 import TopNavbar from '../../components/top-navbar/TopNavbar';
 import useAuthStore from '../../store/useAuthStore';
@@ -36,7 +37,9 @@ const RecommendedScreen = () => {
           {recommendedNames.length === 0 ? (
             <div className={styles.emptyState}>
               No Recommended playlists available.{' '}
-              <span className={styles.emptyStatePrompt}>Make One?</span>
+              <Link to="/create-recommended" className={styles.emptyStatePrompt}>
+                Make One?
+              </Link>
             </div>
           ) : (
             <div className={styles.recommendedList}>
@@ -47,6 +50,12 @@ const RecommendedScreen = () => {
                 </div>
               ))}
             </div>
+          )}
+
+          {recommendedNames.length > 0 && (
+            <Link to="/create-recommended" className={styles.newRecommendedButton}>
+              + New Recommended Playlist
+            </Link>
           )}
         </section>
       </div>

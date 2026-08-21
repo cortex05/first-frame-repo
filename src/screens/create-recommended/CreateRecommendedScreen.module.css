@@ -218,6 +218,10 @@
   text-align: left;
 }
 
+.summaryQuestionsHeading {
+  margin-top: 12px;
+}
+
 .summaryQuestions {
   margin-bottom: 20px;
 }

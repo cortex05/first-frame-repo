@@ -62,9 +62,30 @@
 .emptyStatePrompt {
   font-weight: 600;
   color: #2c6fad;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color 0.3s ease;
 }
 
-.statusText {
-  color: #666;
-  margin-top: 12px;
+.emptyStatePrompt:hover {
+  color: var(--confirm);
+}
+
+
+.newRecommendedButton {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 10px 20px;
+  font-size: 15px;
+  background: var(--confirm);
+  color: #fff;
+  border: 2px solid var(--confirm-hover);
+  border-radius: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: border 0.5s ease, box-shadow 0.5s ease;
+}
+
+.newRecommendedButton:hover {
+  border: 2px solid var(--light-blue-background);
 }
