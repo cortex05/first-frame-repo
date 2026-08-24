@@ -44,10 +44,14 @@ const RecommendedScreen = () => {
           ) : (
             <div className={styles.recommendedList}>
               {recommendedNames.map((charge, index) => (
-                <div key={charge} className={styles.recommendedItem}>
+                <Link
+                  key={charge}
+                  to={`/recommended/${encodeURIComponent(charge)}`}
+                  className={styles.recommendedItem}
+                >
                   <span className={styles.recommendedNumber}>{index + 1}.</span>
                   <span className={styles.recommendedCharge}>{charge}</span>
-                </div>
+                </Link>
               ))}
             </div>
           )}

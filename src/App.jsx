@@ -14,6 +14,7 @@ import QuestionsScreen from './screens/questions/QuestionsScreen';
 import MakePlaylistScreen from './screens/make-playlist/MakePlaylistScreen';
 import RecommendedScreen from './screens/recommended/RecommendedScreen';
 import CreateRecommendedScreen from './screens/create-recommended/CreateRecommendedScreen';
+import EditRecommendedScreen from './screens/edit-recommended/EditRecommendedScreen';
 import LoginScreen from './screens/auth/login/LoginScreen';
 import RegisterScreen from './screens/auth/register/RegisterScreen';
 
@@ -104,6 +105,7 @@ function App() {
 					<Route element={<AdminRoutes isAdmin={isAdmin} />}>
 						<Route path="/recommended" element={<RecommendedScreen />} />
 						<Route path="/create-recommended" element={<CreateRecommendedScreen />} />
+						<Route path="/recommended/:charge" element={<EditRecommendedScreen />} />
 					</Route>
 				</Route>
       		</Routes>
