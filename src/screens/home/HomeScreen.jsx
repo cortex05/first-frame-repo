@@ -88,7 +88,7 @@ const Home = () => {
             onClick={handleOpenPlaylistModal}
             className={styles.linkButton}
           >
-            Access Playlists
+            Personal Playlists
           </button>
 
           {userInfo?.isAdmin && (
