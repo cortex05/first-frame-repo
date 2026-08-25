@@ -9,9 +9,10 @@ import { saveCase } from "../../api/case";
 import { getPlaylistById } from "../../api/playlist";
 import Question from "../../types/polls/Question";
 import { QuestionType } from "../../types/ENUMS";
-import { caseCategoryLabel } from "../../types/caseCategories";
+import { caseCategoryLabel, getCaseCategory } from "../../types/caseCategories";
 import { EMPTY_QUESTION_FORM } from "../../utils/formUtils";
 import { normalizeQuestion } from "../../utils/questionNormalization";
+import useRecommendedPlaylist from "../../hooks/useRecommendedPlaylist";
 
 import styles from "./CaseScreen.module.css";
 
@@ -49,7 +50,16 @@ const CaseScreen = () => {
   const [isLoadingPlaylist, setIsLoadingPlaylist] = useState(false);
   const [isLoadingPlaylistDetails, setIsLoadingPlaylistDetails] = useState(false);
 
+  const {
+    recommended,
+    isLoading: isLoadingRecommended,
+    error: recommendedError,
+    load: loadRecommended,
+  } = useRecommendedPlaylist(userInfo?.token);
+
   if (!activeCase) return <p>Case not found.</p>;
+
+  const selectedCharge = getCaseCategory(activeCase.category)?.matter || "";
 
   const persistCaseUpdate = async (updatedCase) => {
     if (!userInfo?.token) {
@@ -279,6 +289,25 @@ const CaseScreen = () => {
     setSelectedPlaylist(null);
     setSelectedPlaylistQuestionIds([]);
     setPlaylistModalOpen(true);
+    loadRecommended(selectedCharge);
+  };
+
+  /**
+   * Puts the recommended set into the same slot a user playlist occupies, so
+   * the question list, the selection toggles and "Load Questions" below it work
+   * on it unchanged. Nothing is fetched here -- the set arrived whole when the
+   * modal opened, where a user playlist carries only its title until picked.
+   */
+  const handleSelectRecommended = () => {
+    if (!recommended) return;
+
+    setSaveError("");
+    setSelectedPlaylist({
+      _id: recommended._id,
+      title: `Recommended — ${recommended.charge}`,
+      questions: recommended.questions || [],
+    });
+    setSelectedPlaylistQuestionIds([]);
   };
 
   const getPlaylistQuestionKey = (question, index) => question.id || `index-${index}`;
@@ -840,6 +869,29 @@ const CaseScreen = () => {
         >
           {!selectedPlaylist ? (
             <div>
+              {isLoadingRecommended ? (
+                <div className={styles.recommendedNotice}>
+                  Loading the recommended playlist for {selectedCharge}...
+                </div>
+              ) : recommended ? (
+                <div
+                  onClick={handleSelectRecommended}
+                  className={styles.recommendedListItem}
+                >
+                  <span>Recommended — {recommended.charge}</span>
+                </div>
+              ) : (
+                selectedCharge && (
+                  <div className={styles.recommendedNotice}>
+                    No recommended playlist for {selectedCharge} yet.
+                  </div>
+                )
+              )}
+
+              {recommendedError && (
+                <p className={styles.playlistErrorText}>{recommendedError}</p>
+              )}
+
               {playlists.length === 0 ? (
                 <p className={styles.playlistStatusText}>No playlists found.</p>
               ) : (

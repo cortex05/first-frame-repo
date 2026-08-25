@@ -12,10 +12,15 @@ import { getPlaylistById } from "../../api/playlist";
 
 import Question from "../../types/polls/Question";
 import { QuestionType } from "../../types/ENUMS";
-import { CASE_CATEGORIES_BY_AREA, caseCategoryLabel } from "../../types/caseCategories";
+import {
+  CASE_CATEGORIES_BY_AREA,
+  caseCategoryLabel,
+  getCaseCategory,
+} from "../../types/caseCategories";
 import { normalizeQuestion } from "../../utils/questionNormalization";
 
 import { EMPTY_QUESTION_FORM } from "../../utils/formUtils";
+import useRecommendedPlaylist from "../../hooks/useRecommendedPlaylist";
 
 import styles from "./CreateCaseScreen.module.css";
 
@@ -50,6 +55,18 @@ const CreateCaseScreen = () => {
   const playlists = useAuthStore((state) => state.playlists);
   const fetchUserPlaylists = useAuthStore((state) => state.fetchUserPlaylists);
 
+  const {
+    recommended,
+    isLoading: isLoadingRecommended,
+    error: recommendedError,
+    load: loadRecommended,
+  } = useRecommendedPlaylist(userInfo?.token);
+
+  // Recommended sets are keyed by charge alone, while a category is an
+  // area-and-charge pair -- 'Weapons Charges' files under both Criminal and
+  // Civil, and one curated set covers it either way.
+  const selectedCharge = getCaseCategory(category)?.matter || "";
+
   useEffect(() => {
     if (userInfo?.token) {
       fetchUserPlaylists(userInfo.token);
@@ -76,6 +93,19 @@ const CreateCaseScreen = () => {
     setSelectedPlaylistQuestionIds([]);
     setPlaylistError("");
     setPlaylistModalOpen(true);
+    loadRecommended(selectedCharge);
+  };
+
+  const handleSelectRecommended = () => {
+    if (!recommended) return;
+
+    setPlaylistError("");
+    setSelectedPlaylist({
+      _id: recommended._id,
+      title: `Recommended — ${recommended.charge}`,
+      questions: recommended.questions || [],
+    });
+    setSelectedPlaylistQuestionIds([]);
   };
 
   const getPlaylistQuestionKey = (question, index) => question.id || `index-${index}`;
@@ -692,6 +722,31 @@ const CreateCaseScreen = () => {
       >
         {!selectedPlaylist ? (
           <div>
+            {!selectedCharge ? (
+              <div className={styles.recommendedNotice}>
+                Select a case category to see its recommended playlist.
+              </div>
+            ) : isLoadingRecommended ? (
+              <div className={styles.recommendedNotice}>
+                Loading the recommended playlist for {selectedCharge}...
+              </div>
+            ) : recommended ? (
+              <div
+                onClick={handleSelectRecommended}
+                className={styles.recommendedListItem}
+              >
+                <span>Recommended — {recommended.charge}</span>
+              </div>
+            ) : (
+              <div className={styles.recommendedNotice}>
+                No recommended playlist for {selectedCharge} yet.
+              </div>
+            )}
+
+            {recommendedError && (
+              <p className={styles.playlistErrorText}>{recommendedError}</p>
+            )}
+
             {playlists.length === 0 ? (
               <p className={styles.playlistStatusText}>You have no playlists saved.</p>
             ) : (
