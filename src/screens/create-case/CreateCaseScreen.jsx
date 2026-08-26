@@ -735,7 +735,7 @@ const CreateCaseScreen = () => {
                 onClick={handleSelectRecommended}
                 className={styles.recommendedListItem}
               >
-                <span>Recommended — {recommended.charge}</span>
+                <span>Hector Recommends — {recommended.charge}</span>
               </div>
             ) : (
               <div className={styles.recommendedNotice}>
