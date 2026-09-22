@@ -5,6 +5,7 @@ import useCaseStore from "../../store/useCaseStore";
 import useAuthStore from "../../store/useAuthStore";
 import { saveCase } from "../../api/case";
 import { QuestionType } from "../../types/ENUMS";
+import { cssVar } from "../../utils/cssVars";
 
 import Modal from "../../components/modal/Modal";
 
@@ -88,28 +89,37 @@ const QuestionsScreen = () => {
   };
 
   // ── colour helpers ─────────────────────────────────────────────
+  // Canvas can't resolve `var(--x)`, so read the variables into literal hex
+  // once per render and compare against these instead of raw "#fff"/"#000".
+  const canvas = {
+    light: cssVar("--light-text", "#fff"),
+    black: cssVar("--black", "#000"),
+  };
+
   const getStudentFill = (studentId) => {
     if (showScores) return getScoreColor(studentId);
-    if (!selectedQuestion) return "var(--light-text)";
+    if (!selectedQuestion) return canvas.light;
     const answer = currentAnswers[studentId];
-    if (answer === undefined) return "var(--light-text)";
+    if (answer === undefined) return canvas.light;
     if (selectedQuestion.type === QuestionType.TRUE_FALSE) {
-      return isTrueLabel(answer.label) ? "#000" : "var(--light-text)";
+      return isTrueLabel(answer.label) ? canvas.black : canvas.light;
     }
     const idx = selectedQuestion.options.findIndex(
       (o) => o.label === answer.label,
     );
-    return idx >= 0 ? MC_COLORS[idx] : "var(--light-text)";
+    return idx >= 0 ? MC_COLORS[idx] : canvas.light;
   };
 
   const getStudentTextColor = (studentId) => {
     if (showScores)
-      return getScoreColor(studentId) === "#F54927" ? "var(--light-text)" : "#2E2E2D";
+      return getScoreColor(studentId) === "#F54927" ? canvas.light : "#2E2E2D";
     if (selectedQuestion?.type === QuestionType.TRUE_FALSE) {
       const answer = currentAnswers[studentId];
-      return isTrueLabel(answer?.label) ? "var(--light-text)" : "#000";
+      return isTrueLabel(answer?.label) ? canvas.light : canvas.black;
     }
-    return getStudentFill(studentId) === "var(--light-text)" ? "#000" : "var(--light-text)";
+    return getStudentFill(studentId) === canvas.light
+      ? canvas.black
+      : canvas.light;
   };
 
   // const getStudentStrokeWidth = (studentId) => {
@@ -402,7 +412,7 @@ const QuestionsScreen = () => {
         ) : (
           <React.Fragment>
             {activeCase.questions.length === 0 && (
-              <p style={{ color: "#888", fontSize: 13 }}>
+              <p style={{ color: "var(--grey-subtle-text)", fontSize: 13 }}>
                 No questions on this case.
               </p>
             )}
@@ -451,7 +461,7 @@ const QuestionsScreen = () => {
                         background:
                           q.type === QuestionType.TRUE_FALSE
                             ? "#e6f4ea"
-                            : "#fff3cd",
+                            : "var(--warning-bg)",
                         color:
                           q.type === QuestionType.TRUE_FALSE
                             ? "#2e7d32"
@@ -764,7 +774,8 @@ const QuestionsScreen = () => {
                       answerText = answerObj.label;
                     }
                     const bg = getAnswerColor(q, value);
-                    const textColor = bg === "#F54927" ? "var(--light-text)" : "#2E2E2D";
+                    const textColor =
+                      bg === "#F54927" ? "var(--light-text)" : "#2E2E2D";
                     return (
                       <div
                         key={q.id}
@@ -852,7 +863,7 @@ const QuestionsScreen = () => {
       <div style={{ flex: 1, position: "relative" }}>
         {rects.length === 0 ? (
           <div style={{ padding: 32 }}>
-            <p style={{ color: "#888" }}>
+            <p style={{ color: "var(--grey-subtle-text)" }}>
               No seating chart saved yet. Complete the seating chart first.
             </p>
           </div>
@@ -881,8 +892,8 @@ const QuestionsScreen = () => {
                     <Rect
                       width={r.width}
                       height={r.height}
-                      fill="#bfbfbf" 
-                      stroke="#000"
+                      fill="#bfbfbf"
+                      stroke={canvas.black}
                       strokeWidth={2}
                       cornerRadius={4}
                     />
@@ -902,7 +913,7 @@ const QuestionsScreen = () => {
                       <Circle
                         radius={CIRCLE_R}
                         fill={getStudentFill(s.id)}
-                        stroke="#000"
+                        stroke={canvas.black}
                         strokeWidth={
                           // getStudentStrokeWidth(s.id)
                           1.5

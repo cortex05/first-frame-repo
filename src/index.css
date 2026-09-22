@@ -27,10 +27,11 @@
   --label-light: #d8d8d8;
   --modal-text: #333; 
 
+  --black: #000;                 /* CaseScreen / CreateCaseScreen pill text */
+
   /* START HERE */
 
   /* --- Neutrals / greys --- */
-  --black: #000;                 /* CaseScreen / CreateCaseScreen pill text */
   --grey-button-bg: #f0f0f0;     /* cancel + secondary button bg */
   --grey-disabled-light: #d3d3d3;/* Modal disabled bg / dark-mode text */
   --grey-border: #ccc;           /* default 1px input & card border — 14 uses */

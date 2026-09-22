@@ -7,6 +7,7 @@ import { initialStudentGeneration } from "../../utilities/studentUtilities";
 import useSeatingDraft from "../../hooks/useSeatingDraft";
 
 import Modal from "../../components/modal/Modal";
+import { cssVar } from "../../utils/cssVars";
 import styles from "./SaveScreen.module.css";
 
 const SIDEBAR_W = 260;
@@ -55,6 +56,12 @@ const StartScreen = () => {
 
   const stageRef = useRef(null);
   const lastPinchDist = useRef(0);
+
+  // Canvas can't resolve `var(--x)` — Konva needs the literal hex.
+  const canvas = {
+    light: cssVar("--light-text", "#fff"),
+    black: cssVar("--black", "#000"),
+  };
 
   const studentNumber = Number(activeCase?.studentNumber);
   const {
@@ -469,7 +476,7 @@ const StartScreen = () => {
                   width={r.width}
                   height={r.height}
                   fill="#bfbfbf"
-                  stroke="#000"
+                  stroke={canvas.black}
                   strokeWidth={2}
                   cornerRadius={4}
                 />
@@ -477,8 +484,8 @@ const StartScreen = () => {
                   <Group key={s.id} x={s.xRel} y={s.yRel}>
                     <Circle
                       radius={CIRCLE_R}
-                      fill="var(--light-text)"
-                      stroke="#000"
+                      fill={canvas.light}
+                      stroke={canvas.black}
                       strokeWidth={1.5}
                     />
                     <Text
@@ -488,7 +495,7 @@ const StartScreen = () => {
                       height={CIRCLE_R * 2}
                       text={String(s.id)}
                       fontSize={12}
-                      fill="#000"
+                      fill={canvas.black}
                       align="center"
                       verticalAlign="middle"
                       listening={false}
