@@ -27,14 +27,13 @@
   --label-light: #d8d8d8;
   --modal-text: #333; 
 
+  /* --- Neutrals / greys --- */
   --black: #000;                 /* CaseScreen / CreateCaseScreen pill text */
+  --grey-button-bg: #f0f0f0;     /* cancel + secondary button bg */
 
   /* START HERE */
 
   /* --- Neutrals / greys --- */
-  --grey-button-bg: #f0f0f0;     /* cancel + secondary button bg */
-  --grey-disabled-light: #d3d3d3;/* Modal disabled bg / dark-mode text */
-  --grey-border: #ccc;           /* default 1px input & card border — 14 uses */
   --grey-empty-text: #c0bdbd;    /* empty-state text */
   --grey-disabled: #aaa;         /* disabled button bg — 8 uses */
   --grey-border-strong: #999;    /* CreateRecommended disabled border */

@@ -646,9 +646,9 @@ const CreateCaseScreen = () => {
                 padding: "12px 0",
                 fontSize: 15,
                 fontWeight: 600,
-                background: "#f0f0f0",
+                background: "var(--grey-button-bg)",
                 color: "#333",
-                border: "1px solid #ccc",
+                border: "1px solid var(--grey-border-strong)",
                 borderRadius: 6,
                 cursor: "pointer",
               }}
@@ -697,9 +697,9 @@ const CreateCaseScreen = () => {
               flex: 1,
               padding: "10px 0",
               fontWeight: 600,
-              background: "#f0f0f0",
+              background: "var(--grey-button-bg)",
               color: "#333",
-              border: "1px solid #ccc",
+              border: "1px solid var(--grey-border-strong)",
               borderRadius: 6,
               cursor: "pointer",
             }}

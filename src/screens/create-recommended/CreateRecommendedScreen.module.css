@@ -34,7 +34,7 @@
 .inputStyle {
   padding: 2px 12px;
   font-size: 18px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--grey-border-strong);
   border-radius: 6px;
   width: 100%;
   box-sizing: border-box;
@@ -50,7 +50,7 @@
 
 .textAreaStyle {
   font-size: 18px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--grey-border-strong);
   border-radius: 6px;
   width: 100%;
   box-sizing: border-box;
@@ -326,9 +326,9 @@
   padding: 12px 0;
   font-size: 15px;
   font-weight: 600;
-  background: #f0f0f0;
+  background: var(--grey-button-bg);
   color: #333;
-  border: 1px solid #ccc;
+  border: 1px solid var(--grey-border-strong);
   border-radius: 6px;
   cursor: pointer;
 }
@@ -361,9 +361,9 @@
   flex: 1;
   padding: 10px 0;
   font-weight: 600;
-  background: #f0f0f0;
+  background: var(--grey-button-bg);
   color: #333;
-  border: 1px solid #ccc;
+  border: 1px solid var(--grey-border-strong);
   border-radius: 6px;
   cursor: pointer;
 }

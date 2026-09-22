@@ -19,7 +19,7 @@
 .inputStyle {
   padding: 2px 12px;
   font-size: 18px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--grey-border-strong);
   border-radius: 6px;
   width: 100%;
   box-sizing: border-box;
@@ -35,7 +35,7 @@
 
 .textAreaStyle {
   font-size: 18px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--grey-border-strong);
   border-radius: 6px;
   width: 100%;
   box-sizing: border-box;

@@ -14,7 +14,7 @@
 .inputStyle {
 	padding: 10px 12px;
     font-size: 15px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--gray-border-strong);
     border-radius: 6px;
     width: 100%;
     box-sizing: border-box;
@@ -278,9 +278,9 @@
 	min-width: 100px;
 	padding: 10px 0;
 	font-weight: 600;
-	background: #f0f0f0;
+	background: var(--grey-button-bg);
 	color: #333;
-	border: 1px solid #ccc;
+	border: 1px solid var(--grey-border-strong);
 	border-radius: 6px;
 	cursor: pointer;
 }
