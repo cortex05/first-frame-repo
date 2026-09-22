@@ -1,13 +1,11 @@
 :root {
   /* Semantic color tokens: light theme defaults */
-  --color-bg: #ffffff;
   --color-surface: #f5f8ff;
   --color-surface-muted: #f4f3ec;
   --color-border: #e5e4e7;
 
   --color-text-primary: #08060d;
   --color-text-muted: #6b6375;
-  --color-text-on-accent: #ffffff;
 
   --color-action-primary: #aa3bff;
   --color-action-primary-bg: rgba(170, 59, 255, 0.1);
@@ -28,6 +26,70 @@
   --light-text: #fff;
   --label-light: #d8d8d8;
   --modal-text: #333; 
+
+  /* START HERE */
+
+  /* --- Neutrals / greys --- */
+  --black: #000;                 /* CaseScreen / CreateCaseScreen pill text */
+  --grey-button-bg: #f0f0f0;     /* cancel + secondary button bg */
+  --grey-disabled-light: #d3d3d3;/* Modal disabled bg / dark-mode text */
+  --grey-border: #ccc;           /* default 1px input & card border — 14 uses */
+  --grey-empty-text: #c0bdbd;    /* empty-state text */
+  --grey-disabled: #aaa;         /* disabled button bg — 8 uses */
+  --grey-border-strong: #999;    /* CreateRecommended disabled border */
+  --grey-subtle-text: #888;      /* hint / placeholder text */
+  --grey-secondary-text: #666;   /* secondary body text */
+  --grey-dark-text: #444;        /* EditRecommended label */
+  --grey-dark-bg: #303030;       /* Modal dark surface */
+  /* NOTE: #333 already exists above as --modal-text (5 uses) */
+
+  /* --- Navbar blues --- */
+  --navbar-bg: #273952;
+  --navbar-border: #2f425a;
+  --navbar-chip-bg: #e8edf8;
+  --navbar-chip-text: #1f2a3f;
+  --navbar-chip-border: #a5b8d7;
+
+  /* --- Primary / action blues --- */
+  --blue-primary: #2c6fad;       /* primary button bg + link text — 11 uses */
+  --blue-primary-dark: #1f4f85;  /* focus ring / active border */
+  --blue-selected-bg: #e8f1ff;   /* selected row bg */
+  --blue-selected-border: #7aa9df;
+  /* NOTE: #4a90d9 already exists above as --blue-background (3 uses) */
+
+  /* --- Card / surface blues --- */
+  --card-bg: #e8edfa;            /* Home + Case card bg */
+  --card-border: #abbbd3;
+  --blue-border-light: #c5d8f5;  /* light blue panel border — 10 uses */
+  /* NOTE: #f5f8ff already exists above as --color-surface (8 uses) */
+
+  /* --- Questions screen --- */
+  --question-bg: #d0dcfc;
+  --question-answered-bg: #eef4ff;
+  --question-answered-border: #d9e5fa;
+
+  /* --- Yellows / oranges --- */
+  --yellow-bg: #f7c873;          /* tag / pill bg */
+  --yellow-border: #e0a33e;
+  --yellow-bg-hover: #f3b449;
+  --orange-edit: #f0ad4e;        /* edit button bg */
+  --warning-bg: #fff3cd;
+  --warning-text: #856404;
+
+  /* --- Greens --- */
+  --success-bg: #e6f4ea;
+  --success-text: #2e7d32;
+
+  /* --- Reds --- */
+  --error-text-light: #ffd2d2;   /* error text on dark auth screens */
+  /* NOTE: #d9534f already exists above as --decline (8 uses) */
+
+  /* --- Shadows / overlays --- */
+  --shadow-strong: rgba(0, 0, 0, 0.6);  /* 0 4px 12px card shadow — 9 uses */
+  --shadow-modal: rgba(0, 0, 0, 0.3);   /* Modal 0 4px 20px shadow */
+  /* NOTE: rgba(0, 0, 0, 0.4) already exists above as --color-overlay */
+
+  /* END HERE */
 
   /* Backward-compatible aliases for existing styles */
   --text: var(--color-text-muted);
@@ -70,7 +132,6 @@
 
   --color-text-primary: #f3f4f6;
   --color-text-muted: #9ca3af;
-  --color-text-on-accent: #ffffff;
 
   --color-action-primary: #c084fc;
   --color-action-primary-bg: rgba(192, 132, 252, 0.15);
@@ -94,7 +155,6 @@
 
     --color-text-primary: #f3f4f6;
     --color-text-muted: #9ca3af;
-    --color-text-on-accent: #ffffff;
 
     --color-action-primary: #c084fc;
     --color-action-primary-bg: rgba(192, 132, 252, 0.15);

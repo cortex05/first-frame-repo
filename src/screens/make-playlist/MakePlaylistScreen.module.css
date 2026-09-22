@@ -37,7 +37,7 @@
   padding: 10px 20px;
   font-size: 15px;
   background: var(--confirm);
-  color: #fff;
+  color: var(--light-text);
   border: none;
   border-radius: 6px;
   cursor: pointer;

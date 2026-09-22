@@ -90,26 +90,26 @@ const QuestionsScreen = () => {
   // ── colour helpers ─────────────────────────────────────────────
   const getStudentFill = (studentId) => {
     if (showScores) return getScoreColor(studentId);
-    if (!selectedQuestion) return "#fff";
+    if (!selectedQuestion) return "var(--light-text)";
     const answer = currentAnswers[studentId];
-    if (answer === undefined) return "#fff";
+    if (answer === undefined) return "var(--light-text)";
     if (selectedQuestion.type === QuestionType.TRUE_FALSE) {
-      return isTrueLabel(answer.label) ? "#000" : "#fff";
+      return isTrueLabel(answer.label) ? "#000" : "var(--light-text)";
     }
     const idx = selectedQuestion.options.findIndex(
       (o) => o.label === answer.label,
     );
-    return idx >= 0 ? MC_COLORS[idx] : "#fff";
+    return idx >= 0 ? MC_COLORS[idx] : "var(--light-text)";
   };
 
   const getStudentTextColor = (studentId) => {
     if (showScores)
-      return getScoreColor(studentId) === "#F54927" ? "#fff" : "#2E2E2D";
+      return getScoreColor(studentId) === "#F54927" ? "var(--light-text)" : "#2E2E2D";
     if (selectedQuestion?.type === QuestionType.TRUE_FALSE) {
       const answer = currentAnswers[studentId];
-      return isTrueLabel(answer?.label) ? "#fff" : "#000";
+      return isTrueLabel(answer?.label) ? "var(--light-text)" : "#000";
     }
-    return getStudentFill(studentId) === "#fff" ? "#000" : "#fff";
+    return getStudentFill(studentId) === "var(--light-text)" ? "#000" : "var(--light-text)";
   };
 
   // const getStudentStrokeWidth = (studentId) => {
@@ -337,7 +337,7 @@ const QuestionsScreen = () => {
               fontSize: 13,
               fontWeight: 600,
               background: showScores ? "#2c6fad" : "#e3edf7",
-              color: showScores ? "#fff" : "#2c6fad",
+              color: showScores ? "var(--light-text)" : "#2c6fad",
               border: "1px solid #2c6fad",
               borderRadius: 6,
               cursor: "pointer",
@@ -356,7 +356,7 @@ const QuestionsScreen = () => {
                 fontSize: 15,
                 fontWeight: 600,
                 background: "#2c6fad",
-                color: "#fff",
+                color: "var(--light-text)",
                 border: "none",
                 borderRadius: 6,
                 cursor: "pointer",
@@ -374,7 +374,7 @@ const QuestionsScreen = () => {
                 fontSize: 15,
                 fontWeight: 600,
                 background: "#2c6fad",
-                color: "#fff",
+                color: "var(--light-text)",
                 border: "none",
                 borderRadius: 6,
                 cursor: "pointer",
@@ -390,7 +390,7 @@ const QuestionsScreen = () => {
                 fontSize: 15,
                 fontWeight: 600,
                 background: "#2c6fad",
-                color: "#fff",
+                color: "var(--light-text)",
                 border: "none",
                 borderRadius: 6,
                 cursor: "pointer",
@@ -414,7 +414,7 @@ const QuestionsScreen = () => {
                 fontSize: 15,
                 fontWeight: 600,
                 background: "#2c6fad",
-                color: "#fff",
+                color: "var(--light-text)",
                 border: "none",
                 borderRadius: 6,
                 cursor: "pointer",
@@ -521,7 +521,7 @@ const QuestionsScreen = () => {
                                   fontSize: 13,
                                   fontWeight: 600,
                                   background: MC_COLORS[i],
-                                  color: "#fff",
+                                  color: "var(--light-text)",
                                   border:
                                     activeOptionIndex === i
                                       ? "3px solid #222"
@@ -570,7 +570,7 @@ const QuestionsScreen = () => {
                             fontSize: 15,
                             fontWeight: 600,
                             background: "#2c6fad",
-                            color: "#fff",
+                            color: "var(--light-text)",
                             border: "none",
                             borderRadius: 6,
                             cursor: isSavingAnswers ? "not-allowed" : "pointer",
@@ -614,7 +614,7 @@ const QuestionsScreen = () => {
               <div
                 onClick={(e) => e.stopPropagation()}
                 style={{
-                  background: "#fff",
+                  background: "var(--light-text)",
                   borderRadius: 10,
                   padding: 24,
                   minWidth: 280,
@@ -654,7 +654,7 @@ const QuestionsScreen = () => {
                   {sorted.map((s) => {
                     const score = getStudentScore(s.id);
                     const bg = getScoreColor(s.id);
-                    const textColor = bg === "#F54927" ? "#fff" : "#2E2E2D";
+                    const textColor = bg === "#F54927" ? "var(--light-text)" : "#2E2E2D";
                     return (
                       <button
                         key={s.id}
@@ -688,7 +688,7 @@ const QuestionsScreen = () => {
       {studentReport !== null &&
         (() => {
           const getAnswerColor = (question, value) => {
-            if (value === null || value === undefined) return "#fff";
+            if (value === null || value === undefined) return "var(--light-text)";
             const vals = question.options.map((o) => o.value);
             const minVal = Math.min(...vals);
             const maxVal = Math.max(...vals);
@@ -716,7 +716,7 @@ const QuestionsScreen = () => {
             >
               <div
                 style={{
-                  background: "#fff",
+                  background: "var(--light-text)",
                   borderRadius: 10,
                   padding: 24,
                   minWidth: 320,
@@ -764,7 +764,7 @@ const QuestionsScreen = () => {
                       answerText = answerObj.label;
                     }
                     const bg = getAnswerColor(q, value);
-                    const textColor = bg === "#F54927" ? "#fff" : "#2E2E2D";
+                    const textColor = bg === "#F54927" ? "var(--light-text)" : "#2E2E2D";
                     return (
                       <div
                         key={q.id}

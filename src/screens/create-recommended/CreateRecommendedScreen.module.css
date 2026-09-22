@@ -126,7 +126,7 @@
   font-weight: 700;
   padding: 4px 8px;
   background: #f0ad4e;
-  color: #fff;
+  color: var(--light-text);
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -139,7 +139,7 @@
   font-weight: 700;
   padding: 0;
   background: #d9534f;
-  color: #fff;
+  color: var(--light-text);
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -168,7 +168,7 @@
   padding: 10px 20px;
   font-size: 15px;
   background: var(--confirm);
-  color: #fff;
+  color: var(--light-text);
   border: 2px solid var(--confirm-hover);
   border-radius: 6px;
   cursor: pointer;
@@ -185,7 +185,7 @@
   font-size: 18px;
   font-weight: 600;
   background: var(--confirm);
-  color: #fff;
+  color: var(--light-text);
   border: 3px solid var(--confirm-hover);
   border-radius: 8px;
   cursor: pointer;
@@ -267,7 +267,7 @@
 
 .confirm {
   background: var(--confirm);
-  color: #fff;
+  color: var(--light-text);
 }
 
 .confirm:disabled {
@@ -277,7 +277,7 @@
 
 .decline {
   background: var(--decline);
-  color: #fff;
+  color: var(--light-text);
 }
 
 .questionModalAddButton {
@@ -286,7 +286,7 @@
   font-size: 15px;
   font-weight: 600;
   background: var(--confirm);
-  color: #fff;
+  color: var(--light-text);
   border: none;
   border-radius: 6px;
   margin-bottom: 8px;
@@ -310,7 +310,7 @@
   font-size: 15px;
   font-weight: 600;
   background: #4a90d9;
-  color: #fff;
+  color: var(--light-text);
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -351,7 +351,7 @@
   padding: 10px 0;
   font-weight: 600;
   background: #d9534f;
-  color: #fff;
+  color: var(--light-text);
   border: none;
   border-radius: 6px;
   cursor: pointer;

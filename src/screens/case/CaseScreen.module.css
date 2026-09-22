@@ -61,12 +61,12 @@
 
 .confirm {
 	background: var(--confirm);
-	color: #fff;
+	color: var(--light-text);
 } 
 
 .decline {
 	background: var(--decline);
-	color: #fff;
+	color: var(--light-text);
 }
 
 .inputStyle {
@@ -91,7 +91,7 @@
 
 .caseItem:hover {
 	background: var(--blue-background);
-	color: #fff;
+	color: var(--light-text);
 }
 
 .caseItem span {
@@ -110,7 +110,7 @@
 	margin-top: 8px;
 	padding: 10px 20px;
 	font-size: 15px;
-	color: #fff;
+	color: var(--light-text);
 	border: none;
 	border-radius: 6px;
 	cursor: pointer;
@@ -236,7 +236,7 @@
 
 .playlistQuestionSelected .playlistQuestionNumber,
 .playlistQuestionSelected .playlistQuestionText {
-	color: #fff;
+	color: var(--light-text);
 }
 
 .playlistQuestionNumber {
@@ -262,7 +262,7 @@
 	padding: 10px 0;
 	font-weight: 600;
 	background: var(--confirm);
-	color: #fff;
+	color: var(--light-text);
 	border: none;
 	border-radius: 6px;
 	cursor: pointer;

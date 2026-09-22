@@ -429,7 +429,7 @@ const CaseScreen = () => {
                   fontWeight: 700,
                   padding: "4px 8px",
                   background: "#f0ad4e",
-                  color: "#fff",
+                  color: "var(--light-text)",
                   border: "none",
                   borderRadius: 4,
                   cursor: "pointer",
@@ -446,7 +446,7 @@ const CaseScreen = () => {
                   fontWeight: 700,
                   padding: 0,
                   background: "#d9534f",
-                  color: "#fff",
+                  color: "var(--light-text)",
                   border: "none",
                   borderRadius: 4,
                   cursor: "pointer",
@@ -462,7 +462,7 @@ const CaseScreen = () => {
                   fontWeight: 600,
                   padding: "2px 8px",
                   background:
-                    q.type === QuestionType.TRUE_FALSE ? "#e6f4ea" : "#fff3cd",
+                    q.type === QuestionType.TRUE_FALSE ? "#e6f4ea" : "var(--light-text)3cd",
                   color:
                     q.type === QuestionType.TRUE_FALSE ? "#2e7d32" : "#856404",
                   borderRadius: 12,
@@ -502,7 +502,7 @@ const CaseScreen = () => {
               fontSize: 17,
               fontWeight: 600,
               background: "#2c6fad",
-              color: "#fff",
+              color: "var(--light-text)",
               borderRadius: 8,
               textDecoration: "none",
             }}
@@ -522,7 +522,7 @@ const CaseScreen = () => {
                 fontSize: 17,
                 fontWeight: 600,
                 background: "#2c6fad",
-                color: "#fff",
+                color: "var(--light-text)",
                 borderRadius: 8,
                 textDecoration: "none",
               }}
@@ -685,7 +685,7 @@ const CaseScreen = () => {
                 background: questionForm.text.trim()
                   ? "var(--confirm)"
                   : "#aaa",
-                color: "#fff",
+                color: "var(--light-text)",
                 border: "none",
                 borderRadius: 6,
                 marginBottom: 8,
@@ -707,7 +707,7 @@ const CaseScreen = () => {
                   fontSize: 15,
                   fontWeight: 600,
                   background: questionForm.text.trim() ? "#4a90d9" : "#aaa",
-                  color: "#fff",
+                  color: "var(--light-text)",
                   border: "none",
                   borderRadius: 6,
                   cursor:
@@ -769,7 +769,7 @@ const CaseScreen = () => {
                 padding: "10px 0",
                 fontWeight: 600,
                 background: "#d9534f",
-                color: "#fff",
+                color: "var(--light-text)",
                 border: "none",
                 borderRadius: 6,
                 cursor: "pointer",

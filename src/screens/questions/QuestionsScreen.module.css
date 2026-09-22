@@ -11,7 +11,7 @@
 	margin-bottom: 6px;
 	border-radius: 6px;
 	cursor: pointer;
-	background: #fff;
+	background: var(--light-text);
 	color: #333;
 	border: 1px solid #c5d8f5;
 	font-size: 13px;
@@ -49,10 +49,10 @@
 
 .confirm {
 	background: var(--confirm);
-	color: #fff;
+	color: var(--light-text);
 }
 
 .decline {
 	background: var(--decline);
-	color: #fff;
+	color: var(--light-text);
 }

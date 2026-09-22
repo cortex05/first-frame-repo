@@ -22,10 +22,10 @@
 
 .confirm {
 	background: var(--confirm);
-	color: #fff;
+	color: var(--light-text);
 }
 
 .decline {
 	background: var(--decline);
-	color: #fff;
+	color: var(--light-text);
 }

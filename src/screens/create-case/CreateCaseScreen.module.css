@@ -161,7 +161,7 @@
 
 .playlistQuestionSelected .playlistQuestionNumber,
 .playlistQuestionSelected .playlistQuestionText {
-  color: #fff;
+  color: var(--light-text);
 }
 
 .playlistQuestionNumber {
@@ -186,7 +186,7 @@
   padding: 10px 0;
   font-weight: 600;
   background: var(--confirm);
-  color: #fff;
+  color: var(--light-text);
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -204,7 +204,7 @@
   font-size: 16px;
   font-weight: 600;
   background: var(--confirm);
-  color: #fff;
+  color: var(--light-text);
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -239,7 +239,7 @@
   padding: 10px 20px;
   font-size: 15px;
   background: var(--blue-background);
-  color: #fff;
+  color: var(--light-text);
   border: 2px solid var(--light-blue-background);
   border-radius: 6px;
   cursor: pointer;
@@ -257,7 +257,7 @@
   padding: 10px 20px;
   font-size: 15px;
   background: var(--confirm);
-  color: #fff;
+  color: var(--light-text);
   border: 2px solid var(--confirm-hover);
   border-radius: 6px;
   cursor: pointer;

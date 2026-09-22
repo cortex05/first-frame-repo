@@ -242,7 +242,7 @@ const StartScreen = () => {
     padding: "8px 0",
     fontSize: 13,
     fontWeight: 600,
-    background: "#fff",
+    background: "var(--light-text)",
     color: enabled ? "#2c6fad" : "#aaa",
     border: `1px solid ${enabled ? "#c5d8f5" : "#e0e0e0"}`,
     borderRadius: 6,
@@ -363,7 +363,7 @@ const StartScreen = () => {
             fontSize: 14,
             fontWeight: 600,
             background: remaining.length > 0 ? "var(--confirm)" : "#aaa",
-            color: "#fff",
+            color: "var(--light-text)",
             border: "none",
             borderRadius: 6,
             cursor: remaining.length > 0 ? "pointer" : "not-allowed",
@@ -396,7 +396,7 @@ const StartScreen = () => {
             fontSize: 14,
             fontWeight: 600,
             background: "#2c6fad",
-            color: "#fff",
+            color: "var(--light-text)",
             border: "none",
             borderRadius: 6,
             cursor: "pointer" 
@@ -413,7 +413,7 @@ const StartScreen = () => {
               fontSize: 15,
               fontWeight: 600,
               background: "#2e7d32",
-              color: "#fff",
+              color: "var(--light-text)",
               border: "none",
               borderRadius: 6,
               cursor: "pointer",
@@ -477,7 +477,7 @@ const StartScreen = () => {
                   <Group key={s.id} x={s.xRel} y={s.yRel}>
                     <Circle
                       radius={CIRCLE_R}
-                      fill="#fff"
+                      fill="var(--light-text)"
                       stroke="#000"
                       strokeWidth={1.5}
                     />

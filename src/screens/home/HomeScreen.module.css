@@ -32,7 +32,7 @@
 
 .linkButton:hover {
   background: var(--blue-background);
-  color: #fff;
+  color: var(--light-text);
 }
 
 .modalContent {
@@ -57,7 +57,7 @@
 
 .caseItem:hover {
   background: var(--blue-background);
-  color: #fff;
+  color: var(--light-text);
 }
 
 .caseItem span {

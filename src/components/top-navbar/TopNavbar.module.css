@@ -31,7 +31,7 @@
 
 .navButton:hover {
   background: #2c6fad;
-  color: #ffffff;
+  color: var(--light-text);
 }
 
 .modalButtons {
@@ -58,12 +58,12 @@
 
 .confirm {
   background: var(--confirm);
-  color: #fff;
+  color: var(--light-text);
 }
 
 .decline {
   background: var(--decline);
-  color: #fff;
+  color: var(--light-text);
 }
 
 @media (max-width: 700px) {

@@ -87,7 +87,7 @@
   padding: 10px 20px;
   font-size: 15px;
   background: var(--confirm);
-  color: #fff;
+  color: var(--light-text);
   border: 2px solid var(--confirm-hover);
   border-radius: 6px;
   cursor: pointer;
