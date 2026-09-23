@@ -7,7 +7,7 @@
 
 .value {
 	font-size: 15px;
-	color: #c0bdbd;
+	color: var(--label-light);
 	margin-bottom: 16px;
 }
 

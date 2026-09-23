@@ -198,7 +198,7 @@
 }
 
 .createButton:disabled {
-  background: #aaa;
+  background: var(--grey-disabled);
   border-color: #999;
   cursor: not-allowed;
 }
@@ -271,7 +271,7 @@
 }
 
 .confirm:disabled {
-  background: #aaa;
+  background: var(--grey-disabled);
   cursor: not-allowed;
 }
 
@@ -294,7 +294,7 @@
 }
 
 .questionModalAddButton:disabled {
-  background: #aaa;
+  background: var(--grey-disabled);
   cursor: not-allowed;
 }
 
@@ -317,7 +317,7 @@
 }
 
 .questionModalSaveButton:disabled {
-  background: #aaa;
+  background: var(--grey-disabled);
   cursor: not-allowed;
 }
 

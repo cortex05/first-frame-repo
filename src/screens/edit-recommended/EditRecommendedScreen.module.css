@@ -19,7 +19,7 @@
 
 .value {
   font-size: 15px;
-  color: #c0bdbd;
+  color: var(--label-light);
   margin-bottom: 16px;
 }
 
@@ -38,7 +38,7 @@
 }
 
 .statusText {
-  color: #c0bdbd;
+  color: var(--label-light);
   font-size: 18px;
 }
 
@@ -139,7 +139,7 @@
 }
 
 .addQuestionButton:disabled {
-  background: #aaa;
+  background: var(--grey-disabled);
   cursor: not-allowed;
 }
 
@@ -163,7 +163,7 @@
 }
 
 .deleteRecommendedButton:disabled {
-  background: #aaa;
+  background: var(--grey-disabled);
   cursor: not-allowed;
 }
 
@@ -278,7 +278,7 @@
 }
 
 .confirm:disabled {
-  background: #aaa;
+  background: var(--grey-disabled);
   cursor: not-allowed;
 }
 
@@ -288,7 +288,7 @@
 }
 
 .decline:disabled {
-  background: #aaa;
+  background: var(--grey-disabled);
   cursor: not-allowed;
 }
 

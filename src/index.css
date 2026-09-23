@@ -30,12 +30,11 @@
   /* --- Neutrals / greys --- */
   --black: #000;                 /* CaseScreen / CreateCaseScreen pill text */
   --grey-button-bg: #f0f0f0;     /* cancel + secondary button bg */
+  --grey-disabled: #aaa;         /* disabled button bg — 8 uses */
 
   /* START HERE */
 
   /* --- Neutrals / greys --- */
-  --grey-empty-text: #c0bdbd;    /* empty-state text */
-  --grey-disabled: #aaa;         /* disabled button bg — 8 uses */
   --grey-border-strong: #999;    /* CreateRecommended disabled border */
   --grey-subtle-text: #888;      /* hint / placeholder text */
   --grey-secondary-text: #666;   /* secondary body text */

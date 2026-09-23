@@ -684,7 +684,7 @@ const CaseScreen = () => {
                 fontWeight: 600,
                 background: questionForm.text.trim()
                   ? "var(--confirm)"
-                  : "#aaa",
+                  : "var(--grey-disabled)",
                 color: "var(--light-text)",
                 border: "none",
                 borderRadius: 6,
@@ -706,7 +706,7 @@ const CaseScreen = () => {
                   padding: "12px 0",
                   fontSize: 15,
                   fontWeight: 600,
-                  background: questionForm.text.trim() ? "#4a90d9" : "#aaa",
+                  background: questionForm.text.trim() ? "#4a90d9" : "var(--grey-disabled)",
                   color: "var(--light-text)",
                   border: "none",
                   borderRadius: 6,
