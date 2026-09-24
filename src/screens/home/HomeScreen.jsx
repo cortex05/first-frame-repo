@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Modal from "../../components/modal/Modal";
 import TopNavbar from "../../components/top-navbar/TopNavbar";
 import styles from "./HomeScreen.module.css";
 import { getPlaylistById } from "../../api/playlist";
 
 import useCaseStore from "../../store/useCaseStore";
-import useAuthStore from "../../store/useAuthStore";
+import useAuthStore, { selectIsAccountAdmin } from "../../store/useAuthStore";
 
 const Home = () => {
+  const location = useLocation();
+  // Set by a redirect, e.g. after losing access to a case. Shown once.
+  const [notice] = useState(() => location.state?.message ?? "");
   const [modalOpen, setModalOpen] = useState(false);
   const [playlistModalOpen, setPlaylistModalOpen] = useState(false);
   const [selectedPlaylist, setSelectedPlaylist] = useState(null);
@@ -19,6 +22,7 @@ const Home = () => {
   const userInfo = useAuthStore((state) => state.userInfo);
   const playlists = useAuthStore((state) => state.playlists);
   const fetchUserPlaylists = useAuthStore((state) => state.fetchUserPlaylists);
+  const isAccountAdmin = useAuthStore(selectIsAccountAdmin);
 
   const navigate = useNavigate();
 
@@ -28,6 +32,13 @@ const Home = () => {
       fetchUserPlaylists(userInfo.token);
     }
   }, [userInfo?.token]);
+
+  useEffect(() => {
+    // Clear the one-off message so a refresh or back navigation does not repeat it.
+    if (location.state?.message) {
+      navigate(location.pathname, { replace: true, state: null });
+    }
+  }, []);
 
   const handleOpenPlaylistModal = () => {
     setSelectedPlaylist(null);
@@ -70,10 +81,14 @@ const Home = () => {
           {/* <h3>What would you like to do?</h3> */}
         </div>
 
+        {notice && <p className={styles.notice}>{notice}</p>}
+
         <div className={styles.actionContainer}>
-          <Link to="/create-case" className={styles.linkButton}>
-            Create New Case
-          </Link>
+          {isAccountAdmin && (
+            <Link to="/create-case" className={styles.linkButton}>
+              Create New Case
+            </Link>
+          )}
 
           <div onClick={() => setModalOpen(true)} className={styles.linkButton}>
             <span>Access Existing Case</span>
@@ -105,7 +120,11 @@ const Home = () => {
         >
           <div className={styles.modalContent}>
             {cases.length === 0 ? (
-              <p style={{ color: "var(--modal-text)" }}>No existing cases found.</p>
+              <p style={{ color: "var(--modal-text)" }}>
+                {isAccountAdmin
+                  ? "No existing cases found."
+                  : "No cases have been assigned to you yet."}
+              </p>
             ) : (
               <div>
                 {cases.map((c) => (

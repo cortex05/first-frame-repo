@@ -27,6 +27,14 @@ const LoginScreen = () => {
     try {
       const userInfo = await login({ email: email.trim(), password });
       setUserInfo(userInfo);
+
+      // A user with a temporary password can do nothing else yet -- loading
+      // cases or playlists now would only come back 403.
+      if (userInfo.mustChangePassword) {
+        navigate('/change-password', { replace: true });
+        return;
+      }
+
       await Promise.all([
         fetchUserPlaylists(userInfo.token),
         fetchUserCases(userInfo.token),

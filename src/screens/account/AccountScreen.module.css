@@ -1,0 +1,181 @@
+.container {
+  width: 100%;
+  max-width: 50%;
+  margin: 0 auto;
+  padding: 32px;
+  color: var(--light-text);
+  text-align: left;
+}
+
+.container h1 {
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  margin: 0 0 24px;
+  color: var(--label-light);
+}
+
+.section {
+  margin-bottom: 32px;
+}
+
+.sectionHeading {
+  margin-bottom: 12px;
+}
+
+.form {
+  margin-bottom: 16px;
+}
+
+.inlineForm {
+  display: flex;
+  gap: 8px;
+}
+
+.fieldStyle {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.labelStyle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--label-light);
+}
+
+.inputStyle,
+.selectStyle {
+  padding: 2px 12px;
+  font-size: 16px;
+  border: 1px solid var(--grey-button-b);
+  border-radius: 6px;
+  box-sizing: border-box;
+  height: 44px;
+}
+
+.inputStyle {
+  flex: 1;
+  width: 100%;
+}
+
+.primaryButton,
+.confirmButton,
+.declineButton {
+  padding: 10px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--light-text);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.primaryButton {
+  background: var(--blue-primary);
+}
+
+.confirmButton {
+  background: var(--confirm);
+}
+
+.declineButton {
+  background: var(--decline);
+}
+
+.primaryButton:disabled,
+.confirmButton:disabled,
+.declineButton:disabled {
+  background: var(--grey-disabled);
+  cursor: not-allowed;
+}
+
+.userList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.userRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  background: var(--color-surface);
+  border: 1px solid var(--blue-border-light);
+  border-radius: 6px;
+  color: var(--modal-text);
+}
+
+.userDisabled {
+  opacity: 0.6;
+}
+
+.userIdentity {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.username {
+  font-weight: 600;
+}
+
+.email {
+  color: var(--grey-secondary-text);
+  font-size: 14px;
+}
+
+.pendingTag {
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--warning-bg);
+  color: var(--warning-text);
+  border-radius: 12px;
+}
+
+.userControls {
+  display: flex;
+  gap: 8px;
+}
+
+.rowError {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--decline);
+  font-size: 14px;
+}
+
+.hint {
+  margin: 8px 0 12px;
+  color: var(--label-light);
+  font-size: 14px;
+}
+
+.error {
+  margin: 0 0 12px;
+  color: var(--error-text-light);
+  font-size: 14px;
+}
+
+.success {
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  background: var(--success-bg);
+  color: var(--success-text);
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+@media (max-width: 900px) {
+  .container {
+    max-width: 90%;
+  }
+}

@@ -78,3 +78,18 @@
     font-size: 14px;
   }
 }
+
+.navActions {
+  display: flex;
+  align-items: center;
+}
+
+.accountName {
+  margin-left: 12px;
+  padding: 4px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--navbar-border);
+  color: var(--label-light);
+  border-radius: 12px;
+}

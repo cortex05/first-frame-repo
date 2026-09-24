@@ -2,10 +2,13 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import useCaseStore from "../../store/useCaseStore";
-import useAuthStore from "../../store/useAuthStore";
+import useAuthStore, { selectIsAccountAdmin } from "../../store/useAuthStore";
+import useAccountStore from "../../store/useAccountStore";
 import Modal from "../../components/modal/Modal";
+import OwnerPicker from "../../components/owner-picker/OwnerPicker";
 import TopNavbar from "../../components/top-navbar/TopNavbar";
-import { saveCase } from "../../api/case";
+import { archiveCase, saveCase, setCaseOwners } from "../../api/case";
+import { isCaseComplete } from "../../utils/caseCompletion";
 import { getPlaylistById } from "../../api/playlist";
 import Question from "../../types/polls/Question";
 import { QuestionType } from "../../types/ENUMS";
@@ -57,27 +60,114 @@ const CaseScreen = () => {
     load: loadRecommended,
   } = useRecommendedPlaylist(userInfo?.token);
 
+  const removeCase = useCaseStore((state) => state.removeCase);
+  const isAccountAdmin = useAuthStore(selectIsAccountAdmin);
+  const accountUsers = useAccountStore((state) => state.users);
+  const fetchAccountUsers = useAccountStore((state) => state.fetchAccountUsers);
+
+  const [ownersModalOpen, setOwnersModalOpen] = useState(false);
+  const [draftOwners, setDraftOwners] = useState([]);
+  const [ownersError, setOwnersError] = useState("");
+  const [isSavingOwners, setIsSavingOwners] = useState(false);
+  const [archiveModalOpen, setArchiveModalOpen] = useState(false);
+  const [archiveError, setArchiveError] = useState("");
+  const [isArchiving, setIsArchiving] = useState(false);
+
+  useEffect(() => {
+    // Admins need the user list to show and change owners.
+    if (isAccountAdmin && userInfo?.token) {
+      fetchAccountUsers(userInfo.token).catch(() => {});
+    }
+  }, [isAccountAdmin, userInfo?.token]);
+
   if (!activeCase) return <p>Case not found.</p>;
 
   const selectedCharge = getCaseCategory(activeCase.category)?.matter || "";
+  const isOwner = (activeCase.owners || []).map(String).includes(String(userInfo?.userId));
+  const canArchive = isAccountAdmin || isOwner;
+  const isComplete = isCaseComplete(activeCase);
 
-  const persistCaseUpdate = async (updatedCase) => {
-    if (!userInfo?.token) {
-      updateCase(updatedCase);
-      localStorage.setItem(
-        "cases",
-        JSON.stringify(useCaseStore.getState().cases),
-      );
-      return updatedCase;
-    }
-
-    const savedCase = await saveCase(activeCase._id, updatedCase, userInfo.token);
-    updateCase(savedCase || updatedCase);
+  const syncCasesToStorage = () => {
     localStorage.setItem(
       "cases",
       JSON.stringify(useCaseStore.getState().cases),
     );
-    return savedCase || updatedCase;
+  };
+
+  /**
+   * The server answers 404 when this user can no longer see the case (their
+   * ownership was removed, or it was archived by someone else). Drop the stale
+   * local copy and send them home.
+   */
+  const handleLostAccess = (requestError) => {
+    if (requestError?.response?.status !== 404) return false;
+
+    removeCase(activeCase._id);
+    syncCasesToStorage();
+    navigate("/home", {
+      replace: true,
+      state: { message: "You no longer have access to that case." },
+    });
+    return true;
+  };
+
+  const persistCaseUpdate = async (updatedCase) => {
+    if (!userInfo?.token) {
+      updateCase(updatedCase);
+      syncCasesToStorage();
+      return updatedCase;
+    }
+
+    try {
+      const savedCase = await saveCase(activeCase._id, updatedCase, userInfo.token);
+      updateCase(savedCase || updatedCase);
+      syncCasesToStorage();
+      return savedCase || updatedCase;
+    } catch (requestError) {
+      handleLostAccess(requestError);
+      throw requestError;
+    }
+  };
+
+  const openOwnersModal = () => {
+    setDraftOwners((activeCase.owners || []).map(String));
+    setOwnersError("");
+    setOwnersModalOpen(true);
+  };
+
+  const handleSaveOwners = async () => {
+    setOwnersError("");
+    setIsSavingOwners(true);
+
+    try {
+      const savedCase = await setCaseOwners(activeCase._id, draftOwners, userInfo.token);
+      updateCase(savedCase);
+      syncCasesToStorage();
+      setOwnersModalOpen(false);
+    } catch (requestError) {
+      if (!handleLostAccess(requestError)) {
+        setOwnersError(requestError?.response?.data?.message || "Unable to save the owners.");
+      }
+    } finally {
+      setIsSavingOwners(false);
+    }
+  };
+
+  const handleArchive = async () => {
+    setArchiveError("");
+    setIsArchiving(true);
+
+    try {
+      const archived = await archiveCase(activeCase._id, userInfo.token);
+      removeCase(activeCase._id);
+      syncCasesToStorage();
+      navigate(`/archive/${archived._id}`, { replace: true });
+    } catch (requestError) {
+      if (!handleLostAccess(requestError)) {
+        setArchiveError(requestError?.response?.data?.message || "Unable to archive the case.");
+      }
+      setIsArchiving(false);
+    }
   };
 
   const normalizeQuestionForCase = (question) => {
@@ -531,6 +621,84 @@ const CaseScreen = () => {
             </button>
           </Link>
         )}
+
+        {/* Owners & archive */}
+        {(isAccountAdmin || canArchive) && (
+          <section className={styles.manageSection}>
+            {isAccountAdmin && (
+              <button onClick={openOwnersModal} className={styles.manageOwnersButton}>
+                Manage Owners
+              </button>
+            )}
+
+            {canArchive && (
+              <div>
+                <button
+                  onClick={() => {
+                    setArchiveError("");
+                    setArchiveModalOpen(true);
+                  }}
+                  disabled={!isComplete}
+                  className={styles.archiveButton}
+                >
+                  Archive Case
+                </button>
+                {!isComplete && (
+                  <p className={styles.archiveHint}>Answer every question to archive.</p>
+                )}
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* Owners Modal */}
+        <Modal
+          isOpen={ownersModalOpen}
+          onClose={() => setOwnersModalOpen(false)}
+          title="Case Owners"
+          hideDefaultClose
+        >
+          <p className={styles.modalText}>
+            Owners can open, run and archive this case.
+          </p>
+          <OwnerPicker
+            users={accountUsers}
+            value={draftOwners}
+            onChange={setDraftOwners}
+            disabled={isSavingOwners}
+          />
+          {ownersError && <p className={styles.modalError}>{ownersError}</p>}
+          <div className={styles.startModalButtons}>
+            <button onClick={handleSaveOwners} disabled={isSavingOwners} className={styles.confirm}>
+              {isSavingOwners ? "Saving..." : "Save"}
+            </button>
+            <button onClick={() => setOwnersModalOpen(false)} className={styles.decline}>
+              Cancel
+            </button>
+          </div>
+        </Modal>
+
+        {/* Archive Confirmation Modal */}
+        <Modal
+          isOpen={archiveModalOpen}
+          onClose={() => setArchiveModalOpen(false)}
+          title="Archive Case"
+          hideDefaultClose
+        >
+          <p className={styles.modalText}>
+            Archiving moves this case to the account&apos;s archive. It can still be viewed
+            there, but it can no longer be changed.
+          </p>
+          {archiveError && <p className={styles.modalError}>{archiveError}</p>}
+          <div className={styles.startModalButtons}>
+            <button onClick={handleArchive} disabled={isArchiving} className={styles.confirm}>
+              {isArchiving ? "Archiving..." : "Archive"}
+            </button>
+            <button onClick={() => setArchiveModalOpen(false)} className={styles.decline}>
+              Cancel
+            </button>
+          </div>
+        </Modal>
 
         {/* Add/Edit Question Modal */}
         <Modal

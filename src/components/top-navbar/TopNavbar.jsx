@@ -2,59 +2,80 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import Modal from '../modal/Modal';
-import useAuthStore from '../../store/useAuthStore';
+import useAuthStore, { selectIsAccountAdmin } from '../../store/useAuthStore';
 
 import styles from './TopNavbar.module.css';
 
 const TopNavbar = ({ warnOnHomeNavigation = false }) => {
   const navigate = useNavigate();
   const userInfo = useAuthStore((state) => state.userInfo);
+  const isAccountAdmin = useAuthStore(selectIsAccountAdmin);
   const clearUserInfo = useAuthStore((state) => state.clearUserInfo);
   const [logoutWarningOpen, setLogoutWarningOpen] = useState(false);
-  const [homeWarningOpen, setHomeWarningOpen] = useState(false);
+  // Where the user asked to go while the page has unsaved changes.
+  const [pendingPath, setPendingPath] = useState(null);
 
   const handleContinueLogout = () => {
     clearUserInfo();
     setLogoutWarningOpen(false);
   };
 
-  const handleHomeClick = () => {
-    if (warnOnHomeNavigation) {
-      setHomeWarningOpen(true);
-      return;
-    }
+  // On pages that warn about unsaved changes, every navbar link asks first.
+  const handleNavigate = (event, path) => {
+    if (!warnOnHomeNavigation) return;
 
-    navigate('/home');
+    event.preventDefault();
+    setPendingPath(path);
   };
 
-  const handleContinueHome = () => {
-    setHomeWarningOpen(false);
-    navigate('/home');
+  const handleContinueNavigation = () => {
+    const path = pendingPath;
+    setPendingPath(null);
+    navigate(path);
   };
 
   return (
     <React.Fragment>
       <header className={styles.navbar}>
         <div> 
-          {warnOnHomeNavigation ? (
-            <button type="button" className={styles.navButton} onClick={handleHomeClick}>
-              Home
-            </button>
-          ) : (
-            <Link to="/" className={styles.navButton}>
-              Home
-            </Link>
-          )}
+          <Link
+            to="/home"
+            className={styles.navButton}
+            onClick={(event) => handleNavigate(event, '/home')}
+          >
+            Home
+          </Link>
           <span>   Hello {userInfo?.username}</span>
+          {userInfo?.accountName && (
+            <span className={styles.accountName}>{userInfo.accountName}</span>
+          )}
         </div>
 
-        <button
-          type="button"
-          className={styles.navButton}
-          onClick={() => setLogoutWarningOpen(true)}
-        >
-          Log out
-        </button>
+        <div className={styles.navActions}>
+          <Link
+            to="/archive"
+            className={styles.navButton}
+            onClick={(event) => handleNavigate(event, '/archive')}
+          >
+            Archive
+          </Link>
+          {isAccountAdmin && (
+            <Link
+              to="/account"
+              className={styles.navButton}
+              onClick={(event) => handleNavigate(event, '/account')}
+            >
+              Account
+            </Link>
+          )}
+          <button
+            type="button"
+            className={styles.navButton}
+            onClick={() => setLogoutWarningOpen(true)}
+          >
+            Log out
+          </button>
+        </div>
       </header>
 
       <Modal
@@ -88,8 +109,8 @@ const TopNavbar = ({ warnOnHomeNavigation = false }) => {
       </Modal>
 
       <Modal
-        isOpen={homeWarningOpen}
-        onClose={() => setHomeWarningOpen(false)}
+        isOpen={Boolean(pendingPath)}
+        onClose={() => setPendingPath(null)}
         title="Leave This Page?"
       >
         <h3
@@ -103,7 +124,7 @@ const TopNavbar = ({ warnOnHomeNavigation = false }) => {
         </h3>
 
         <div className={styles.modalButtons}>
-          <button type="button" className={styles.confirm} onClick={handleContinueHome}>
+          <button type="button" className={styles.confirm} onClick={handleContinueNavigation}>
             Confirm
           </button>
         </div>

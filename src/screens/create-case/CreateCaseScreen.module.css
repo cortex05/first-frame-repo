@@ -270,3 +270,8 @@
   /* background: var(--blue-background); */
   border: 2px solid var(--light-blue-background);
 }
+.ownersHint {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: var(--grey-subtle-text);
+}

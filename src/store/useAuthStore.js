@@ -1,8 +1,55 @@
 import { create } from 'zustand';
 import { getUserPlaylists } from '../api/playlist';
 import { getRecommendedNames } from '../api/recommended';
+import useAccountStore from './useAccountStore';
+import useCaseStore from './useCaseStore';
 
 const USER_INFO_STORAGE_KEY = 'userInfo';
+const CASES_STORAGE_KEY = 'cases';
+const SEATING_DRAFT_PREFIX = 'seating-draft:';
+
+/**
+ * The persisted session. isAdmin is the PLATFORM admin (Recommended curator);
+ * role is the ACCOUNT role. Both only drive which UI is shown -- every action
+ * is authorized server-side against the freshly loaded user, so editing these
+ * in localStorage reveals buttons that still fail with a 403.
+ */
+const normalizeUserInfo = (raw) => ({
+  token: raw?.token ?? '',
+  userId: raw?.userId ?? '',
+  username: raw?.username ?? '',
+  isAdmin: Boolean(raw?.isAdmin),
+  accountId: raw?.accountId ?? '',
+  accountName: raw?.accountName ?? '',
+  role: raw?.role === 'admin' ? 'admin' : 'member',
+  mustChangePassword: Boolean(raw?.mustChangePassword),
+});
+
+// A session saved before accounts existed has no accountId and is discarded,
+// which sends that user back to the login screen.
+const isCompleteSession = (userInfo) =>
+  Boolean(userInfo?.token && userInfo?.userId && userInfo?.username && userInfo?.accountId);
+
+/**
+ * Removes everything one user leaves in localStorage, so the next person on a
+ * shared machine does not see their cases or seating drafts.
+ */
+const clearUserData = () => {
+  window.localStorage.removeItem(USER_INFO_STORAGE_KEY);
+  window.localStorage.removeItem(CASES_STORAGE_KEY);
+
+  const draftKeys = [];
+  for (let i = 0; i < window.localStorage.length; i += 1) {
+    const key = window.localStorage.key(i);
+    if (key?.startsWith(SEATING_DRAFT_PREFIX)) {
+      draftKeys.push(key);
+    }
+  }
+  draftKeys.forEach((key) => window.localStorage.removeItem(key));
+
+  useCaseStore.getState().getAllCases([]);
+  useAccountStore.getState().reset();
+};
 
 const safeReadStoredUserInfo = () => {
   if (typeof window === 'undefined') {
@@ -15,30 +62,20 @@ const safeReadStoredUserInfo = () => {
       return null;
     }
 
-    const parsed = JSON.parse(raw);
-    if (!parsed?.token || !parsed?.userId || !parsed?.username) {
-      return null;
-    }
-
-    return {
-      token: parsed.token,
-      userId: parsed.userId,
-      username: parsed.username,
-      // Drives which UI is shown, nothing more. Every admin action is
-      // authorized server-side against the freshly loaded user, so editing this
-      // in localStorage reveals buttons that still fail with a 403.
-      isAdmin: Boolean(parsed.isAdmin),
-    };
+    const parsed = normalizeUserInfo(JSON.parse(raw));
+    return isCompleteSession(parsed) ? parsed : null;
   } catch {
     return null;
   }
 };
 
+export const selectIsAccountAdmin = (state) => state.userInfo?.role === 'admin';
+
 const useAuthStore = create((set, get) => ({
   userInfo: safeReadStoredUserInfo(),
   playlists: [],
   // Charges of every recommended set. Recommended sets have no title, so the
-  // charge is the identifier. Populated for admins only.
+  // charge is the identifier. Populated for platform admins only.
   recommendedNames: [],
   isLoadingRecommendedNames: false,
 
@@ -93,15 +130,10 @@ const useAuthStore = create((set, get) => ({
   },
 
   setUserInfo: (nextUserInfo) => {
-    const normalized = {
-      token: nextUserInfo?.token ?? '',
-      userId: nextUserInfo?.userId ?? '',
-      username: nextUserInfo?.username ?? '',
-      isAdmin: Boolean(nextUserInfo?.isAdmin),
-    };
+    const normalized = normalizeUserInfo(nextUserInfo);
 
-    if (!normalized.token || !normalized.userId || !normalized.username) {
-      window.localStorage.removeItem(USER_INFO_STORAGE_KEY);
+    if (!isCompleteSession(normalized)) {
+      clearUserData();
       set({ userInfo: null, playlists: [], recommendedNames: [] });
       return;
     }
@@ -110,8 +142,23 @@ const useAuthStore = create((set, get) => ({
     set({ userInfo: normalized, playlists: [], recommendedNames: [] });
   },
 
+  /**
+   * Merges a few session fields without a new login -- after a password
+   * change, an account rename or an admin demoting themselves.
+   */
+  updateSession: (partial) => {
+    const { userInfo } = get();
+    if (!userInfo) {
+      return;
+    }
+
+    const normalized = normalizeUserInfo({ ...userInfo, ...partial });
+    window.localStorage.setItem(USER_INFO_STORAGE_KEY, JSON.stringify(normalized));
+    set({ userInfo: normalized });
+  },
+
   clearUserInfo: () => {
-    window.localStorage.removeItem(USER_INFO_STORAGE_KEY);
+    clearUserData();
     set({ userInfo: null, playlists: [], recommendedNames: [] });
   },
 }));

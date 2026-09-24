@@ -45,3 +45,25 @@ export const saveCase = async (caseId, casePayload, token) => {
 
   return normalizeCaseQuestionsPayload(res.data.data);
 };
+
+// Account admins only. Replaces the whole owner list.
+export const setCaseOwners = async (caseId, owners, token) => {
+  const res = await axiosInstance.put(CASE_API.OWNERS(caseId), { owners }, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return normalizeCaseQuestionsPayload(res.data.data);
+};
+
+// Moves a complete case into the archive. Returns the archived snapshot.
+export const archiveCase = async (caseId, token) => {
+  const res = await axiosInstance.post(CASE_API.ARCHIVE(caseId), null, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return normalizeCaseQuestionsPayload(res.data.data);
+};

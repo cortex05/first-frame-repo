@@ -3,10 +3,12 @@ import { v4 as uuidv4 } from "uuid";
 import { useNavigate } from "react-router-dom";
 
 import Modal from "../../components/modal/Modal";
+import OwnerPicker from "../../components/owner-picker/OwnerPicker";
 import TopNavbar from "../../components/top-navbar/TopNavbar";
 
 import useCaseStore from "../../store/useCaseStore";
 import useAuthStore from "../../store/useAuthStore";
+import useAccountStore from "../../store/useAccountStore";
 import { createCase } from "../../api/case";
 import { getPlaylistById } from "../../api/playlist";
 
@@ -32,6 +34,8 @@ const CreateCaseScreen = () => {
   const [category, setCategory] = useState("");
 
 	const [numberOfStudents, setNumberOfStudents] = useState("");
+  // Users the case is handed to. Account admins see every case regardless.
+  const [owners, setOwners] = useState([]);
 
   const [questions, setQuestions] = useState([]);
   const [questionModal, setQuestionModal] = useState(false);
@@ -54,6 +58,16 @@ const CreateCaseScreen = () => {
   const userInfo = useAuthStore((state) => state.userInfo);
   const playlists = useAuthStore((state) => state.playlists);
   const fetchUserPlaylists = useAuthStore((state) => state.fetchUserPlaylists);
+  const accountUsers = useAccountStore((state) => state.users);
+  const fetchAccountUsers = useAccountStore((state) => state.fetchAccountUsers);
+
+  useEffect(() => {
+    if (userInfo?.token) {
+      fetchAccountUsers(userInfo.token).catch(() => {
+        // The picker shows its empty state; creating a case still works.
+      });
+    }
+  }, [userInfo?.token]);
 
   const {
     recommended,
@@ -324,6 +338,7 @@ const CreateCaseScreen = () => {
       category,
       studentNumber: Number(numberOfStudents),
       questions: normalizedQuestions,
+      owners,
     };
 
     try {
@@ -404,6 +419,14 @@ const CreateCaseScreen = () => {
             onChange={(e) => setNumberOfStudents(e.target.value)}
             placeholder="e.g. 30"
           />
+        </div>
+
+        <div className={styles.fieldStyle}>
+          <label className={styles.labelStyle}>Case Owners</label>
+          <p className={styles.ownersHint}>
+            Owners can open, run and archive this case. Account admins can always see it.
+          </p>
+          <OwnerPicker users={accountUsers} value={owners} onChange={setOwners} />
         </div>
       </section>
 

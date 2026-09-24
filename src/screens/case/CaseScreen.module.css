@@ -284,3 +284,55 @@
 	border-radius: 6px;
 	cursor: pointer;
 }
+/* Owners & archive */
+.manageSection {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	gap: 12px;
+	margin-top: 32px;
+	padding-top: 24px;
+	border-top: 1px solid var(--blue-border-light);
+}
+
+.manageOwnersButton,
+.archiveButton {
+	padding: 10px 20px;
+	font-size: 15px;
+	font-weight: 600;
+	color: var(--light-text);
+	border: none;
+	border-radius: 6px;
+	cursor: pointer;
+}
+
+.manageOwnersButton {
+	background: var(--blue-primary);
+}
+
+.archiveButton {
+	background: var(--decline);
+}
+
+.archiveButton:disabled {
+	background: var(--grey-disabled);
+	cursor: not-allowed;
+}
+
+.archiveHint {
+	margin: 6px 0 0;
+	font-size: 13px;
+	color: var(--grey-subtle-text);
+}
+
+.modalText {
+	margin: 0 0 16px;
+	max-width: 420px;
+	color: var(--modal-text);
+}
+
+.modalError {
+	margin: 0 0 12px;
+	color: var(--decline);
+	font-size: 14px;
+}
