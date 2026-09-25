@@ -29,6 +29,8 @@ This is the frontend only. The API is a separate repo, **first-frame-back**, whi
 
 **Screens (`src/screens/<name>/<Name>Screen.jsx` + `.module.css`).** Each screen is a large self-contained component that uses CSS Modules. The main flow: create a case → `/case/:id` → `/start/:caseId` (seating chart) → `/questions/:caseId` (answering questions per student). `/make-playlist` builds question playlists, which are shared across the account. The platform-admin-only recommended screens curate one recommended question set per charge. The charge is that set's unique identifier, and a set has no title.
 
+**Scores and risk (`src/utils/studentScores.js`).** The single source of student totals and risk tiers, used by both the live Scores view in `QuestionsScreen` (circle colors, sort modal, student modal) and the archive report (`ArchivedCaseScreen` + `components/student-report/StudentReportCard`). Tiers band the score *range* (min to max) into equal thirds, not students into rank-thirds; equal scores are all `low`. Changing `bandTier` changes both screens, and `studentScores.test.js` pins the pre-refactor colors. Students are identified by student number: `chartData.rects[].assignedStudents[].id` is a number, but `answers[questionId]` keys are strings, so look answers up with `getAnswer` (it uses `String(id)`). Tier colors are the `--risk-{high,medium,low}-{bg,text}` tokens.
+
 **Konva canvases.** `StartScreen` and `QuestionsScreen` draw with `react-konva`. Canvas contexts don't resolve CSS variables, so any `fill`/`stroke` passed to Konva must go through `cssVar('--name', fallback)` from `src/utils/cssVars.js`. That helper resolves the value from `:root` and caches it per theme. `main.jsx` patches `getContext` to set `willReadFrequently` for Konva hit detection.
 
 **Seating draft (`src/hooks/useSeatingDraft.js`).** Keeps the in-progress seating chart in `localStorage` under `seating-draft:<caseId>`, with undo history and batched writes. A draft is dropped if the case's student count has changed. `discardDraft()` is called once the chart has been committed to the case.
@@ -40,6 +42,7 @@ This is the frontend only. The API is a separate repo, **first-frame-back**, whi
 ## Styling conventions
 
 - All colors are CSS custom properties defined in `src/index.css`. Recent work removed hardcoded hex values across the app, so use an existing variable or add a new one there rather than hardcoding a color.
+- Only reference variables that `index.css` actually defines. A `var()` naming an undefined variable makes the whole declaration invalid, so the border or background silently disappears. The token set was trimmed, so check after editing styles: every `var(--name)` in `src` should appear as `--name:` in `index.css` (the only allowed exception is `--x` in `cssVars.js` comments).
 - Theme: light is the default. Dark mode applies through `:root[data-theme='dark']` or through `prefers-color-scheme` when no `data-theme` is set.
 
 ## Notes

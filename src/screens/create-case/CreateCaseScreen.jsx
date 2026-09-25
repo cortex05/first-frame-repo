@@ -670,7 +670,7 @@ const CreateCaseScreen = () => {
                 fontSize: 15,
                 fontWeight: 600,
                 background: "var(--decline)",
-                color: "var(--text-light)",
+                color: "var(--light-text)",
                 border: "1px solid var(--grey-disabled)",
                 borderRadius: 6,
                 cursor: "pointer",

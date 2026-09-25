@@ -6,6 +6,12 @@ import useAuthStore from "../../store/useAuthStore";
 import { saveCase } from "../../api/case";
 import { QuestionType } from "../../types/ENUMS";
 import { cssVar } from "../../utils/cssVars";
+import {
+  getAnswer,
+  getAnswerTier,
+  getRiskTiers,
+  getStudentTotal,
+} from "../../utils/studentScores";
 
 import Modal from "../../components/modal/Modal";
 
@@ -65,28 +71,17 @@ const QuestionsScreen = () => {
     return defaults;
   };
 
-  // ── score helper ──────────────────────────────────────────────
-  const getStudentScore = (studentId) => {
-    const answers = activeCase.answers || {};
-    return Object.values(answers).reduce((sum, qAnswers) => {
-      return sum + ((qAnswers[studentId] || {}).value || 0);
-    }, 0);
-  };
+  // ── scores & risk tiers ───────────────────────────────────────
+  // Totals and the low/medium/high banding come from utils/studentScores, the
+  // same rule the archive report uses, so archived risk matches these colors.
+  const getStudentScore = (studentId) => getStudentTotal(activeCase, studentId);
 
-  // ── score colour (gradient: #5BF527 low → #F54927 high) ────────
   const allStudents = rects.flatMap((r) => r.assignedStudents);
-  const allScores = allStudents.map((s) => getStudentScore(s.id));
-  const _minScore = allScores.length ? Math.min(...allScores) : 0;
-  const _maxScore = allScores.length ? Math.max(...allScores) : 0;
-
-  const getScoreColor = (studentId) => {
-    const score = getStudentScore(studentId);
-    if (_maxScore === _minScore) return "#5BF527";
-    const range = _maxScore - _minScore;
-    if (score <= _minScore + range / 3) return "#5BF527";
-    if (score <= _minScore + (2 * range) / 3) return "#F7F46D";
-    return "#F54927";
-  };
+  const scoreTiers = getRiskTiers(
+    activeCase,
+    allStudents.map((s) => s.id),
+  );
+  const getScoreTier = (studentId) => scoreTiers.get(studentId) ?? "low";
 
   // ── colour helpers ─────────────────────────────────────────────
   // Canvas can't resolve `var(--x)`, so read the variables into literal hex
@@ -95,6 +90,18 @@ const QuestionsScreen = () => {
     light: cssVar("--light-text", "#fff"),
     black: cssVar("--color-text-primary", "#08060d"),
   };
+  const riskFill = {
+    high: cssVar("--risk-high-bg", "#F54927"),
+    medium: cssVar("--risk-medium-bg", "#F7F46D"),
+    low: cssVar("--risk-low-bg", "#5BF527"),
+  };
+  const riskText = {
+    high: cssVar("--risk-high-text", canvas.light),
+    medium: cssVar("--risk-medium-text", "#2E2E2D"),
+    low: cssVar("--risk-low-text", "#2E2E2D"),
+  };
+
+  const getScoreColor = (studentId) => riskFill[getScoreTier(studentId)];
 
   const getStudentFill = (studentId) => {
     if (showScores) return getScoreColor(studentId);
@@ -111,8 +118,7 @@ const QuestionsScreen = () => {
   };
 
   const getStudentTextColor = (studentId) => {
-    if (showScores)
-      return getScoreColor(studentId) === "#F54927" ? canvas.light : "#2E2E2D";
+    if (showScores) return riskText[getScoreTier(studentId)];
     if (selectedQuestion?.type === QuestionType.TRUE_FALSE) {
       const answer = currentAnswers[studentId];
       return isTrueLabel(answer?.label) ? canvas.light : canvas.black;
@@ -663,8 +669,9 @@ const QuestionsScreen = () => {
                 <div style={{ overflowY: "auto" }}>
                   {sorted.map((s) => {
                     const score = getStudentScore(s.id);
-                    const bg = getScoreColor(s.id);
-                    const textColor = bg === "#F54927" ? "var(--light-text)" : "#2E2E2D";
+                    const tier = getScoreTier(s.id);
+                    const bg = `var(--risk-${tier}-bg)`;
+                    const textColor = `var(--risk-${tier}-text)`;
                     return (
                       <button
                         key={s.id}
@@ -697,20 +704,12 @@ const QuestionsScreen = () => {
       {/* ── Student Report modal ── */}
       {studentReport !== null &&
         (() => {
-          const getAnswerColor = (question, value) => {
-            if (value === null || value === undefined) return "var(--light-text)";
-            const vals = question.options.map((o) => o.value);
-            const minVal = Math.min(...vals);
-            const maxVal = Math.max(...vals);
-
-            if (maxVal === minVal) return "#5BF527";
-
-            const range = maxVal - minVal;
-
-            if (value <= minVal + range / 3) return "#5BF527";
-            if (value <= minVal + (2 * range) / 3) return "#F7F46D";
-            return "#F54927";
-          };
+          // Tier of this answer's points among the question's option values
+          // (utils/studentScores), or null for "N/A" -- shown as a white badge.
+          const getAnswerBadgeTier = (question, answerObj) =>
+            answerObj?.value === null || answerObj?.value === undefined
+              ? null
+              : getAnswerTier(question, answerObj);
 
           return (
             <div
@@ -764,18 +763,16 @@ const QuestionsScreen = () => {
                 </div>
                 <div style={{ overflowY: "auto" }}>
                   {activeCase.questions.map((q) => {
-                    const answerObj = ((activeCase.answers || {})[q.id] || {})[
-                      studentReport
-                    ];
+                    const answerObj = getAnswer(activeCase, q.id, studentReport);
                     let value = null;
                     let answerText = null
                     if (answerObj !== undefined) {
                       value = answerObj.value;
                       answerText = answerObj.label;
                     }
-                    const bg = getAnswerColor(q, value);
-                    const textColor =
-                      bg === "#F54927" ? "var(--light-text)" : "#2E2E2D";
+                    const tier = getAnswerBadgeTier(q, answerObj);
+                    const bg = tier ? `var(--risk-${tier}-bg)` : "var(--light-text)";
+                    const textColor = tier ? `var(--risk-${tier}-text)` : "#2E2E2D";
                     return (
                       <div
                         key={q.id}

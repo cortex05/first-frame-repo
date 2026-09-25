@@ -895,8 +895,8 @@ const CaseScreen = () => {
                   fontSize: 15,
                   fontWeight: 600,
                   background: "var(--decline)",
-                  color: "var(--text-light)",
-                  border: "10px solid var(--grey-button-b)",
+                  color: "var(--light-text)",
+                  border: "1px solid var(--grey-disabled)",
                   borderRadius: 6,
                   cursor: "pointer",
                 }}

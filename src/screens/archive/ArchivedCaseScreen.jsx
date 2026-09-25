@@ -1,27 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
+import StudentReportCard from '../../components/student-report/StudentReportCard';
 import TopNavbar from '../../components/top-navbar/TopNavbar';
 import { getArchivedCase } from '../../api/archive';
 import useAccountStore, { usernameFor } from '../../store/useAccountStore';
 import useAuthStore from '../../store/useAuthStore';
 import { caseCategoryLabel } from '../../types/caseCategories';
-import { QuestionType } from '../../types/ENUMS';
 import { formatDate } from '../../utils/formatDate';
+import {
+  getReportStudentNumbers,
+  getRiskTiers,
+  getStudentTotal,
+} from '../../utils/studentScores';
 
 import styles from './ArchiveScreen.module.css';
 
-const answerText = (answer) => {
-  if (answer === null || answer === undefined) return '—';
-  if (typeof answer !== 'object') return String(answer);
-
-  const label = answer.label === undefined || answer.label === null ? '—' : String(answer.label);
-  return answer.value === undefined ? label : `${label} (${answer.value} pts)`;
-};
-
 /**
- * Read-only view of one archived case: its details, owners, and every
- * question with the answers each student gave.
+ * Read-only view of one archived case: its details and owners, then a report
+ * per seated student -- their risk tier, total, and every answer with the
+ * points it earned. Risk uses the same rule as the live Scores view.
  */
 const ArchivedCaseScreen = () => {
   const { id } = useParams();
@@ -66,8 +64,9 @@ const ArchivedCaseScreen = () => {
     }
     if (error || !archived) return <p className={styles.error}>{error}</p>;
 
-    const answers = archived.answers || {};
     const owners = archived.owners || [];
+    const studentNumbers = getReportStudentNumbers(archived);
+    const riskTiers = getRiskTiers(archived, studentNumbers);
 
     return (
       <React.Fragment>
@@ -89,33 +88,23 @@ const ArchivedCaseScreen = () => {
         </section>
 
         <section>
-          <h2 className={styles.sectionHeading}>Questions</h2>
-          {(archived.questions || []).map((question, index) => {
-            const questionAnswers = Object.entries(answers[question.id] || {});
-            return (
-              <div key={question.id} className={styles.questionCard}>
-                <div className={styles.questionHeader}>
-                  <span className={styles.questionNumber}>{index + 1}.</span>
-                  <span className={styles.questionText}>{question.text}</span>
-                  <span className={styles.typeTag}>
-                    {question.type === QuestionType.TRUE_FALSE ? 'T/F' : 'MC'}
-                  </span>
-                </div>
-                {questionAnswers.length === 0 ? (
-                  <p className={styles.muted}>No answers recorded.</p>
-                ) : (
-                  <ul className={styles.answerList}>
-                    {questionAnswers.map(([studentId, answer], answerIndex) => (
-                      <li key={studentId}>
-                        <span className={styles.muted}>Student {answerIndex + 1}:</span>{' '}
-                        {answerText(answer)}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            );
-          })}
+          <h2 className={styles.sectionHeading}>Students</h2>
+          {studentNumbers.length === 0 ? (
+            <p className={styles.hint}>No students were seated for this case.</p>
+          ) : (
+            <div className={styles.studentList}>
+              {studentNumbers.map((studentNumber) => (
+                <StudentReportCard
+                  key={studentNumber}
+                  studentNumber={studentNumber}
+                  risk={riskTiers.get(studentNumber)}
+                  total={getStudentTotal(archived, studentNumber)}
+                  questions={archived.questions || []}
+                  answers={archived.answers || {}}
+                />
+              ))}
+            </div>
+          )}
         </section>
       </React.Fragment>
     );

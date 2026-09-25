@@ -1,6 +1,5 @@
 import { useState, useRef, useMemo } from "react";
 import { Stage, Layer, Rect, Circle, Text, Group } from "react-konva";
-import "../../App.css";
 import useCaseStore from "../../store/useCaseStore";
 import { useNavigate, useParams } from "react-router-dom";
 import { initialStudentGeneration } from "../../utilities/studentUtilities";

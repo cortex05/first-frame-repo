@@ -1,0 +1,80 @@
+.card {
+  padding: 12px 14px;
+  background: var(--light-blue-background);
+  border: 1px solid var(--question-bg);
+  border-radius: 6px;
+  color: var(--modal-text);
+  text-align: left;
+  margin-bottom: 12px;
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 10px;
+  font-size: 16px;
+}
+
+.student {
+  font-weight: 700;
+}
+
+.total {
+  margin-left: auto;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  border-top: 1px solid var(--question-bg);
+  font-size: 14px;
+}
+
+.questionText {
+  flex: 1;
+}
+
+/* Shared by the risk badge and each answer's points badge. */
+.badge {
+  flex-shrink: 0;
+  min-width: 56px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.risk_high {
+  background: var(--risk-high-bg);
+  color: var(--risk-high-text);
+}
+
+.risk_medium {
+  background: var(--risk-medium-bg);
+  color: var(--risk-medium-text);
+}
+
+.risk_low {
+  background: var(--risk-low-bg);
+  color: var(--risk-low-text);
+}
+
+.badgeEmpty {
+  background: var(--light-text);
+  color: var(--grey-disabled);
+  border: 1px solid var(--grey-disabled);
+}

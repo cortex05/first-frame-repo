@@ -32,6 +32,15 @@
   --question-bg: #d0dcfc;
   --question-answered-bg: #c0d6ff;
 
+  /* --- Risk tiers: Scores view + archive report (utils/studentScores.js) --- */
+  /* Konva reads these through cssVar(); keep the fallbacks there in sync. */
+  --risk-high-bg: #F54927;
+  --risk-high-text: var(--light-text);
+  --risk-medium-bg: #F7F46D;
+  --risk-medium-text: #2E2E2D;
+  --risk-low-bg: #5BF527;
+  --risk-low-text: #2E2E2D;
+
   /* Recommends */
   --recommend-bg: #f7c873;
   --recommend-bg-hover: #f3b449;

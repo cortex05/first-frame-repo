@@ -14,7 +14,7 @@
 .inputStyle {
 	padding: 10px 12px;
     font-size: 15px;
-    border: 1px solid var(--gray-border-strong);
+    border: 1px solid var(--grey-disabled);
     border-radius: 6px;
     width: 100%;
     box-sizing: border-box;
@@ -292,7 +292,7 @@
 	gap: 12px;
 	margin-top: 32px;
 	padding-top: 24px;
-	border-top: 1px solid var(--blue-border-light);
+	border-top: 1px solid var(--question-bg);
 }
 
 .manageOwnersButton,

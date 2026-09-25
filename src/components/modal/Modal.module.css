@@ -35,9 +35,9 @@
   width: 100%;
   padding: 12px 0;
   font-size: 16px;
-  background: var(--grey-button-b);
+  background: var(--light-blue-background);
   color: #303030;
-  border: 1px solid var(--grey-button-b);
+  border: 1px solid var(--grey-disabled);
   border-radius: 6px;
   cursor: pointer;
   transition:
@@ -47,5 +47,5 @@
 
 .closeButton:hover {
   background: #303030;
-  color: var(--grey-button-b);
+  color: var(--light-blue-background);
 }

@@ -54,7 +54,7 @@
 .selectStyle {
   padding: 2px 12px;
   font-size: 16px;
-  border: 1px solid var(--grey-button-b);
+  border: 1px solid var(--grey-disabled);
   border-radius: 6px;
   box-sizing: border-box;
   height: 44px;
@@ -110,8 +110,8 @@
   gap: 12px;
   padding: 10px 12px;
   margin-bottom: 8px;
-  background: var(--color-surface);
-  border: 1px solid var(--blue-border-light);
+  background: var(--light-blue-background);
+  border: 1px solid var(--question-bg);
   border-radius: 6px;
   color: var(--modal-text);
 }
@@ -172,8 +172,8 @@
 .success {
   margin: 0 0 12px;
   padding: 8px 12px;
-  background: var(--success-bg);
-  color: var(--success-text);
+  background: var(--tf-bg);
+  color: var(--tf-text);
   border-radius: 6px;
   font-size: 14px;
 }
