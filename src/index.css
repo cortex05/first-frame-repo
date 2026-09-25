@@ -1,17 +1,5 @@
 :root {
   /* Semantic color tokens: light theme defaults */
-  --color-surface: #f5f8ff;
-  --color-surface-muted: #f4f3ec;
-  --color-border: #e5e4e7;
-
-  --color-text-primary: #08060d;
-  --color-text-muted: #6b6375;
-
-  --color-action-primary: #aa3bff;
-  --color-action-primary-bg: rgba(170, 59, 255, 0.1);
-  --color-action-primary-border: rgba(170, 59, 255, 0.5);
-
-  --color-overlay: rgba(0, 0, 0, 0.4);
   --color-social-bg: rgba(244, 243, 236, 0.5);
   --shadow-elev-1:
     rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
@@ -26,6 +14,7 @@
   --light-text: #fff;
   --label-light: #d8d8d8;
   --modal-text: #333; 
+  --color-text-primary: #08060d;
 
   /* --- Neutrals / greys --- */
   --black: #000;                 /* CaseScreen / CreateCaseScreen pill text */
@@ -86,19 +75,15 @@
   /* --- Shadows / overlays --- */
   --shadow-strong: rgba(0, 0, 0, 0.6);  /* 0 4px 12px card shadow — 9 uses */
   --shadow-modal: rgba(0, 0, 0, 0.3);   /* Modal 0 4px 20px shadow */
-  /* NOTE: rgba(0, 0, 0, 0.4) already exists above as --color-overlay */
 
   /* END HERE */
 
   /* Backward-compatible aliases for existing styles */
-  --text: var(--color-text-muted);
+  --text: var(--light-text);
   --text-h: var(--color-text-primary);
   --bg: var(--color-bg);
-  --border: var(--color-border);
-  --code-bg: var(--color-surface-muted);
-  --accent: var(--color-action-primary);
-  --accent-bg: var(--color-action-primary-bg);
-  --accent-border: var(--color-action-primary-border);
+  --border: var(--light-blue-background);
+  --code-bg: var(--light-blue-background);
   --social-bg: var(--color-social-bg);
   --shadow: var(--shadow-elev-1);
 
@@ -125,18 +110,6 @@
 /* Manual theme override: light */
 :root[data-theme='light'] {
   --color-bg: #16171d;
-  --color-surface: #1f2028;
-  --color-surface-muted: #1f2028;
-  --color-border: #2e303a;
-
-  --color-text-primary: #f3f4f6;
-  --color-text-muted: #9ca3af;
-
-  --color-action-primary: #c084fc;
-  --color-action-primary-bg: rgba(192, 132, 252, 0.15);
-  --color-action-primary-border: rgba(192, 132, 252, 0.5);
-
-  --color-overlay: rgba(0, 0, 0, 0.55);
   --color-social-bg: rgba(47, 48, 58, 0.5);
   --shadow-elev-1:
     rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
@@ -148,18 +121,6 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']):not([data-theme='dark']) {
     --color-bg: #16171d;
-    --color-surface: #1f2028;
-    --color-surface-muted: #1f2028;
-    --color-border: #2e303a;
-
-    --color-text-primary: #f3f4f6;
-    --color-text-muted: #9ca3af;
-
-    --color-action-primary: #c084fc;
-    --color-action-primary-bg: rgba(192, 132, 252, 0.15);
-    --color-action-primary-border: rgba(192, 132, 252, 0.5);
-
-    --color-overlay: rgba(0, 0, 0, 0.55);
     --color-social-bg: rgba(47, 48, 58, 0.5);
     --shadow-elev-1:
       rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
