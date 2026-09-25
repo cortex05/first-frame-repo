@@ -7,6 +7,9 @@
   --confirm: #009b00;
   --confirm-hover: #28bb28;
   --decline: #d9534f;
+  --orange-edit: #f79306; 
+  --warning-bg: #fff3cd; /* multiple choice bg */
+  --warning-text: #856404; /* multiple choice text */
 
   --light-text: #fff;
   --label-light: #d8d8d8;
@@ -25,15 +28,11 @@
   --question-bg: #d0dcfc;
   --question-answered-bg: #c0d6ff;
 
-  /* START HERE */
-  /* --- Yellows / oranges --- */
-  --yellow-bg: #f7c873;          /* tag / pill bg */
-  --yellow-border: #e0a33e;
-  --yellow-bg-hover: #f3b449;
-  --orange-edit: #f0ad4e;        /* edit button bg */
-  --warning-bg: #fff3cd;
-  --warning-text: #856404;
+  /* Recommends */
+  --recommend-bg: #f7c873;
+  --recommend-bg-hover: #f3b449;
 
+  /* START HERE */
   /* --- Greens --- */
   --success-bg: #e6f4ea;
   --success-text: #2e7d32;

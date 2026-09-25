@@ -78,7 +78,7 @@
   font-size: 11px;
   font-weight: 700;
   padding: 4px 8px;
-  background: #f0ad4e;
+  background: var(--orange-edit);
   color: var(--light-text);
   border: none;
   border-radius: 4px;
@@ -118,8 +118,8 @@
 }
 
 .typeBadgeMultipleChoice {
-  background: #fff3cd;
-  color: #856404;
+  background: var(--warning-bg);
+  color: var(--warning-text);
 }
 
 .addQuestionButton {

@@ -465,7 +465,7 @@ const QuestionsScreen = () => {
                         color:
                           q.type === QuestionType.TRUE_FALSE
                             ? "#2e7d32"
-                            : "#856404",
+                            : "var(--warning-text)",
                       }}
                     >
                       {q.type === QuestionType.TRUE_FALSE ? "T/F" : "MC"}

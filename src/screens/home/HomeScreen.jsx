@@ -200,7 +200,7 @@ const Home = () => {
                     minWidth: 100,
                     padding: "10px 0",
                     fontWeight: 600,
-                    background: "#f0ad4e",
+                    background: "var(--orange-edit)",
                     color: "var(--light-text)",
                     border: "none",
                     borderRadius: 6,

@@ -519,7 +519,7 @@ const CaseScreen = () => {
                   fontSize: 11,
                   fontWeight: 700,
                   padding: "4px 8px",
-                  background: "#f0ad4e",
+                  background: "var(--orange-edit)",
                   color: "var(--light-text)",
                   border: "none",
                   borderRadius: 4,
@@ -555,7 +555,7 @@ const CaseScreen = () => {
                   background:
                     q.type === QuestionType.TRUE_FALSE ? "#e6f4ea" : "var(--light-text)3cd",
                   color:
-                    q.type === QuestionType.TRUE_FALSE ? "#2e7d32" : "#856404",
+                    q.type === QuestionType.TRUE_FALSE ? "#2e7d32" : "var(--warning-text)",
                   borderRadius: 12,
                 }}
               >
