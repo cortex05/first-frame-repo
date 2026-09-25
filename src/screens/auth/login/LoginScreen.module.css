@@ -62,7 +62,7 @@
 
 .error {
   margin: 0 0 12px;
-  color: #ffd2d2;
+  color: var(--error-text-light);
   font-size: 14px;
 }
 

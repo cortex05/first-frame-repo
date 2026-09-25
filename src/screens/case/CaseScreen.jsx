@@ -553,9 +553,9 @@ const CaseScreen = () => {
                   fontWeight: 600,
                   padding: "2px 8px",
                   background:
-                    q.type === QuestionType.TRUE_FALSE ? "#e6f4ea" : "var(--light-text)3cd",
+                    q.type === QuestionType.TRUE_FALSE ? "var(--tf-bg)" : "var(--light-text)3cd",
                   color:
-                    q.type === QuestionType.TRUE_FALSE ? "#2e7d32" : "var(--warning-text)",
+                    q.type === QuestionType.TRUE_FALSE ? "var(--tf-text)" : "var(--warning-text)",
                   borderRadius: 12,
                 }}
               >

@@ -135,7 +135,7 @@
 }
 
 .addQuestionButton:hover:not(:disabled) {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 4px 12px var(--shadow-strong);
 }
 
 .addQuestionButton:disabled {
@@ -159,7 +159,7 @@
 }
 
 .deleteRecommendedButton:hover:not(:disabled) {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 4px 12px var(--shadow-strong);
 }
 
 .deleteRecommendedButton:disabled {
@@ -269,7 +269,7 @@
 }
 
 .modalButtons button:hover:not(:disabled) {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 4px 12px var(--shadow-strong);
 }
 
 .confirm {
