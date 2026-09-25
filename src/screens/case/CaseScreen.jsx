@@ -506,6 +506,7 @@ const CaseScreen = () => {
                 border: "1px solid #c5d8f5",
                 borderRadius: 6,
                 fontSize: 14,
+                color: "var(--modal-text)"
               }}
             >
               <span style={{ fontWeight: 600, color: "#2c6fad", minWidth: 24 }}>
@@ -893,8 +894,8 @@ const CaseScreen = () => {
                   padding: "12px 0",
                   fontSize: 15,
                   fontWeight: 600,
-                  background: "var(--grey-button-bg)",
-                  color: "#333",
+                  background: "var(--decline)",
+                  color: "var(--text-light)",
                   border: "10px solid var(--grey-button-b)",
                   borderRadius: 6,
                   cursor: "pointer",
@@ -919,7 +920,7 @@ const CaseScreen = () => {
           title="Remove Question"
           hideDefaultClose
         >
-          <p style={{ marginBottom: 20 }}>
+          <p style={{ marginBottom: 20, color: "var(--modal-text)" }}>
             Are you sure you want to remove this question from this case?
           </p>
           <div
@@ -936,7 +937,7 @@ const CaseScreen = () => {
                 flex: 1,
                 padding: "10px 0",
                 fontWeight: 600,
-                background: "#d9534f",
+                background: "var(--confirm)",
                 color: "var(--light-text)",
                 border: "none",
                 borderRadius: 6,
@@ -951,8 +952,8 @@ const CaseScreen = () => {
                 flex: 1,
                 padding: "10px 0",
                 fontWeight: 600,
-                background: "var(--grey-button-bg)",
-                color: "#333",
+                background: "var(--decline)",
+                color: "var(text-light)",
                 border: "1px solid var(--grey-border-strong)",
                 borderRadius: 6,
                 cursor: "pointer",

@@ -40,6 +40,10 @@
   margin-bottom: 16px;
 }
 
+.fieldStyle input {
+  padding: 16px;
+}
+
 .labelStyle {
   font-size: 16px;
   font-weight: 600;
@@ -128,7 +132,7 @@
 }
 
 .email {
-  color: var(--grey-secondary-text);
+  color: var(--light-text);
   font-size: 14px;
 }
 

@@ -412,7 +412,7 @@ const QuestionsScreen = () => {
         ) : (
           <React.Fragment>
             {activeCase.questions.length === 0 && (
-              <p style={{ color: "var(--grey-subtle-text)", fontSize: 13 }}>
+              <p style={{ color: "var(--modal-text)", fontSize: 13 }}>
                 No questions on this case.
               </p>
             )}
@@ -863,7 +863,7 @@ const QuestionsScreen = () => {
       <div style={{ flex: 1, position: "relative" }}>
         {rects.length === 0 ? (
           <div style={{ padding: 32 }}>
-            <p style={{ color: "var(--grey-subtle-text)" }}>
+            <p style={{ color: "var(--light-text)" }}>
               No seating chart saved yet. Complete the seating chart first.
             </p>
           </div>
@@ -983,6 +983,7 @@ const QuestionsScreen = () => {
                   textAlign: "center",
                   fontSize: 14,
                   fontFamily: "monospace",
+                  color: "var(--modal-text)"
                 }}
               >
                 {Math.round(scale * 100)}%

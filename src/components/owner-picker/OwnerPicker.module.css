@@ -41,6 +41,6 @@
 
 .empty {
   margin: 0 0 16px;
-  color: var(--grey-subtle-text);
+  color: var(--grey-disabled);
   font-size: 14px;
 }

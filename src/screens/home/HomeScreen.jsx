@@ -225,25 +225,7 @@ const Home = () => {
                 >
                   Delete
                 </button>
-                <button
-                  onClick={() => {
-                    setPlaylistModalOpen(false);
-                    setSelectedPlaylist(null);
-                  }}
-                  style={{
-                    flex: 1,
-                    minWidth: 100,
-                    padding: "10px 0",
-                    fontWeight: 600,
-                    background: "var(--grey-button-bg)",
-                    color: "#333",
-                    border: "1px solid var(--grey-border-strong)",
-                    borderRadius: 6,
-                    cursor: "pointer",
-                  }}
-                >
-                  Cancel
-                </button>
+                
               </div>
             </div>
           )}

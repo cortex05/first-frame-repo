@@ -1,9 +1,4 @@
 :root {
-  /* Semantic color tokens: light theme defaults */
-  --color-social-bg: rgba(244, 243, 236, 0.5);
-  --shadow-elev-1:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
-
   /* NEW GOING FORWARD */
   --blue-background: #4a90d9;
   --light-blue-background: #f0f5fb;
@@ -15,21 +10,13 @@
   --label-light: #d8d8d8;
   --modal-text: #333; 
   --color-text-primary: #08060d;
-
-  /* --- Neutrals / greys --- */
-  --black: #000;                 /* CaseScreen / CreateCaseScreen pill text */
-  --grey-button-bg: #f0f0f0;     /* cancel + secondary button bg */
-  --grey-disabled: #aaa;         /* disabled button bg — 8 uses */
+  --black: #000; /* FOR THE CIRCLE STROKE */
+  --grey-disabled: #aaa;
 
   /* START HERE */
 
   /* --- Neutrals / greys --- */
-  --grey-border-strong: #999;    /* CreateRecommended disabled border */
-  --grey-subtle-text: #888;      /* hint / placeholder text */
-  --grey-secondary-text: #666;   /* secondary body text */
-  --grey-dark-text: #444;        /* EditRecommended label */
-  --grey-dark-bg: #303030;       /* Modal dark surface */
-  /* NOTE: #333 already exists above as --modal-text (5 uses) */
+  --grey-border-strong: #999;    /* CreateRecommended disabled borde */
 
   /* --- Navbar blues --- */
   --navbar-bg: #273952;
@@ -84,8 +71,6 @@
   --bg: var(--color-bg);
   --border: var(--light-blue-background);
   --code-bg: var(--light-blue-background);
-  --social-bg: var(--color-social-bg);
-  --shadow: var(--shadow-elev-1);
 
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
   --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
@@ -110,10 +95,6 @@
 /* Manual theme override: light */
 :root[data-theme='light'] {
   --color-bg: #16171d;
-  --color-social-bg: rgba(47, 48, 58, 0.5);
-  --shadow-elev-1:
-    rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-
   color-scheme: light;
 }
 
@@ -121,10 +102,6 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']):not([data-theme='dark']) {
     --color-bg: #16171d;
-    --color-social-bg: rgba(47, 48, 58, 0.5);
-    --shadow-elev-1:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-
     color-scheme: dark;
   }
 

@@ -51,11 +51,11 @@
 
 .itemMeta {
   font-size: 13px;
-  color: var(--grey-secondary-text);
+  color: var(--light-text);
 }
 
 .muted {
-  color: var(--grey-secondary-text);
+  color: var(--label-light);
   font-weight: 400;
 }
 

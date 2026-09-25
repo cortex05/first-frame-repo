@@ -326,8 +326,8 @@
   padding: 12px 0;
   font-size: 15px;
   font-weight: 600;
-  background: var(--grey-button-bg);
-  color: #333;
+  background: var(--decline);
+  color: var(--light-text);
   border: 1px solid var(--grey-border-strong);
   border-radius: 6px;
   cursor: pointer;
@@ -361,8 +361,8 @@
   flex: 1;
   padding: 10px 0;
   font-weight: 600;
-  background: var(--grey-button-bg);
-  color: #333;
+  background: var(--decline);
+  color: var(--light-text);
   border: 1px solid var(--grey-border-strong);
   border-radius: 6px;
   cursor: pointer;
