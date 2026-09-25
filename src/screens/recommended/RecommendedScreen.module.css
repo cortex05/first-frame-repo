@@ -33,7 +33,7 @@
   padding: 8px 12px;
   margin-bottom: 8px;
   background: #f5f8ff;
-  border: 1px solid #c5d8f5;
+  border: 1px solid var(--light-blue-background);
   border-radius: 6px;
   color: var(--modal-text);
   font-size: 14px;
@@ -44,13 +44,13 @@
 }
 
 .recommendedItem:hover {
-  background: #e8f1ff;
-  border-color: #7aa9df;
+  background: var(--light-blue-background);
+  border-color: var(--blue-primary-dark);
 }
 
 .recommendedNumber {
   font-weight: 600;
-  color: #2c6fad;
+  color: var(--modal-text);
   min-width: 24px;
 }
 
@@ -62,7 +62,7 @@
 .emptyState {
   padding: 24px 12px;
   background: #f5f8ff;
-  border: 1px solid #c5d8f5;
+  border: 1px solid var(--light-blue-background);
   border-radius: 6px;
   color: var(--modal-text);
   font-size: 15px;
@@ -70,7 +70,7 @@
 
 .emptyStatePrompt {
   font-weight: 600;
-  color: #2c6fad;
+  color: var(--modal-text);
   cursor: pointer;
   text-decoration: underline;
   transition: color 0.3s ease;

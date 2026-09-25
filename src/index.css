@@ -1,7 +1,9 @@
 :root {
   /* NEW GOING FORWARD */
   --blue-background: #4a90d9;
+  --blue-primary-dark: #1f4f85;
   --light-blue-background: #f0f5fb;
+
   --confirm: #009b00;
   --confirm-hover: #28bb28;
   --decline: #d9534f;
@@ -9,40 +11,21 @@
   --light-text: #fff;
   --label-light: #d8d8d8;
   --modal-text: #333; 
-  --color-text-primary: #08060d;
-  --black: #000; /* FOR THE CIRCLE STROKE */
+  --color-text-primary: #08060d; /* FOR THE CIRCLE STROKE */
   --grey-disabled: #aaa;
 
-  /* START HERE */
-
-  /* --- Neutrals / greys --- */
-  --grey-border-strong: #999;    /* CreateRecommended disabled borde */
-
-  /* --- Navbar blues --- */
+  /* --- Navbar --- */
   --navbar-bg: #273952;
   --navbar-border: #2f425a;
-  --navbar-chip-bg: #e8edf8;
-  --navbar-chip-text: #1f2a3f;
-  --navbar-chip-border: #a5b8d7;
 
-  /* --- Primary / action blues --- */
-  --blue-primary: #2c6fad;       /* primary button bg + link text — 11 uses */
-  --blue-primary-dark: #1f4f85;  /* focus ring / active border */
-  --blue-selected-bg: #e8f1ff;   /* selected row bg */
-  --blue-selected-border: #7aa9df;
-  /* NOTE: #4a90d9 already exists above as --blue-background (3 uses) */
-
-  /* --- Card / surface blues --- */
+  /* CARD */
   --card-bg: #e8edfa;            /* Home + Case card bg */
-  --card-border: #abbbd3;
-  --blue-border-light: #c5d8f5;  /* light blue panel border — 10 uses */
-  /* NOTE: #f5f8ff already exists above as --color-surface (8 uses) */
 
   /* --- Questions screen --- */
   --question-bg: #d0dcfc;
-  --question-answered-bg: #eef4ff;
-  --question-answered-border: #d9e5fa;
+  --question-answered-bg: #c0d6ff;
 
+  /* START HERE */
   /* --- Yellows / oranges --- */
   --yellow-bg: #f7c873;          /* tag / pill bg */
   --yellow-border: #e0a33e;
@@ -67,7 +50,6 @@
 
   /* Backward-compatible aliases for existing styles */
   --text: var(--light-text);
-  --text-h: var(--color-text-primary);
   --bg: var(--color-bg);
   --border: var(--light-blue-background);
   --code-bg: var(--light-blue-background);
@@ -135,7 +117,6 @@ body {
 h2 {
   font-family: var(--heading);
   font-weight: 500;
-  color: var(--text-h);
 }
 
 h1 {
@@ -165,7 +146,6 @@ code,
   font-family: var(--mono);
   display: inline-flex;
   border-radius: 4px;
-  color: var(--text-h);
 }
 
 code {

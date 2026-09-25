@@ -48,7 +48,7 @@
   padding: 14px 36px;
   font-size: 17px;
   font-weight: 600;
-  background: #2c6fad;
+  background: var(--blue-background);
   color: var(--light-text);
   border: none;
   border-radius: 8px;

@@ -57,7 +57,7 @@
   padding: 8px 12px;
   margin-bottom: 8px;
   background: #f5f8ff;
-  border: 1px solid #c5d8f5;
+  border: 1px solid var(--light-blue-background);
   border-radius: 6px;
   font-size: 14px;
   color: var(--modal-text);
@@ -65,7 +65,7 @@
 
 .questionNumber {
   font-weight: 600;
-  color: #2c6fad;
+  color: var(--modal-text);
   min-width: 24px;
 }
 
@@ -207,7 +207,7 @@
 .inputStyle {
   padding: 10px 12px;
   font-size: 15px;
-  border: 1px solid var(--grey-border-strong);
+  border: 1px solid var(--grey-disabled);
   border-radius: 6px;
   width: 100%;
   box-sizing: border-box;
@@ -216,7 +216,7 @@
 .textAreaStyle {
   padding: 10px 12px;
   font-size: 15px;
-  border: 1px solid var(--grey-border-strong);
+  border: 1px solid var(--grey-disabled);
   border-radius: 6px;
   width: 100%;
   box-sizing: border-box;

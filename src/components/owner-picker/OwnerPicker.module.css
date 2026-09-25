@@ -21,7 +21,7 @@
 }
 
 .itemSelected {
-  background: var(--blue-selected-bg);
+  background: var(--light-blue-background);
   border-color: var(--blue-selected-border);
 }
 

@@ -78,9 +78,9 @@
 	margin-bottom: 6px;
 	border-radius: 6px;
 	cursor: pointer;
-	background: #e8edfa;
+	background: var(--card-bg);
 	color: var(--modal-text);
-	border: 3px solid #abbbd3;
+	border: 3px solid var(--blue-background);
 	font-size: 13px;
 	display: flex;
 	align-items: center;
@@ -168,7 +168,7 @@
 	padding: 8px 12px;
 	margin-bottom: 8px;
 	background: #f5f8ff;
-	border: 1px solid #c5d8f5;
+	border: 1px solid var(--light-blue-background);
 	border-radius: 6px;
 	font-size: 14px;
 	cursor: pointer;
@@ -212,7 +212,7 @@
 	padding: 8px 12px;
 	margin-bottom: 8px;
 	background: #f5f8ff;
-	border: 1px solid #c5d8f5;
+	border: 1px solid var(--light-blue-background);
 	border-radius: 6px;
 	color: var(--modal-text);
 	font-size: 14px;
@@ -224,14 +224,14 @@
 }
 
 .playlistQuestionSelectable:hover {
-	background: #e8f1ff;
-	border-color: #7aa9df;
+	background: var(--light-blue-background);
+	border-color: var(--blue-primary-dark);
 }
 
 .playlistQuestionSelected {
-	background: #2c6fad;
-	border-color: #1f4f85;
-	box-shadow: 0 0 0 1px #1f4f85;
+	background: var(--blue-background);
+	border-color: var(--blue-primary-dark);
+	box-shadow: 0 0 0 1px var(--blue-primary-dark);
 }
 
 .playlistQuestionSelected .playlistQuestionNumber,
@@ -241,7 +241,7 @@
 
 .playlistQuestionNumber {
 	font-weight: 600;
-	color: #2c6fad;
+	color: var(--modal-text);
 	min-width: 24px;
 }
 
@@ -280,7 +280,7 @@
 	font-weight: 600;
 	background: var(--decline);
 	color: #333;
-	border: 1px solid var(--grey-border-strong);
+	border: 1px solid var(--grey-disabled);
 	border-radius: 6px;
 	cursor: pointer;
 }
@@ -307,7 +307,7 @@
 }
 
 .manageOwnersButton {
-	background: var(--blue-primary);
+	background: var(--blue-background);
 }
 
 .archiveButton {

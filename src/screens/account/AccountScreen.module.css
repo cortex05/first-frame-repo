@@ -78,7 +78,7 @@
 }
 
 .primaryButton {
-  background: var(--blue-primary);
+  background: var(--blue-background);
 }
 
 .confirmButton {

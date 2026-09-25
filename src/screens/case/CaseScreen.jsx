@@ -503,13 +503,13 @@ const CaseScreen = () => {
                 padding: "8px 12px",
                 marginBottom: 8,
                 background: "#f5f8ff",
-                border: "1px solid #c5d8f5",
+                border: "1px solid var(--light-blue-background)",
                 borderRadius: 6,
                 fontSize: 14,
                 color: "var(--modal-text)"
               }}
             >
-              <span style={{ fontWeight: 600, color: "#2c6fad", minWidth: 24 }}>
+              <span style={{ fontWeight: 600, color: "var(--modal-text)", minWidth: 24 }}>
                 {i + 1}.
               </span>
               <span style={{ flex: 1 }}>{q.text}</span>
@@ -592,7 +592,7 @@ const CaseScreen = () => {
               padding: "14px 36px",
               fontSize: 17,
               fontWeight: 600,
-              background: "#2c6fad",
+              background: "var(--blue-background)",
               color: "var(--light-text)",
               borderRadius: 8,
               textDecoration: "none",
@@ -612,7 +612,7 @@ const CaseScreen = () => {
                 padding: "14px 36px",
                 fontSize: 17,
                 fontWeight: 600,
-                background: "#2c6fad",
+                background: "var(--blue-background)",
                 color: "var(--light-text)",
                 borderRadius: 8,
                 textDecoration: "none",
@@ -954,7 +954,7 @@ const CaseScreen = () => {
                 fontWeight: 600,
                 background: "var(--decline)",
                 color: "var(text-light)",
-                border: "1px solid var(--grey-border-strong)",
+                border: "1px solid var(--grey-disabled)",
                 borderRadius: 6,
                 cursor: "pointer",
               }}

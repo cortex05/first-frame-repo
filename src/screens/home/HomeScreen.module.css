@@ -44,9 +44,9 @@
 	margin-bottom: 6px;
 	border-radius: 6px;
 	cursor: pointer;
-	background: #e8edfa;
+	background: var(--card-bg);
 	color: var(--modal-text);
-	border: 3px solid #abbbd3;
+	border: 3px solid var(--blue-background);
 	font-size: 13px;
 	display: flex;
 	align-items: center;

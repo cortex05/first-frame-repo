@@ -93,7 +93,7 @@ const QuestionsScreen = () => {
   // once per render and compare against these instead of raw "#fff"/"#000".
   const canvas = {
     light: cssVar("--light-text", "#fff"),
-    black: cssVar("--black", "#000"),
+    black: cssVar("--color-text-primary", "#08060d"),
   };
 
   const getStudentFill = (studentId) => {
@@ -317,7 +317,7 @@ const QuestionsScreen = () => {
           width: SIDEBAR_W,
           flexShrink: 0,
           background: "#f5f8ff", // mod this color
-          borderRight: "1px solid #c5d8f5",
+          borderRight: "1px solid var(--light-blue-background)",
           display: "flex",
           flexDirection: "column",
           overflowY: "auto",
@@ -332,7 +332,7 @@ const QuestionsScreen = () => {
             marginBottom: 16,
           }}
         >
-          <h2 style={{ margin: 0, fontSize: 16, color: "#2c6fad" }}>
+          <h2 style={{ margin: 0, fontSize: 16, color: "var(--modal-text)" }}>
             Questions
           </h2>
           <button
@@ -346,9 +346,9 @@ const QuestionsScreen = () => {
               padding: "5px 12px",
               fontSize: 13,
               fontWeight: 600,
-              background: showScores ? "#2c6fad" : "#e3edf7",
-              color: showScores ? "var(--light-text)" : "#2c6fad",
-              border: "1px solid #2c6fad",
+              background: showScores ? "var(--blue-background)" : "#e3edf7",
+              color: showScores ? "var(--light-text)" : "var(--modal-text)",
+              border: "1px solid var(--modal-text)",
               borderRadius: 6,
               cursor: "pointer",
             }}
@@ -365,7 +365,7 @@ const QuestionsScreen = () => {
                 padding: "12px 0",
                 fontSize: 15,
                 fontWeight: 600,
-                background: "#2c6fad",
+                background: "var(--blue-background)",
                 color: "var(--light-text)",
                 border: "none",
                 borderRadius: 6,
@@ -383,7 +383,7 @@ const QuestionsScreen = () => {
                 padding: "12px 0",
                 fontSize: 15,
                 fontWeight: 600,
-                background: "#2c6fad",
+                background: "var(--blue-background)",
                 color: "var(--light-text)",
                 border: "none",
                 borderRadius: 6,
@@ -399,7 +399,7 @@ const QuestionsScreen = () => {
                 padding: "12px 0",
                 fontSize: 15,
                 fontWeight: 600,
-                background: "#2c6fad",
+                background: "var(--blue-background)",
                 color: "var(--light-text)",
                 border: "none",
                 borderRadius: 6,
@@ -423,7 +423,7 @@ const QuestionsScreen = () => {
                 padding: "12px 0",
                 fontSize: 15,
                 fontWeight: 600,
-                background: "#2c6fad",
+                background: "var(--blue-background)",
                 color: "var(--light-text)",
                 border: "none",
                 borderRadius: 6,
@@ -477,7 +477,7 @@ const QuestionsScreen = () => {
                   <div>
                     {/* Answer controls */}
                     {selectedQuestion && (
-                      <div style={{ borderTop: "1px solid #c5d8f5" }}>
+                      <div style={{ borderTop: "1px solid var(--light-blue-background)" }}>
                         <p
                           style={{
                             fontSize: 30,
@@ -579,7 +579,7 @@ const QuestionsScreen = () => {
                             padding: "12px 0",
                             fontSize: 15,
                             fontWeight: 600,
-                            background: "#2c6fad",
+                            background: "var(--blue-background)",
                             color: "var(--light-text)",
                             border: "none",
                             borderRadius: 6,
@@ -643,7 +643,7 @@ const QuestionsScreen = () => {
                     marginBottom: 16,
                   }}
                 >
-                  <h3 style={{ margin: 0, fontSize: 16, color: "#2c6fad" }}>
+                  <h3 style={{ margin: 0, fontSize: 16, color: "var(--modal-text)" }}>
                     {sortModal === "high" ? "High to Low" : "Low to High"}
                   </h3>
                   <button
@@ -745,7 +745,7 @@ const QuestionsScreen = () => {
                     marginBottom: 16,
                   }}
                 >
-                  <h3 style={{ margin: 0, fontSize: 16, color: "#2c6fad" }}>
+                  <h3 style={{ margin: 0, fontSize: 16, color: "var(--modal-text)" }}>
                     Student Report - #{studentReport}
                   </h3>
                   <button
@@ -969,7 +969,7 @@ const QuestionsScreen = () => {
                   height: 28,
                   fontSize: 18,
                   lineHeight: 1,
-                  border: "1px solid var(--grey-border-strong)",
+                  border: "1px solid var(--grey-disabled)",
                   borderRadius: 4,
                   cursor: "pointer",
                   background: "#f5f5f5",
@@ -995,7 +995,7 @@ const QuestionsScreen = () => {
                   height: 28,
                   fontSize: 18,
                   lineHeight: 1,
-                  border: "1px solid var(--grey-border-strong)",
+                  border: "1px solid var(--grey-disabled)",
                   borderRadius: 4,
                   cursor: "pointer",
                   background: "#f5f5f5",
@@ -1012,7 +1012,7 @@ const QuestionsScreen = () => {
                   height: 28,
                   padding: "0 8px",
                   fontSize: 12,
-                  border: "1px solid var(--grey-border-strong)",
+                  border: "1px solid var(--grey-disabled)",
                   borderRadius: 4,
                   cursor: "pointer",
                   background: "#f5f5f5",

@@ -6,8 +6,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px 18px;
-  background: #273952;
-  border-bottom: 3px solid #2f425a;
+  background: var(--navbar-bg);
+  border-bottom: 3px solid var(--navbar-border);
 }
 
 .navButton {
@@ -21,16 +21,16 @@
   font-size: 16px;
   font-weight: 700;
   text-decoration: none;
-  background: #e8edf8;
-  color: #1f2a3f;
-  border: 1px solid #a5b8d7;
+  background: var(--light-text);
+  color: var(--modal-text);
+  border: 1px solid var(--blue-background);
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.3s ease, color 0.3s ease;
 }
 
 .navButton:hover {
-  background: #2c6fad;
+  background: var(--blue-background);
   color: var(--light-text);
 }
 

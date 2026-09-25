@@ -32,30 +32,30 @@
   gap: 4px;
   padding: 10px 12px;
   margin-bottom: 8px;
-  background: var(--light-blue-background);
+  background: var(--label-light);
   border: 1px solid var(--blue-border-light);
   border-radius: 6px;
   color: var(--modal-text);
-  text-decoration: none;
+  text-decoration: none; 
   transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .item:hover {
-  background: var(--blue-selected-bg);
+  background: var(--light-blue-background);
   border-color: var(--blue-selected-border);
 }
 
 .itemTitle {
   font-weight: 600;
+  color: var(--modal-text);
 }
 
 .itemMeta {
   font-size: 13px;
-  color: var(--light-text);
+  color: var(--modal-text);
 }
 
 .muted {
-  color: var(--label-light);
   font-weight: 400;
 }
 
@@ -126,7 +126,7 @@
 .questionNumber {
   min-width: 24px;
   font-weight: 600;
-  color: var(--blue-primary);
+  color: var(--blue-background);
 }
 
 .questionText {

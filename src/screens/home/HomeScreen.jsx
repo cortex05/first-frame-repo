@@ -182,7 +182,7 @@ const Home = () => {
                     key={`${selectedPlaylist._id}-${question.id || index}`}
                     className={styles.caseItem}
                   >
-                    <span style={{ fontWeight: 600, color: "#2c6fad", minWidth: 24 }}>
+                    <span style={{ fontWeight: 600, color: "var(--modal-text)", minWidth: 24 }}>
                       {index + 1}.
                     </span>
                     <span style={{ flex: 1, fontSize: 14, fontWeight: 500 }}>

@@ -60,7 +60,7 @@ const StartScreen = () => {
   // Canvas can't resolve `var(--x)` — Konva needs the literal hex.
   const canvas = {
     light: cssVar("--light-text", "#fff"),
-    black: cssVar("--black", "#000"),
+    black: cssVar("--color-text-primary", "#08060d"),
   };
 
   const studentNumber = Number(activeCase?.studentNumber);
@@ -240,7 +240,7 @@ const StartScreen = () => {
     width: "100%",
     padding: "8px 10px",
     fontSize: 14,
-    border: "1px solid #c5d8f5",
+    border: "1px solid var(--light-blue-background)",
     borderRadius: 6,
     boxSizing: "border-box",
   };
@@ -250,8 +250,8 @@ const StartScreen = () => {
     fontSize: 13,
     fontWeight: 600,
     background: "var(--light-text)",
-    color: enabled ? "#2c6fad" : "var(--grey-disabled)",
-    border: `1px solid ${enabled ? "#c5d8f5" : "#e0e0e0"}`,
+    color: enabled ? "var(--modal-text)" : "var(--grey-disabled)",
+    border: `1px solid ${enabled ? "var(--light-blue-background)" : "#e0e0e0"}`,
     borderRadius: 6,
     cursor: enabled ? "pointer" : "not-allowed",
   });
@@ -264,7 +264,7 @@ const StartScreen = () => {
           width: SIDEBAR_W,
           flexShrink: 0,
           background: "#f5f8ff",
-          borderRight: "1px solid #c5d8f5",
+          borderRight: "1px solid var(--light-blue-background)",
           display: "flex",
           flexDirection: "column",
           padding: 16,
@@ -272,7 +272,7 @@ const StartScreen = () => {
           overflowY: "auto",
         }}
       >
-        <h2 style={{ margin: 0, fontSize: 24, color: "#2c6fad" }}>
+        <h2 style={{ margin: 0, fontSize: 24, color: "var(--modal-text)" }}>
           Assign Students
         </h2>
 
@@ -402,7 +402,7 @@ const StartScreen = () => {
             padding: "10px 0",
             fontSize: 14,
             fontWeight: 600,
-            background: "#2c6fad",
+            background: "var(--blue-background)",
             color: "var(--light-text)",
             border: "none",
             borderRadius: 6,
@@ -435,7 +435,7 @@ const StartScreen = () => {
             marginTop: "auto",
             fontSize: 16,
             color: "#555",
-            borderTop: "1px solid #c5d8f5",
+            borderTop: "1px solid var(--light-blue-background)",
             paddingTop: 12,
           }}
         >
@@ -531,7 +531,7 @@ const StartScreen = () => {
               height: 28,
               fontSize: 18,
               lineHeight: 1,
-              border: "1px solid var(--grey-border-strong)",
+              border: "1px solid var(--grey-disabled)",
               borderRadius: 4,
               cursor: "pointer",
               background: "#f5f5f5",
@@ -556,7 +556,7 @@ const StartScreen = () => {
               height: 28,
               fontSize: 18,
               lineHeight: 1,
-              border: "1px solid var(--grey-border-strong)",
+              border: "1px solid var(--grey-disabled)",
               borderRadius: 4,
               cursor: "pointer",
               background: "#f5f5f5",
@@ -570,7 +570,7 @@ const StartScreen = () => {
               height: 28,
               padding: "0 8px",
               fontSize: 12,
-              border: "1px solid var(--grey-border-strong)",
+              border: "1px solid var(--grey-disabled)",
               borderRadius: 4,
               cursor: "pointer",
               background: "#f5f5f5",
