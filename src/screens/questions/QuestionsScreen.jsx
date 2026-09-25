@@ -460,11 +460,11 @@ const QuestionsScreen = () => {
                         borderRadius: 10,
                         background:
                           q.type === QuestionType.TRUE_FALSE
-                            ? "#e6f4ea"
+                            ? "var(--tf-bg)"
                             : "var(--warning-bg)",
                         color:
                           q.type === QuestionType.TRUE_FALSE
-                            ? "#2e7d32"
+                            ? "var(--tf-text)"
                             : "var(--warning-text)",
                       }}
                     >

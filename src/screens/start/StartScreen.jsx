@@ -419,7 +419,7 @@ const StartScreen = () => {
               padding: "12px 0",
               fontSize: 15,
               fontWeight: 600,
-              background: "#2e7d32",
+              background: "var(--tf-text)",
               color: "var(--light-text)",
               border: "none",
               borderRadius: 6,

@@ -154,8 +154,8 @@
 }
 
 .typeBadgeTrueFalse {
-  background: #e6f4ea;
-  color: #2e7d32;
+  background: var(--tf-bg);
+  color: var(--tf-text);
 }
 
 .typeBadgeMultipleChoice {
