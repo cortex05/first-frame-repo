@@ -6,6 +6,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px 18px;
+  color: var(--light-text);
   background: var(--navbar-bg);
   border-bottom: 3px solid var(--navbar-border);
 }

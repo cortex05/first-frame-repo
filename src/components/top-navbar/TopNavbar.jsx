@@ -45,7 +45,7 @@ const TopNavbar = ({ warnOnHomeNavigation = false }) => {
           >
             Home
           </Link>
-          <span>   Hello {userInfo?.username}</span>
+          <span>   Hello {userInfo?.username} - TEAM: </span>
           {userInfo?.accountName && (
             <span className={styles.accountName}>{userInfo.accountName}</span>
           )}
