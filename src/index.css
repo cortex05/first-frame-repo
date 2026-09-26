@@ -1,4 +1,13 @@
+/*
+ * Theme: dark is the default and lives in :root. Light overrides it through
+ * :root[data-theme='light']. initTheme() (utils/theme.js) always sets
+ * data-theme from localStorage.theme; the OS preference is ignored.
+ */
 :root {
+  /* --- Page --- */
+  --page-bg: #121212;
+  --page-text: #fff;
+
   /* NEW GOING FORWARD */
   --blue-background: #4a90d9;
   --blue-primary-dark: #1f4f85;
@@ -7,23 +16,41 @@
   --confirm: #009b00;
   --confirm-hover: #28bb28;
   --decline: #d9534f;
-  --orange-edit: #f79306; 
+  --orange-edit: #f79306;
 
   --warning-bg: #fff3cd; /* multiple choice bg */
   --warning-text: #856404; /* multiple choice text */
   --tf-bg: #e6f4ea; /* true/false */
   --tf-text: #2e7d32;
 
-  --light-text: #fff;
-  --label-light: #d8d8d8;
-  --error-text-light: #ffd2d2;
-  --modal-text: #333; 
+  --light-text: #fff; /* text/icons on colored fills */
+  --label-light: #d8d8d8; /* labels drawn on the page */
+  --error-text-light: #ffd2d2; /* errors drawn on the page */
+  --modal-text: #333;
   --color-text-primary: #08060d; /* FOR THE CIRCLE STROKE */
   --grey-disabled: #aaa;
+
+  /* --- Surfaces (cards, modals, forms) --- */
+  --surface: #fff;
+  --surface-subtle: #f5f8ff;
+  --surface-muted: #f5f5f5;
+  --surface-selected: #e3edf7;
+  --surface-overlay-control: rgba(255, 255, 255, 0.92); /* floating canvas toolbars */
+
+  /* --- Text on surfaces --- */
+  --text-strong: #303030;
+  --text-secondary: #555;
+  --text-muted: #888;
+  --text-link-muted: #456b96;
+
+  /* --- Borders --- */
+  --border-subtle: #e0e0e0;
+  --border-control: #bfbfbf;
 
   /* --- Navbar --- */
   --navbar-bg: #273952;
   --navbar-border: #2f425a;
+  --navbar-text: #d8d8d8;
 
   /* CARD */
   --card-bg: #e8edfa;            /* Home + Case card bg */
@@ -31,6 +58,11 @@
   /* --- Questions screen --- */
   --question-bg: #d0dcfc;
   --question-answered-bg: #c0d6ff;
+  /* Multiple-choice option colors; Konva reads these through cssVar(). */
+  --mc-1: #4caf50;
+  --mc-2: #f44336;
+  --mc-3: #ff9800;
+  --mc-4: #009688;
 
   /* --- Risk tiers: Scores view + archive report (utils/studentScores.js) --- */
   /* Konva reads these through cssVar(); keep the fallbacks there in sync. */
@@ -48,6 +80,8 @@
   /* --- Shadows / overlays --- */
   --shadow-strong: rgba(0, 0, 0, 0.6);
   --shadow-modal: rgba(0, 0, 0, 0.3);
+  --shadow-soft: rgba(0, 0, 0, 0.3);
+  --overlay: rgba(0, 0, 0, 0.4);
 
   /* Backward-compatible aliases for existing styles */
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
@@ -63,27 +97,85 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Manual theme override: dark */
-:root[data-theme='dark'] {
-  color-scheme: dark;
-}
-
-/* Manual theme override: light */
+/* Every color token in :root must appear here (enforced by src/index.css.test.js). */
 :root[data-theme='light'] {
-  --color-bg: #16171d;
+  /* --- Page --- */
+  --page-bg: #f4f6fb;
+  --page-text: #1b2533;
+
+  --blue-background: #2f74c0;
+  --blue-primary-dark: #1f4f85;
+  --light-blue-background: #e4edf8;
+
+  --confirm: #008a00;
+  --confirm-hover: #1fa01f;
+  --decline: #c9302c;
+  --orange-edit: #e07f00;
+
+  --warning-bg: #fff3cd;
+  --warning-text: #856404;
+  --tf-bg: #e6f4ea;
+  --tf-text: #2e7d32;
+
+  --light-text: #fff;
+  --label-light: #4a5566;
+  --error-text-light: #b3261e;
+  --modal-text: #333;
+  --color-text-primary: #08060d;
+  --grey-disabled: #b5bcc5;
+
+  /* --- Surfaces (cards, modals, forms) --- */
+  --surface: #fff;
+  --surface-subtle: #f5f8ff;
+  --surface-muted: #eceff3;
+  --surface-selected: #e3edf7;
+  --surface-overlay-control: rgba(255, 255, 255, 0.92);
+
+  /* --- Text on surfaces --- */
+  --text-strong: #303030;
+  --text-secondary: #555;
+  --text-muted: #6b7280;
+  --text-link-muted: #456b96;
+
+  /* --- Borders --- */
+  --border-subtle: #d5dbe3;
+  --border-control: #aeb6c1;
+
+  /* --- Navbar --- */
+  --navbar-bg: #dbe4f0;
+  --navbar-border: #b7c6da;
+  --navbar-text: #1f2f45;
+
+  /* CARD */
+  --card-bg: #eef2fc;
+
+  /* --- Questions screen --- */
+  --question-bg: #dde6fd;
+  --question-answered-bg: #cadfff;
+  --mc-1: #4caf50;
+  --mc-2: #f44336;
+  --mc-3: #ff9800;
+  --mc-4: #009688;
+
+  /* --- Risk tiers: unchanged so Scores colors mean the same in both themes --- */
+  --risk-high-bg: #F54927;
+  --risk-high-text: var(--light-text);
+  --risk-medium-bg: #F7F46D;
+  --risk-medium-text: #2E2E2D;
+  --risk-low-bg: #5BF527;
+  --risk-low-text: #2E2E2D;
+
+  /* Recommends */
+  --recommend-bg: #f7c873;
+  --recommend-bg-hover: #f3b449;
+
+  /* --- Shadows / overlays --- */
+  --shadow-strong: rgba(15, 30, 50, 0.25);
+  --shadow-modal: rgba(15, 30, 50, 0.18);
+  --shadow-soft: rgba(15, 30, 50, 0.15);
+  --overlay: rgba(15, 30, 50, 0.35);
+
   color-scheme: light;
-}
-
-/* System dark mode only when no manual override is set */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']):not([data-theme='dark']) {
-    --color-bg: #16171d;
-    color-scheme: dark;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
 }
 
 @media (max-width: 1024px) {
@@ -94,6 +186,8 @@
 
 body {
   margin: 0;
+  background: var(--page-bg);
+  color: var(--page-text);
 }
 
 #root {

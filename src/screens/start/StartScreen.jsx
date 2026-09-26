@@ -248,9 +248,9 @@ const StartScreen = () => {
     padding: "8px 0",
     fontSize: 13,
     fontWeight: 600,
-    background: "var(--light-text)",
+    background: "var(--surface)",
     color: enabled ? "var(--modal-text)" : "var(--grey-disabled)",
-    border: `1px solid ${enabled ? "var(--light-blue-background)" : "#e0e0e0"}`,
+    border: `1px solid ${enabled ? "var(--light-blue-background)" : "var(--border-subtle)"}`,
     borderRadius: 6,
     cursor: enabled ? "pointer" : "not-allowed",
   });
@@ -262,7 +262,7 @@ const StartScreen = () => {
         style={{
           width: SIDEBAR_W,
           flexShrink: 0,
-          background: "#f5f8ff",
+          background: "var(--surface-subtle)",
           borderRight: "1px solid var(--light-blue-background)",
           display: "flex",
           flexDirection: "column",
@@ -275,12 +275,12 @@ const StartScreen = () => {
           Assign Students
         </h2>
 
-        <p style={{ margin: 0, fontSize: 16, color: "#555" }}>
+        <p style={{ margin: 0, fontSize: 16, color: "var(--text-secondary)" }}>
           Remaining: <strong>{remaining.length}</strong> /{" "}
           {activeCase.studentNumber}
         </p>
 
-        <p style={{ margin: 0, fontSize: 16, color: "#555" }}>
+        <p style={{ margin: 0, fontSize: 16, color: "var(--text-secondary)" }}>
           {rows} × {cols} = {totalCells} cells
           {remaining.length < totalCells && remaining.length > 0
             ? ` (${remaining.length} filled, ${totalCells - remaining.length} empty)`
@@ -292,7 +292,7 @@ const StartScreen = () => {
             style={{
               fontSize: 13,
               fontWeight: 600,
-              color: "#444",
+              color: "var(--text-secondary)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -329,7 +329,7 @@ const StartScreen = () => {
               style={{
                 fontSize: 13,
                 fontWeight: 600,
-                color: "#444",
+                color: "var(--text-secondary)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -433,7 +433,7 @@ const StartScreen = () => {
           style={{
             marginTop: "auto",
             fontSize: 16,
-            color: "#555",
+            color: "var(--text-secondary)",
             borderTop: "1px solid var(--light-blue-background)",
             paddingTop: 12,
           }}
@@ -474,7 +474,7 @@ const StartScreen = () => {
                 <Rect
                   width={r.width}
                   height={r.height}
-                  fill="#bfbfbf"
+                  fill={cssVar("--border-control", "#bfbfbf")}
                   stroke={canvas.black}
                   strokeWidth={2}
                   cornerRadius={4}
@@ -516,11 +516,11 @@ const StartScreen = () => {
             display: "flex",
             alignItems: "center",
             gap: 6,
-            background: "rgba(255,255,255,0.92)",
+            background: "var(--surface-overlay-control)",
             color: "var(--color-text-primary)",
             borderRadius: 8,
             padding: "6px 10px",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+            boxShadow: "0 2px 8px var(--shadow-soft)",
             userSelect: "none",
           }}
         >
@@ -535,7 +535,7 @@ const StartScreen = () => {
               border: "1px solid var(--grey-disabled)",
               borderRadius: 4,
               cursor: "pointer",
-              background: "#f5f5f5",
+              background: "var(--surface-muted)",
             }}
           >
             −
@@ -561,7 +561,7 @@ const StartScreen = () => {
               border: "1px solid var(--grey-disabled)",
               borderRadius: 4,
               cursor: "pointer",
-              background: "#f5f5f5",
+              background: "var(--surface-muted)",
             }}
           >
             +
@@ -576,7 +576,7 @@ const StartScreen = () => {
               border: "1px solid var(--grey-disabled)",
               borderRadius: 4,
               cursor: "pointer",
-              background: "#f5f5f5",
+              background: "var(--surface-muted)",
               marginLeft: 4,
             }}
           >

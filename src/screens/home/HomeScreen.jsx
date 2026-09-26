@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Modal from "../../components/modal/Modal";
 import TopNavbar from "../../components/top-navbar/TopNavbar";
+import ThemeToggle from "../../components/theme-toggle/ThemeToggle";
 import styles from "./HomeScreen.module.css";
 import { getPlaylistById } from "../../api/playlist";
 
@@ -113,6 +114,10 @@ const Home = () => {
           )}
         </div>
 
+        <div className={styles.themeToggleRow}>
+          <ThemeToggle />
+        </div>
+
         <Modal
           isOpen={modalOpen}
           onClose={() => setModalOpen(false)}
@@ -167,7 +172,7 @@ const Home = () => {
               )}
 
               {isLoadingPlaylistDetails && (
-                <p style={{ color: "#666", marginTop: 12 }}>Loading playlist...</p>
+                <p style={{ color: "var(--text-secondary)", marginTop: 12 }}>Loading playlist...</p>
               )}
             </div>
           ) : (
@@ -216,7 +221,7 @@ const Home = () => {
                     minWidth: 100,
                     padding: "10px 0",
                     fontWeight: 600,
-                    background: "#d9534f",
+                    background: "var(--decline)",
                     color: "var(--light-text)",
                     border: "none",
                     borderRadius: 6,

@@ -27,7 +27,7 @@
 .labelStyle {
   font-size: 13px;
   font-weight: 600;
-  color: #888;
+  color: var(--text-muted);
   margin-bottom: 2px;
   display: block;
 }

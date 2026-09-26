@@ -488,7 +488,7 @@ const CaseScreen = () => {
           <h2 style={{ marginBottom: 12 }}>Questions</h2>
 
           {activeCase.questions.length === 0 && (
-            <p style={{ color: "#888", fontSize: 14, marginBottom: 12 }}>
+            <p style={{ color: "var(--text-muted)", fontSize: 14, marginBottom: 12 }}>
               No questions added yet.
             </p>
           )}
@@ -502,7 +502,7 @@ const CaseScreen = () => {
                 gap: 10,
                 padding: "8px 12px",
                 marginBottom: 8,
-                background: "#f5f8ff",
+                background: "var(--surface-subtle)",
                 border: "1px solid var(--light-blue-background)",
                 borderRadius: 6,
                 fontSize: 14,
@@ -536,7 +536,7 @@ const CaseScreen = () => {
                   fontSize: 13,
                   fontWeight: 700,
                   padding: 0,
-                  background: "#d9534f",
+                  background: "var(--decline)",
                   color: "var(--light-text)",
                   border: "none",
                   borderRadius: 4,
@@ -716,7 +716,7 @@ const CaseScreen = () => {
               marginBottom: 16,
             }}
           >
-            <label style={{ fontSize: 13, fontWeight: 600, color: "#444" }}>
+            <label style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)" }}>
               Question Text
             </label>
             <textarea
@@ -739,7 +739,7 @@ const CaseScreen = () => {
               marginBottom: 16,
             }}
           >
-            <label style={{ fontSize: 13, fontWeight: 600, color: "#444" }}>
+            <label style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)" }}>
               Type
             </label>
             <select
@@ -762,7 +762,7 @@ const CaseScreen = () => {
                 style={{
                   fontSize: 13,
                   fontWeight: 600,
-                  color: "#444",
+                  color: "var(--text-secondary)",
                   display: "block",
                   marginBottom: 8,
                 }}
@@ -805,7 +805,7 @@ const CaseScreen = () => {
                 style={{
                   fontSize: 13,
                   fontWeight: 600,
-                  color: "#444",
+                  color: "var(--text-secondary)",
                   display: "block",
                   marginBottom: 8,
                 }}
@@ -875,7 +875,7 @@ const CaseScreen = () => {
                   padding: "12px 0",
                   fontSize: 15,
                   fontWeight: 600,
-                  background: questionForm.text.trim() ? "#4a90d9" : "var(--grey-disabled)",
+                  background: questionForm.text.trim() ? "var(--blue-background)" : "var(--grey-disabled)",
                   color: "var(--light-text)",
                   border: "none",
                   borderRadius: 6,
@@ -907,7 +907,7 @@ const CaseScreen = () => {
           )}
 
           {saveError && (
-            <p style={{ color: "#d9534f", fontSize: 14, margin: "4px 0 0" }}>
+            <p style={{ color: "var(--decline)", fontSize: 14, margin: "4px 0 0" }}>
               {saveError}
             </p>
           )}

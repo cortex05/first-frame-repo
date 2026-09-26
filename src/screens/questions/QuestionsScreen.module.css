@@ -3,7 +3,7 @@
 	border: 3px solid var(--light-blue-background);
 	margin-bottom: 6px;
 	border-radius: 6px;
-	background-color: #d0dcfc;
+	background-color: var(--question-bg);
 }
 
 .questionCard {
@@ -11,7 +11,7 @@
 	margin-bottom: 6px;
 	border-radius: 6px;
 	cursor: pointer;
-	background: var(--light-text);
+	background: var(--surface);
 	color: var(--modal-text);
 	border: 1px solid var(--blue-primary-dark);
 	font-size: 13px;

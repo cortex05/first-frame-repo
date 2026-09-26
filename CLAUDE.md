@@ -42,8 +42,9 @@ This is the frontend only. The API is a separate repo, **first-frame-back**, whi
 ## Styling conventions
 
 - All colors are CSS custom properties defined in `src/index.css`. Recent work removed hardcoded hex values across the app, so use an existing variable or add a new one there rather than hardcoding a color.
-- Only reference variables that `index.css` actually defines. A `var()` naming an undefined variable makes the whole declaration invalid, so the border or background silently disappears. The token set was trimmed, so check after editing styles: every `var(--name)` in `src` should appear as `--name:` in `index.css` (the only allowed exception is `--x` in `cssVars.js` comments).
-- Theme: light is the default. Dark mode applies through `:root[data-theme='dark']` or through `prefers-color-scheme` when no `data-theme` is set.
+- Only reference variables that `index.css` actually defines. A `var()` naming an undefined variable makes the whole declaration invalid, so the border or background silently disappears. Every `var(--name)` and `cssVar('--name')` in `src` must appear as `--name:` in `index.css` (the only allowed exception is the `--x` placeholder in comments). `src/index.css.test.js` enforces this.
+- Theme: **dark is the default** and lives in `:root`; light is the `:root[data-theme='light']` override. `initTheme()` (`src/utils/theme.js`, called in `main.jsx`) always sets `data-theme` from `localStorage.theme` (`'dark'`/`'light'`, anything else means dark). The OS `prefers-color-scheme` is ignored, and logout keeps `theme`. Every color token must be declared in **both** blocks, and no hex/`rgba` literals may appear outside `index.css` except `cssVar` fallbacks. `src/index.css.test.js` enforces both. Token roles: `--light-text` is only for text on colored fills; white backgrounds use `--surface`.
+- Home has a dev/testing theme switch (`components/theme-toggle`, `hooks/useTheme.js`).
 
 ## Notes
 

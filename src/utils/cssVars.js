@@ -11,6 +11,9 @@
 
 const cache = new Map();
 
+// Tests only: the cache outlives a single test otherwise.
+export const clearCssVarCache = () => cache.clear();
+
 const themeKey = () =>
   document.documentElement.getAttribute("data-theme") || "system";
 

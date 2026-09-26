@@ -35,6 +35,10 @@
   color: var(--light-text);
 }
 
+.themeToggleRow {
+  margin-top: 24px;
+}
+
 .modalContent {
   margin: 20px 0px;
 }

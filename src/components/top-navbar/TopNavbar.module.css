@@ -21,7 +21,7 @@
   font-size: 16px;
   font-weight: 700;
   text-decoration: none;
-  background: var(--light-text);
+  background: var(--surface);
   color: var(--modal-text);
   border: 1px solid var(--blue-background);
   border-radius: 8px;
@@ -90,6 +90,6 @@
   font-size: 13px;
   font-weight: 600;
   background: var(--navbar-border);
-  color: var(--label-light);
+  color: var(--navbar-text);
   border-radius: 12px;
 }

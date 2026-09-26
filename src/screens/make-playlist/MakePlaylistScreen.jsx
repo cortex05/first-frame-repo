@@ -234,7 +234,7 @@ const MakePlaylistScreen = () => {
           <h2 style={{ marginBottom: 12 }}>Questions</h2>
 
           {questions.length === 0 && (
-            <p style={{ color: '#888', fontSize: 14, marginBottom: 12 }}>
+            <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 12 }}>
               No questions added yet.
             </p>
           )}
@@ -248,7 +248,7 @@ const MakePlaylistScreen = () => {
                 gap: 10,
                 padding: '8px 12px',
                 marginBottom: 8,
-                background: '#f5f8ff',
+                background: 'var(--surface-subtle)',
                 border: '1px solid var(--light-blue-background)',
                 borderRadius: 6,
                 fontSize: 14,
@@ -283,7 +283,7 @@ const MakePlaylistScreen = () => {
                   fontSize: 13,
                   fontWeight: 700,
                   padding: 0,
-                  background: '#d9534f',
+                  background: 'var(--decline)',
                   color: 'var(--light-text)',
                   border: 'none',
                   borderRadius: 4,
@@ -321,7 +321,7 @@ const MakePlaylistScreen = () => {
         </section>
 
         {submitError && (
-          <p style={{ color: '#d9534f', fontSize: 14, marginBottom: 12 }}>
+          <p style={{ color: 'var(--decline)', fontSize: 14, marginBottom: 12 }}>
             {submitError}
           </p>
         )}
@@ -409,7 +409,7 @@ const MakePlaylistScreen = () => {
               style={{
                 fontSize: 13,
                 fontWeight: 600,
-                color: '#444',
+                color: 'var(--text-secondary)',
                 display: 'block',
                 marginBottom: 8,
               }}
@@ -450,7 +450,7 @@ const MakePlaylistScreen = () => {
               style={{
                 fontSize: 13,
                 fontWeight: 600,
-                color: '#444',
+                color: 'var(--text-secondary)',
                 display: 'block',
                 marginBottom: 8,
               }}
@@ -511,7 +511,7 @@ const MakePlaylistScreen = () => {
                 padding: '12px 0',
                 fontSize: 15,
                 fontWeight: 600,
-                background: questionForm.text.trim() ? '#4a90d9' : 'var(--grey-disabled)',
+                background: questionForm.text.trim() ? 'var(--blue-background)' : 'var(--grey-disabled)',
                 color: 'var(--light-text)',
                 border: 'none',
                 borderRadius: 6,
@@ -563,7 +563,7 @@ const MakePlaylistScreen = () => {
               flex: 1,
               padding: '10px 0',
               fontWeight: 600,
-              background: '#d9534f',
+              background: 'var(--decline)',
               color: 'var(--light-text)',
               border: 'none',
               borderRadius: 6,

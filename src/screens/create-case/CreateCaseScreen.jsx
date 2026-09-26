@@ -435,7 +435,7 @@ const CreateCaseScreen = () => {
         <h2 style={{ marginBottom: 12 }}>Questions</h2>
 
         {questions.length === 0 && (
-          <p style={{ color: "#888", fontSize: 14, marginBottom: 12 }}>
+          <p style={{ color: "var(--text-muted)", fontSize: 14, marginBottom: 12 }}>
             No questions added yet.
           </p>
         )}
@@ -449,7 +449,7 @@ const CreateCaseScreen = () => {
               gap: 10,
               padding: "8px 12px",
               marginBottom: 8,
-              background: "#f5f8ff",
+              background: "var(--surface-subtle)",
               border: "1px solid var(--light-blue-background)",
               borderRadius: 6,
               fontSize: 14,
@@ -482,7 +482,7 @@ const CreateCaseScreen = () => {
                 fontSize: 13,
                 fontWeight: 700,
                 padding: 0,
-                background: "#d9534f",
+                background: "var(--decline)",
                 color: "var(--light-text)",
                 border: "none",
                 borderRadius: 4,
@@ -653,7 +653,7 @@ const CreateCaseScreen = () => {
                 padding: "12px 0",
                 fontSize: 15,
                 fontWeight: 600,
-                background: questionForm.text.trim() ? "#4a90d9" : "var(--grey-disabled)",
+                background: questionForm.text.trim() ? "var(--blue-background)" : "var(--grey-disabled)",
                 color: "var(--light-text)",
                 border: "none",
                 borderRadius: 6,
@@ -857,15 +857,15 @@ const CreateCaseScreen = () => {
             <div style={{ marginTop: 12 }}>
               <strong>Questions ({questions.length}):</strong>
             </div>
-            {questions.length === 0 && <div style={{ color: "#888" }}>None</div>}
+            {questions.length === 0 && <div style={{ color: "var(--text-muted)" }}>None</div>}
             <div style={{marginBottom: 20}}>
               {questions.map((q, i) => (
-                <div key={q.id} style={{ marginLeft: 12, color: "#333", margin: "4px 0" }}>
+                <div key={q.id} style={{ marginLeft: 12, color: "var(--modal-text)", margin: "4px 0" }}>
                   <span style={{ fontWeight: 500, fontSize: 18, maxWidth: 500, display: "inline-block", whiteSpace: "wrap" }} >
                     {i + 1}.{" "}
                     {q.text}
                     {q.options.length > 0 && (
-                        <span style={{ color: "#666" }}>
+                        <span style={{ color: "var(--text-secondary)" }}>
                           {" "}
                           — {q.options.map((o) => `${o.label} (${o.value}pts)`).join(", ")}
                         </span>
@@ -875,7 +875,7 @@ const CreateCaseScreen = () => {
               ))}
             </div>
             {submitError && (
-              <p style={{ color: "#d9534f", fontSize: 16, marginBottom: 12 }}>{submitError}</p>
+              <p style={{ color: "var(--decline)", fontSize: 16, marginBottom: 12 }}>{submitError}</p>
             )}
 
             <button

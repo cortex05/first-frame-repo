@@ -32,7 +32,7 @@
 }
 
 .emptyText {
-  color: #888;
+  color: var(--text-muted);
   font-size: 14px;
   margin-bottom: 12px;
 }
@@ -43,7 +43,7 @@
 }
 
 .errorText {
-  color: #d9534f;
+  color: var(--decline);
   font-size: 15px;
   margin-top: 12px;
 }
@@ -56,7 +56,7 @@
   gap: 10px;
   padding: 8px 12px;
   margin-bottom: 8px;
-  background: #f5f8ff;
+  background: var(--surface-subtle);
   border: 1px solid var(--light-blue-background);
   border-radius: 6px;
   font-size: 14px;
@@ -97,7 +97,7 @@
   font-size: 13px;
   font-weight: 700;
   padding: 0;
-  background: #d9534f;
+  background: var(--decline);
   color: var(--light-text);
   border: none;
   border-radius: 4px;
@@ -201,7 +201,7 @@
 .labelStyle {
   font-size: 13px;
   font-weight: 600;
-  color: #444;
+  color: var(--text-secondary);
 }
 
 .inputStyle {
@@ -293,7 +293,7 @@
 }
 
 .modalErrorText {
-  color: #d9534f;
+  color: var(--decline);
   font-size: 14px;
   margin: 4px 0 12px;
 }

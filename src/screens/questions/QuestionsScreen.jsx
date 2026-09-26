@@ -22,7 +22,6 @@ const SCALE_MIN = 0.1;
 const SCALE_MAX = 5;
 const SCALE_STEP = 1.2;
 const SIDEBAR_W = 300;
-const MC_COLORS = ["#4caf50", "#f44336", "#ff9800", "#009688"];
 
 const isTrueLabel = (label) => label === true || label === "true";
 const isFalseLabel = (label) => label === false || label === "false";
@@ -85,7 +84,7 @@ const QuestionsScreen = () => {
 
   // ── colour helpers ─────────────────────────────────────────────
   // Canvas can't resolve `var(--x)`, so read the variables into literal hex
-  // once per render and compare against these instead of raw "#fff"/"#000".
+  // once per render and compare against these instead of raw color literals.
   const canvas = {
     light: cssVar("--light-text", "#fff"),
     black: cssVar("--color-text-primary", "#08060d"),
@@ -100,6 +99,13 @@ const QuestionsScreen = () => {
     medium: cssVar("--risk-medium-text", "#2E2E2D"),
     low: cssVar("--risk-low-text", "#2E2E2D"),
   };
+  // Multiple-choice option colors: canvas fills and the option buttons.
+  const mcColors = [
+    cssVar("--mc-1", "#4caf50"),
+    cssVar("--mc-2", "#f44336"),
+    cssVar("--mc-3", "#ff9800"),
+    cssVar("--mc-4", "#009688"),
+  ];
 
   const getScoreColor = (studentId) => riskFill[getScoreTier(studentId)];
 
@@ -114,7 +120,7 @@ const QuestionsScreen = () => {
     const idx = selectedQuestion.options.findIndex(
       (o) => o.label === answer.label,
     );
-    return idx >= 0 ? MC_COLORS[idx] : canvas.light;
+    return idx >= 0 ? mcColors[idx] : canvas.light;
   };
 
   const getStudentTextColor = (studentId) => {
@@ -322,7 +328,7 @@ const QuestionsScreen = () => {
         style={{
           width: SIDEBAR_W,
           flexShrink: 0,
-          background: "#f5f8ff", // mod this color
+          background: "var(--surface-subtle)", // mod this color
           borderRight: "1px solid var(--light-blue-background)",
           display: "flex",
           flexDirection: "column",
@@ -352,7 +358,7 @@ const QuestionsScreen = () => {
               padding: "5px 12px",
               fontSize: 13,
               fontWeight: 600,
-              background: showScores ? "var(--blue-background)" : "#e3edf7",
+              background: showScores ? "var(--blue-background)" : "var(--surface-selected)",
               color: showScores ? "var(--light-text)" : "var(--modal-text)",
               border: "1px solid var(--modal-text)",
               borderRadius: 6,
@@ -488,7 +494,7 @@ const QuestionsScreen = () => {
                           style={{
                             fontSize: 30,
                             fontWeight: 600,
-                            color: "#333",
+                            color: "var(--modal-text)",
                             marginBottom: 12,
                           }}
                         >
@@ -497,7 +503,7 @@ const QuestionsScreen = () => {
                               display: "block",
                               fontSize: 40,
                               fontWeight: 700,
-                              color: "#456b96",
+                              color: "var(--text-link-muted)",
                               marginBottom: 6,
                             }}
                           >
@@ -510,7 +516,7 @@ const QuestionsScreen = () => {
                           // <p
                           //   style={{
                           //     fontSize: 14,
-                          //     color: "#363535",
+                          //     color: "var(--text-strong)",
                           //     marginBottom: 12,
                           //   }}
                           // >
@@ -536,11 +542,11 @@ const QuestionsScreen = () => {
                                   padding: "10px 12px",
                                   fontSize: 13,
                                   fontWeight: 600,
-                                  background: MC_COLORS[i],
+                                  background: mcColors[i],
                                   color: "var(--light-text)",
                                   border:
                                     activeOptionIndex === i
-                                      ? "3px solid #222"
+                                      ? "3px solid var(--text-strong)"
                                       : "3px solid transparent",
                                   borderRadius: 6,
                                   cursor: "pointer",
@@ -566,7 +572,7 @@ const QuestionsScreen = () => {
                         <p
                           style={{
                             fontSize: 15,
-                            color: "#363535",
+                            color: "var(--text-strong)",
                             marginBottom: 12,
                           }}
                         >
@@ -620,7 +626,7 @@ const QuestionsScreen = () => {
               style={{
                 position: "fixed",
                 inset: 0,
-                background: "rgba(0,0,0,0.5)",
+                background: "var(--overlay)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -630,7 +636,7 @@ const QuestionsScreen = () => {
               <div
                 onClick={(e) => e.stopPropagation()}
                 style={{
-                  background: "var(--light-text)",
+                  background: "var(--surface)",
                   borderRadius: 10,
                   padding: 24,
                   minWidth: 280,
@@ -638,7 +644,7 @@ const QuestionsScreen = () => {
                   maxHeight: "75vh",
                   display: "flex",
                   flexDirection: "column",
-                  boxShadow: "0 4px 24px rgba(0,0,0,0.3)",
+                  boxShadow: "0 4px 24px var(--shadow-soft)",
                 }}
               >
                 <div
@@ -659,7 +665,7 @@ const QuestionsScreen = () => {
                       border: "none",
                       fontSize: 20,
                       cursor: "pointer",
-                      color: "#666",
+                      color: "var(--text-secondary)",
                       lineHeight: 1,
                     }}
                   >
@@ -716,7 +722,7 @@ const QuestionsScreen = () => {
               style={{
                 position: "fixed",
                 inset: 0,
-                background: "rgba(0,0,0,0.35)",
+                background: "var(--shadow-soft)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -725,7 +731,7 @@ const QuestionsScreen = () => {
             >
               <div
                 style={{
-                  background: "var(--light-text)",
+                  background: "var(--surface)",
                   borderRadius: 10,
                   padding: 24,
                   minWidth: 320,
@@ -733,7 +739,7 @@ const QuestionsScreen = () => {
                   maxHeight: "75vh",
                   display: "flex",
                   flexDirection: "column",
-                  boxShadow: "0 4px 24px rgba(0,0,0,0.35)",
+                  boxShadow: "0 4px 24px var(--shadow-soft)",
                 }}
               >
                 <div
@@ -754,7 +760,7 @@ const QuestionsScreen = () => {
                       border: "none",
                       fontSize: 20,
                       cursor: "pointer",
-                      color: "#666",
+                      color: "var(--text-secondary)",
                       lineHeight: 1,
                     }}
                   >
@@ -771,8 +777,8 @@ const QuestionsScreen = () => {
                       answerText = answerObj.label;
                     }
                     const tier = getAnswerBadgeTier(q, answerObj);
-                    const bg = tier ? `var(--risk-${tier}-bg)` : "var(--light-text)";
-                    const textColor = tier ? `var(--risk-${tier}-text)` : "#2E2E2D";
+                    const bg = tier ? `var(--risk-${tier}-bg)` : "var(--surface)";
+                    const textColor = tier ? `var(--risk-${tier}-text)` : "var(--text-strong)";
                     return (
                       <div
                         key={q.id}
@@ -782,7 +788,7 @@ const QuestionsScreen = () => {
                           justifyContent: "space-between",
                           gap: 12,
                           marginBottom: 8,
-                          border: "1px solid #e0e0e0",
+                          border: "1px solid var(--border-subtle)",
                           borderRadius: 6,
                           overflow: "hidden",
                         }}
@@ -795,7 +801,7 @@ const QuestionsScreen = () => {
                             flex: 1,
                             padding: "10px 14px",
                             fontSize: 13,
-                            color: "#333",
+                            color: "var(--modal-text)",
                           }}
                         >
                           {q.text  + " - " + answerText}
@@ -889,7 +895,7 @@ const QuestionsScreen = () => {
                     <Rect
                       width={r.width}
                       height={r.height}
-                      fill="#bfbfbf"
+                      fill={cssVar("--border-control", "#bfbfbf")}
                       stroke={canvas.black}
                       strokeWidth={2}
                       cornerRadius={4}
@@ -952,10 +958,10 @@ const QuestionsScreen = () => {
                 display: "flex",
                 alignItems: "center",
                 gap: 6,
-                background: "rgba(255,255,255,0.92)",
+                background: "var(--surface-overlay-control)",
                 borderRadius: 8,
                 padding: "6px 10px",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                boxShadow: "0 2px 8px var(--shadow-soft)",
                 userSelect: "none",
               }}
             >
@@ -969,7 +975,7 @@ const QuestionsScreen = () => {
                   border: "1px solid var(--grey-disabled)",
                   borderRadius: 4,
                   cursor: "pointer",
-                  background: "#f5f5f5",
+                  background: "var(--surface-muted)",
                 }}
               >
                 −
@@ -995,7 +1001,7 @@ const QuestionsScreen = () => {
                   border: "1px solid var(--grey-disabled)",
                   borderRadius: 4,
                   cursor: "pointer",
-                  background: "#f5f5f5",
+                  background: "var(--surface-muted)",
                 }}
               >
                 +
@@ -1012,7 +1018,7 @@ const QuestionsScreen = () => {
                   border: "1px solid var(--grey-disabled)",
                   borderRadius: 4,
                   cursor: "pointer",
-                  background: "#f5f5f5",
+                  background: "var(--surface-muted)",
                   marginLeft: 4,
                 }}
               >
