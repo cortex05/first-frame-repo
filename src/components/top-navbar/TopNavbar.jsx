@@ -11,6 +11,7 @@ const TopNavbar = ({ warnOnHomeNavigation = false }) => {
   const userInfo = useAuthStore((state) => state.userInfo);
   const isAccountAdmin = useAuthStore(selectIsAccountAdmin);
   const clearUserInfo = useAuthStore((state) => state.clearUserInfo);
+  const isAuthenticated = Boolean(userInfo?.token && userInfo?.userId && userInfo?.username);
   const [logoutWarningOpen, setLogoutWarningOpen] = useState(false);
   // Where the user asked to go while the page has unsaved changes.
   const [pendingPath, setPendingPath] = useState(null);
@@ -45,36 +46,45 @@ const TopNavbar = ({ warnOnHomeNavigation = false }) => {
           >
             Home
           </Link>
-          <span>   Hello {userInfo?.username} - TEAM: </span>
+          {userInfo?.username && <span>    Hello {userInfo?.username} - TEAM: </span>}
+          
           {userInfo?.accountName && (
             <span className={styles.accountName}>{userInfo.accountName}</span>
           )}
         </div>
 
         <div className={styles.navActions}>
-          <Link
-            to="/archive"
-            className={styles.navButton}
-            onClick={(event) => handleNavigate(event, '/archive')}
-          >
-            Archive
-          </Link>
-          {isAccountAdmin && (
-            <Link
-              to="/account"
-              className={styles.navButton}
-              onClick={(event) => handleNavigate(event, '/account')}
-            >
-              Account
+          {isAuthenticated ? (
+            <React.Fragment>
+              <Link
+                to="/archive"
+                className={styles.navButton}
+                onClick={(event) => handleNavigate(event, '/archive')}
+              >
+                Archive
+              </Link>
+              {isAccountAdmin && (
+                <Link
+                  to="/account"
+                  className={styles.navButton}
+                  onClick={(event) => handleNavigate(event, '/account')}
+                >
+                  Account
+                </Link>
+              )}
+              <button
+                type="button"
+                className={styles.navButton}
+                onClick={() => setLogoutWarningOpen(true)}
+              >
+                Log out
+              </button>
+            </React.Fragment>
+          ) : (
+            <Link to="/login" className={styles.navButton}>
+              Login
             </Link>
           )}
-          <button
-            type="button"
-            className={styles.navButton}
-            onClick={() => setLogoutWarningOpen(true)}
-          >
-            Log out
-          </button>
         </div>
       </header>
 
