@@ -142,7 +142,7 @@
   --border-control: #aeb6c1;
 
   /* --- Navbar --- */
-  --navbar-bg: #5394e9;
+  --navbar-bg: var(--blue-background);
   --navbar-border: #d2d9e3;
   --navbar-text: #1f2f45;
 

@@ -503,7 +503,8 @@ const CaseScreen = () => {
                 padding: "8px 12px",
                 marginBottom: 8,
                 background: "var(--surface-subtle)",
-                border: "1px solid var(--light-blue-background)",
+                //here
+                border: "1px solid var(--color-text-primary)",
                 borderRadius: 6,
                 fontSize: 14,
                 color: "var(--modal-text)"
