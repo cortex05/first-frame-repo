@@ -199,7 +199,7 @@ const MakePlaylistScreen = () => {
       if (fromCaseId) {
         navigate(`/case/${fromCaseId}`);
       } else {
-        navigate('/home');
+        navigate('/dashboard');
       }
     } catch (requestError) {
       setSubmitError(
@@ -349,7 +349,7 @@ const MakePlaylistScreen = () => {
             {isSubmitting ? 'Creating Playlist...' : 'Create Playlist'}
           </button>
           <button
-            onClick={() => navigate(fromCaseId ? `/case/${fromCaseId}` : '/home')}
+            onClick={() => navigate(fromCaseId ? `/case/${fromCaseId}` : '/dashboard')}
             style={{
               display: 'inline-block',
               padding: '14px 36px',

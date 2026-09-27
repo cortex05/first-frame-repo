@@ -1,0 +1,47 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.section {
+  width: 100%;
+  padding: 64px 32px;
+  box-sizing: border-box;
+}
+
+.sectionContent {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.sectionTitle {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: var(--text-strong);
+}
+
+.sectionText {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.sectionSubtle {
+  background: var(--surface-subtle);
+}
+
+.sectionCard {
+  background: var(--card-bg);
+}
+
+@media (max-width: 900px) {
+  .section {
+    padding: 40px 20px;
+  }
+
+  .sectionTitle {
+    font-size: 26px;
+  }
+}

@@ -41,7 +41,7 @@ const LoginScreen = () => {
         // No-ops for a non-admin; setUserInfo above is what makes isAdmin known.
         fetchRecommendedNames(userInfo.token),
       ]);
-      navigate('/home', { replace: true });
+      navigate('/dashboard', { replace: true });
     } catch (requestError) {
       setError(
         requestError?.response?.data?.message || 'Unable to log in. Please check your credentials.'

@@ -2,7 +2,8 @@ import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 
 import useAuthStore, { selectIsAccountAdmin } from './store/useAuthStore';
 
-import Home from './screens/home/HomeScreen';
+import LandingScreen from './screens/landing/LandingScreen';
+import DashboardScreen from './screens/dashboard/DashboardScreen';
 import Start from './screens/start/StartScreen';
 import CreateCaseScreen from './screens/create-case/CreateCaseScreen';
 import CaseScreen from './screens/case/CaseScreen';
@@ -41,7 +42,7 @@ const PasswordChangeGate = ({ mustChangePassword }) => {
 // Account administrators: managing the account and creating cases.
 const AccountAdminRoutes = ({ isAccountAdmin }) => {
 	if (!isAccountAdmin) {
-		return <Navigate to="/home" replace />;
+		return <Navigate to="/dashboard" replace />;
 	}
 
 	return <Outlet />;
@@ -50,7 +51,7 @@ const AccountAdminRoutes = ({ isAccountAdmin }) => {
 // PLATFORM administrators (isAdmin): the global Recommended sets.
 const PlatformAdminRoutes = ({ isPlatformAdmin }) => {
 	if (!isPlatformAdmin) {
-		return <Navigate to="/home" replace />;
+		return <Navigate to="/dashboard" replace />;
 	}
 
 	return <Outlet />;
@@ -58,7 +59,7 @@ const PlatformAdminRoutes = ({ isPlatformAdmin }) => {
 
 const PublicOnlyRoutes = ({ isAuthenticated }) => {
 	if (isAuthenticated) {
-		return <Navigate to="/home" replace />;
+		return <Navigate to="/dashboard" replace />;
 	}
 
 	return <Outlet />;
@@ -78,12 +79,8 @@ const AppRoutes = () => {
 
 	return (
 		<Routes>
-			<Route
-				path="/"
-				element={<Navigate to={isAuthenticated ? '/home' : '/login'} replace />}
-			/>
-
 			<Route element={<PublicOnlyRoutes isAuthenticated={isAuthenticated} />}>
+				<Route path="/" element={<LandingScreen />} />
 				<Route path="/login" element={<LoginScreen />} />
 				<Route path="/register" element={<RegisterScreen />} />
 			</Route>
@@ -92,7 +89,7 @@ const AppRoutes = () => {
 				<Route path="/change-password" element={<ChangePasswordScreen />} />
 
 				<Route element={<PasswordChangeGate mustChangePassword={mustChangePassword} />}>
-					<Route path="/home" element={<Home />} />
+					<Route path="/dashboard" element={<DashboardScreen />} />
 					<Route path="/start/:caseId" element={<Start />} />
 					<Route path="/case/:id" element={<CaseScreen />} />
 					<Route path="/make-playlist" element={<MakePlaylistScreen />} />
@@ -112,6 +109,12 @@ const AppRoutes = () => {
 					</Route>
 				</Route>
 			</Route>
+
+			{/* Unknown paths: signed-in users go to the dashboard, everyone else to the landing page. */}
+			<Route
+				path="*"
+				element={<Navigate to={isAuthenticated ? '/dashboard' : '/'} replace />}
+			/>
 		</Routes>
 	);
 };

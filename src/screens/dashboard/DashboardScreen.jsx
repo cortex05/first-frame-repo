@@ -3,13 +3,13 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import Modal from "../../components/modal/Modal";
 import TopNavbar from "../../components/top-navbar/TopNavbar";
 import ThemeToggle from "../../components/theme-toggle/ThemeToggle";
-import styles from "./HomeScreen.module.css";
+import styles from "./DashboardScreen.module.css";
 import { getPlaylistById } from "../../api/playlist";
 
 import useCaseStore from "../../store/useCaseStore";
 import useAuthStore, { selectIsAccountAdmin } from "../../store/useAuthStore";
 
-const Home = () => {
+const Dashboard = () => {
   const location = useLocation();
   // Set by a redirect, e.g. after losing access to a case. Shown once.
   const [notice] = useState(() => location.state?.message ?? "");
@@ -71,8 +71,8 @@ const Home = () => {
     <React.Fragment>
       <TopNavbar />
 
-      <div className={styles.homeContainer}>
-        <div className={styles.homeHeading}>
+      <div className={styles.dashboardContainer}>
+        <div className={styles.dashboardHeading}>
           <h1>Welcome to our Application</h1>
           <p>
             Currently, you can start NEW a case for seating and questioning
@@ -240,4 +240,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default Dashboard;

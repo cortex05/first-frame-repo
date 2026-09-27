@@ -11,7 +11,8 @@ import useAuthStore from './store/useAuthStore';
 const { stub } = vi.hoisted(() => ({
   stub: (name) => ({ default: () => <p>{name} screen</p> }),
 }));
-vi.mock('./screens/home/HomeScreen', () => stub('Home'));
+vi.mock('./screens/landing/LandingScreen', () => stub('Landing'));
+vi.mock('./screens/dashboard/DashboardScreen', () => stub('Dashboard'));
 vi.mock('./screens/start/StartScreen', () => stub('Start'));
 vi.mock('./screens/create-case/CreateCaseScreen', () => stub('Create case'));
 vi.mock('./screens/case/CaseScreen', () => stub('Case'));
@@ -57,18 +58,50 @@ describe('AppRoutes guards', () => {
     expect(screen.getByText('Login screen')).toBeInTheDocument();
   });
 
+  it('shows the landing page to a signed-out visitor', () => {
+    renderAt('/');
+
+    expect(screen.getByText('Landing screen')).toBeInTheDocument();
+  });
+
+  it('sends a signed-in user from the landing page to the dashboard', () => {
+    useAuthStore.setState({ userInfo: session() });
+
+    renderAt('/');
+    expect(screen.getByText('Dashboard screen')).toBeInTheDocument();
+  });
+
+  it('sends a signed-out visitor on an unknown path to the landing page', () => {
+    renderAt('/no-such-page');
+
+    expect(screen.getByText('Landing screen')).toBeInTheDocument();
+  });
+
+  it('sends a signed-in user on an unknown path to the dashboard', () => {
+    useAuthStore.setState({ userInfo: session() });
+
+    renderAt('/no-such-page');
+    expect(screen.getByText('Dashboard screen')).toBeInTheDocument();
+  });
+
+  it('sends a signed-out visitor from the dashboard to login', () => {
+    renderAt('/dashboard');
+
+    expect(screen.getByText('Login screen')).toBeInTheDocument();
+  });
+
   it('keeps members out of account administration and case creation', () => {
     useAuthStore.setState({ userInfo: session() });
 
     renderAt('/account');
-    expect(screen.getByText('Home screen')).toBeInTheDocument();
+    expect(screen.getByText('Dashboard screen')).toBeInTheDocument();
   });
 
   it('keeps members out of case creation', () => {
     useAuthStore.setState({ userInfo: session() });
 
     renderAt('/create-case');
-    expect(screen.getByText('Home screen')).toBeInTheDocument();
+    expect(screen.getByText('Dashboard screen')).toBeInTheDocument();
   });
 
   it('lets an account admin into account administration and case creation', () => {
@@ -88,7 +121,7 @@ describe('AppRoutes guards', () => {
   it('holds a user with a temporary password on the change-password page', () => {
     useAuthStore.setState({ userInfo: session({ mustChangePassword: true }) });
 
-    renderAt('/home');
+    renderAt('/dashboard');
     expect(screen.getByText('Change password screen')).toBeInTheDocument();
   });
 
@@ -96,7 +129,7 @@ describe('AppRoutes guards', () => {
     useAuthStore.setState({ userInfo: session({ role: 'admin', isAdmin: false }) });
 
     renderAt('/recommended');
-    expect(screen.getByText('Home screen')).toBeInTheDocument();
+    expect(screen.getByText('Dashboard screen')).toBeInTheDocument();
   });
 
   it('lets a platform admin into Recommended whatever their account role', () => {

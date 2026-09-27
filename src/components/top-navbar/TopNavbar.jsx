@@ -39,9 +39,9 @@ const TopNavbar = ({ warnOnHomeNavigation = false }) => {
       <header className={styles.navbar}>
         <div> 
           <Link
-            to="/home"
+            to="/dashboard"
             className={styles.navButton}
-            onClick={(event) => handleNavigate(event, '/home')}
+            onClick={(event) => handleNavigate(event, '/dashboard')}
           >
             Home
           </Link>

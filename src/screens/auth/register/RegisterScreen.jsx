@@ -59,7 +59,7 @@ const RegisterScreen = () => {
         fetchUserPlaylists(session.token),
         fetchUserCases(session.token),
       ]);
-      navigate('/home', { replace: true });
+      navigate('/dashboard', { replace: true });
     } catch (requestError) {
       setError(
         requestError?.response?.data?.message || 'Unable to create the account. Please try again.'

@@ -97,14 +97,14 @@ const CaseScreen = () => {
   /**
    * The server answers 404 when this user can no longer see the case (their
    * ownership was removed, or it was archived by someone else). Drop the stale
-   * local copy and send them home.
+   * local copy and send them to the dashboard.
    */
   const handleLostAccess = (requestError) => {
     if (requestError?.response?.status !== 404) return false;
 
     removeCase(activeCase._id);
     syncCasesToStorage();
-    navigate("/home", {
+    navigate("/dashboard", {
       replace: true,
       state: { message: "You no longer have access to that case." },
     });

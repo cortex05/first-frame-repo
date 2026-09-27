@@ -109,7 +109,7 @@ const AccountScreen = () => {
       // An admin who just gave up their own admin role can no longer use this page.
       if (updated._id === String(userInfo.userId) && updated.role !== 'admin') {
         updateSession({ role: 'member' });
-        navigate('/home', { replace: true });
+        navigate('/dashboard', { replace: true });
       }
     } catch (requestError) {
       setRowErrors((prev) => ({

@@ -48,7 +48,7 @@ const ChangePasswordScreen = () => {
     try {
       const session = await changePassword({ currentPassword, newPassword }, userInfo.token);
       setUserInfo(session);
-      navigate('/home', { replace: true });
+      navigate('/dashboard', { replace: true });
     } catch (requestError) {
       setError(requestError?.response?.data?.message || 'Unable to change password.');
     } finally {

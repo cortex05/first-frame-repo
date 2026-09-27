@@ -60,7 +60,7 @@ const renderCase = () =>
     <MemoryRouter initialEntries={['/case/case-1']}>
       <Routes>
         <Route path="/case/:id" element={<CaseScreen />} />
-        <Route path="/home" element={<p>Home screen</p>} />
+        <Route path="/dashboard" element={<p>Dashboard screen</p>} />
         <Route path="/archive/:id" element={<p>Archived case screen</p>} />
       </Routes>
     </MemoryRouter>,
@@ -119,7 +119,7 @@ describe('CaseScreen archiving', () => {
     expect(screen.getByRole('button', { name: 'Archive Case' })).toBeInTheDocument();
   });
 
-  it('drops the case and goes home when the server says it is gone', async () => {
+  it('drops the case and goes to the dashboard when the server says it is gone', async () => {
     vi.mocked(archiveCase).mockRejectedValue({ response: { status: 404, data: {} } });
     useAuthStore.setState({ userInfo: session() });
     useCaseStore.setState({ cases: [makeCase({ answers: complete })] });
@@ -128,7 +128,7 @@ describe('CaseScreen archiving', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Archive Case' }));
     await userEvent.click(screen.getByRole('button', { name: 'Archive' }));
 
-    expect(await screen.findByText('Home screen')).toBeInTheDocument();
+    expect(await screen.findByText('Dashboard screen')).toBeInTheDocument();
     await waitFor(() => expect(useCaseStore.getState().cases).toEqual([]));
   });
 

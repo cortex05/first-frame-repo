@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import HomeScreen from './HomeScreen';
+import DashboardScreen from './DashboardScreen';
 import useAuthStore from '../../store/useAuthStore';
 import useCaseStore from '../../store/useCaseStore';
 
@@ -25,10 +25,10 @@ const seedSession = (role) => {
   });
 };
 
-const renderHome = () =>
+const renderDashboard = () =>
   render(
     <MemoryRouter>
-      <HomeScreen />
+      <DashboardScreen />
     </MemoryRouter>,
   );
 
@@ -37,10 +37,10 @@ beforeEach(() => {
   useCaseStore.setState({ cases: [], fetchUserCases: vi.fn() });
 });
 
-describe('HomeScreen theme toggle', () => {
+describe('DashboardScreen theme toggle', () => {
   it.each(['member', 'admin'])('is shown to a %s', (role) => {
     seedSession(role);
-    renderHome();
+    renderDashboard();
     expect(screen.getByRole('button', { name: 'Switch to light mode' })).toBeInTheDocument();
   });
 });
