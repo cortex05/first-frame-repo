@@ -7,7 +7,7 @@ import useAccountStore from "../../store/useAccountStore";
 import Modal from "../../components/modal/Modal";
 import OwnerPicker from "../../components/owner-picker/OwnerPicker";
 import TopNavbar from "../../components/top-navbar/TopNavbar";
-import { archiveCase, saveCase, setCaseOwners } from "../../api/case";
+import { archiveCase, saveCase, setCaseOwners, startCase } from "../../api/case";
 import { isCaseComplete } from "../../utils/caseCompletion";
 import { getPlaylistById } from "../../api/playlist";
 import Question from "../../types/polls/Question";
@@ -41,6 +41,8 @@ const CaseScreen = () => {
   const [deleteQuestionId, setDeleteQuestionId] = useState(null);
 
   const [startModal, setStartModal] = useState(false);
+  const [startError, setStartError] = useState("");
+  const [isStarting, setIsStarting] = useState(false);
   const [editStudentNumber, setEditStudentNumber] = useState(false);
   const [numberOfStudents, setNumberOfStudents] = useState(
     activeCase ? activeCase.studentNumber : 0,
@@ -185,18 +187,49 @@ const CaseScreen = () => {
     );
   };
 
+  const openStartModal = () => {
+    setStartError("");
+    setStartModal(true);
+  };
+
+  /**
+   * Saves the case, then records the start on its purchase transaction (the
+   * server keeps only the first start) before moving on to seating.
+   */
   const handleStart = async () => {
+    setStartError("");
+    setIsStarting(true);
+
     try {
+      // Handles its own 404 (lost access) before rethrowing.
       await persistCaseUpdate(activeCase);
-      setStartModal(false);
-      setActiveCase(activeCase._id);
-      navigate(`/start/${activeCase._id}`);
     } catch (requestError) {
-      setSaveError(
-        requestError?.response?.data?.message ||
-          "Unable to save case before starting session.",
-      );
+      if (requestError?.response?.status !== 404) {
+        setStartError(
+          requestError?.response?.data?.message ||
+            "Unable to save case before starting session.",
+        );
+      }
+      setIsStarting(false);
+      return;
     }
+
+    try {
+      await startCase(activeCase._id, userInfo.token);
+    } catch (requestError) {
+      if (!handleLostAccess(requestError)) {
+        setStartError(
+          requestError?.response?.data?.message || "Unable to start the session.",
+        );
+      }
+      setIsStarting(false);
+      return;
+    }
+
+    setIsStarting(false);
+    setStartModal(false);
+    setActiveCase(activeCase._id);
+    navigate(`/start/${activeCase._id}`);
   };
 
   const handleNumberOfStudentsChange = async () => {
@@ -587,7 +620,7 @@ const CaseScreen = () => {
         {/* Start link */}
         {!activeCase.seated && (
           <button
-            onClick={() => setStartModal(true)}
+            onClick={openStartModal}
             style={{
               display: "inline-block",
               padding: "14px 36px",
@@ -980,12 +1013,14 @@ const CaseScreen = () => {
                 Currently this case is set for {activeCase.studentNumber}
               </p>
               <p style={{ marginBottom: 16 }}>Is this correct?</p>
+              {startError && <p className={styles.modalError}>{startError}</p>}
               <div className={styles.startModalButtons}>
-                <button onClick={handleStart} className={styles.confirm}>
-                  Yes
+                <button onClick={handleStart} disabled={isStarting} className={styles.confirm}>
+                  {isStarting ? "Starting..." : "Yes"}
                 </button>
                 <button
                   onClick={() => setEditStudentNumber(true)}
+                  disabled={isStarting}
                   className={styles.decline}
                 >
                   No

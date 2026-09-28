@@ -16,6 +16,7 @@ export const CASE_API = {
   CREATE: "/cases",
   UPDATE: (id) => `/cases/${id}`,
   OWNERS: (id) => `/cases/${id}/owners`,
+  START: (id) => `/cases/${id}/start`,
   ARCHIVE: (id) => `/cases/${id}/archive`,
 };
 

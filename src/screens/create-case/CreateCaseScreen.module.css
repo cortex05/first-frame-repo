@@ -33,188 +33,6 @@
   margin-bottom: 16px;
 }
 
-.textAreaStyle {
-  font-size: 18px;
-  border: 1px solid var(--grey-disabled);
-  border-radius: 6px;
-  width: 100%;
-  box-sizing: border-box;
-  padding: 10px 12px;
-}
-
-.trueFalseValueDisplay { 
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-  color: var(--modal-text);
-}
-
-.trueFalseValueDisplay span { 
-  min-width: 52px; 
-  font-size: 14px; 
-  font-weight: 600; 
-}
-
-.recommendedListItem {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 8px 12px;
-  margin-bottom: 8px;
-  background: var(--recommend-bg);
-  border: 1px solid var(--blue-primary-dark);
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  color: var(--modal-text);
-  transition: background 0.3s ease;
-}
-
-.recommendedListItem:hover {
-  background: var(--recommend-bg-hover);
-}
-
-.recommendedNotice {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 12px;
-  margin-bottom: 8px;
-  background: var(--recommend-bg);
-  border: 1px solid var(--blue-primary-dark);
-  border-radius: 6px;
-  font-size: 14px;
-  color: var(--modal-text);
-  text-align: center;
-  cursor: default;
-}
-
-.playlistListItem {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 8px 12px;
-  margin-bottom: 8px;
-  background: var(--surface-subtle);
-  border: 1px solid var(--light-blue-background);
-  border-radius: 6px;
-  font-size: 14px;
-  cursor: pointer;
-  color: var(--modal-text);
-}
-
-.playlistLoadingState {
-  opacity: 0.7;
-}
-
-.playlistStatusText {
-  color: var(--text-secondary);
-  margin-top: 12px;
-}
-
-.playlistErrorText {
-  color: var(--decline);
-  margin-top: 12px;
-}
-
-.playlistTitle {
-  margin-top: 0;
-  margin-bottom: 12px;
-}
-
-.playlistQuestionsList {
-  margin-bottom: 16px;
-}
-
-.playlistQuestionItem {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  margin-bottom: 8px;
-  background: var(--surface-subtle);
-  border: 1px solid var(--light-blue-background);
-  border-radius: 6px;
-  color: var(--modal-text);
-  font-size: 14px;
-}
-
-.playlistQuestionSelectable {
-  cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.playlistQuestionSelectable:hover {
-  background: var(--light-blue-background);
-  border-color: var(--blue-primary-dark);
-}
-
-.playlistQuestionSelected {
-  background: var(--blue-background);
-  border-color: var(--blue-primary-dark);
-  box-shadow: 0 0 0 1px var(--blue-primary-dark);
-}
-
-.playlistQuestionSelected .playlistQuestionNumber,
-.playlistQuestionSelected .playlistQuestionText {
-  color: var(--light-text);
-}
-
-.playlistQuestionNumber {
-  font-weight: 600;
-  color: var(--modal-text);
-  min-width: 24px;
-}
-
-.playlistQuestionText {
-  flex: 1;
-}
-
-.playlistSelectionHint {
-  margin-top: 0;
-  margin-bottom: 10px;
-  color: var(--text-secondary);
-  font-size: 13px;
-}
-
-.playlistLoadButton {
-  width: 100%;
-  padding: 10px 0;
-  font-weight: 600;
-  background: var(--confirm);
-  color: var(--light-text);
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  margin-bottom: 8px;
-}
-
-.playlistLoadButton:disabled {
-  cursor: not-allowed;
-  opacity: 0.75;
-}
-
-.summaryCreateButton {
-  width: 100%;
-  padding: 12px 0;
-  font-size: 16px;
-  font-weight: 600;
-  background: var(--confirm);
-  color: var(--light-text);
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.summaryCreateButton:disabled {
-  opacity: 0.75;
-  cursor: not-allowed;
-}
-
 .linkButton {
   display: inline-block;
   padding: 16px 32px;
@@ -233,45 +51,64 @@
   color: var(--modal-text);
 }
 
-.playlistAccessButton {
-  margin-top: 8px;
-  margin-left: 8px;
-  padding: 10px 20px;
-  font-size: 15px;
-  background: var(--blue-background);
-  color: var(--light-text);
-  border: 2px solid var(--light-blue-background);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.5s ease, color 0.5s ease;
-}
 
-.playlistAccessButton:hover {
-  background: var(--light-blue-background);
-  border: 2px solid var(--blue-background);
-  color: var(--modal-text);
-}
-
-.addQuestionButton {
-  margin-top: 8px;
-  padding: 10px 20px;
-  font-size: 15px;
-  background: var(--confirm);
-  color: var(--light-text);
-  border: 2px solid var(--confirm-hover);
-  border-radius: 6px;
-  cursor: pointer;
-  /* transition: background 0.5s ease, color 0.5s ease; */
-  transition: border 0.5s ease, box-shadow 0.5s ease;
-  text-decoration: none;
-}
-
-.addQuestionButton:hover {
-  /* background: var(--blue-background); */
-  border: 2px solid var(--light-blue-background);
-}
 .ownersHint {
   margin: 0 0 8px;
   font-size: 14px;
   color: var(--light-text);
+}
+
+.paymentNotice {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.paymentWarning {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  font-size: 16px;
+  font-weight: 600;
+  background: var(--warning-bg);
+  color: var(--warning-text);
+  border-radius: 6px;
+}
+
+.submitError {
+  margin: 0 0 12px;
+  font-size: 16px;
+  color: var(--decline);
+}
+
+.confirmRow {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.confirmButton,
+.declineButton {
+  flex: 1;
+  padding: 12px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--light-text);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.confirmButton {
+  background: var(--confirm);
+  border: none;
+}
+
+.declineButton {
+  background: var(--decline);
+  border: 1px solid var(--grey-disabled);
+}
+
+.confirmButton:disabled,
+.declineButton:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
 }

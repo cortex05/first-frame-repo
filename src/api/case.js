@@ -57,6 +57,18 @@ export const setCaseOwners = async (caseId, owners, token) => {
   return normalizeCaseQuestionsPayload(res.data.data);
 };
 
+// Records the start of the session on the case's purchase transaction (only the
+// first start counts). Returns { caseId, transactionStatus }.
+export const startCase = async (caseId, token) => {
+  const res = await axiosInstance.post(CASE_API.START(caseId), null, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return res.data.data;
+};
+
 // Moves a complete case into the archive. Returns the archived snapshot.
 export const archiveCase = async (caseId, token) => {
   const res = await axiosInstance.post(CASE_API.ARCHIVE(caseId), null, {
