@@ -37,6 +37,11 @@
   --surface-selected: #e3edf7;
   --surface-overlay-control: rgba(255, 255, 255, 0.92); /* floating canvas toolbars */
 
+  /* theme */
+  --theme-bg: var(--surface);
+  --theme-bg-hov: var(--blue-background);
+  --theme-text: var(--modal-text);
+
   /* --- Text on surfaces --- */
   --text-strong: #303030;
   --text-secondary: #555;
@@ -130,6 +135,11 @@
   --surface-muted: #eceff3;
   --surface-selected: #e3edf7;
   --surface-overlay-control: rgba(255, 255, 255, 0.92);
+
+  /* theme */
+  --theme-bg: var(--blue-background);
+  --theme-bg-hov: #273952;
+  --theme-text: var(--light-text);
 
   /* --- Text on surfaces --- */
   --text-strong: #303030;
