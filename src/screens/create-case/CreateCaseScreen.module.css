@@ -3,7 +3,7 @@
   max-width: 50%;
   margin: 0 auto;
   padding: 32px;
-  color: var(--light-text);
+  color: var(--page-text);
 }
 
 .container h1 {
@@ -13,17 +13,17 @@
 .labelStyle {
   font-size: 16px;
   font-weight: 600;
-	color: var(--modal-text);
+	color: var(--label-light);
 }
 
 .inputStyle {
   padding: 2px 12px;
   font-size: 18px;
-  border: 1px solid var(--grey-disabled);
   border-radius: 6px;
   width: 100%;
   box-sizing: border-box;
   height: 50px;
+  border: 2px solid var(--input-border-case);
 }
 
 .fieldStyle {

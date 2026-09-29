@@ -82,6 +82,9 @@
   --recommend-bg: #f7c873;
   --recommend-bg-hover: #f3b449;
 
+  /* light background ONLY */
+  --input-border-case: var(--grey-disabled); 
+
   /* --- Shadows / overlays --- */
   --shadow-strong: rgba(0, 0, 0, 0.6);
   --shadow-modal: rgba(0, 0, 0, 0.3);
@@ -185,6 +188,9 @@
   --shadow-soft: rgba(15, 30, 50, 0.15);
   --overlay: rgba(15, 30, 50, 0.35);
 
+  /* light background ONLY */
+  --input-border-case: var(--modal-text); 
+  
   color-scheme: light;
 }
 
