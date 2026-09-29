@@ -7,7 +7,19 @@ import useAccountStore from "../../store/useAccountStore";
 import Modal from "../../components/modal/Modal";
 import OwnerPicker from "../../components/owner-picker/OwnerPicker";
 import TopNavbar from "../../components/top-navbar/TopNavbar";
-import { archiveCase, saveCase, setCaseOwners, startCase } from "../../api/case";
+import StudentListModal from "../../components/student-report/StudentListModal";
+import StudentReportModal from "../../components/student-report/StudentReportModal";
+import {
+  archiveCase,
+  saveCase,
+  saveStudentDetails,
+  setCaseOwners,
+  startCase,
+} from "../../api/case";
+import {
+  applyLocalStudentDetails,
+  mergeStudentDetails,
+} from "../../utils/studentDetails";
 import { isCaseComplete } from "../../utils/caseCompletion";
 import { getPlaylistById } from "../../api/playlist";
 import Question from "../../types/polls/Question";
@@ -74,6 +86,8 @@ const CaseScreen = () => {
   const [archiveModalOpen, setArchiveModalOpen] = useState(false);
   const [archiveError, setArchiveError] = useState("");
   const [isArchiving, setIsArchiving] = useState(false);
+  const [studentListOpen, setStudentListOpen] = useState(false);
+  const [reportStudentNumber, setReportStudentNumber] = useState(null);
 
   useEffect(() => {
     // Admins need the user list to show and change owners.
@@ -125,6 +139,31 @@ const CaseScreen = () => {
       updateCase(savedCase || updatedCase);
       syncCasesToStorage();
       return savedCase || updatedCase;
+    } catch (requestError) {
+      handleLostAccess(requestError);
+      throw requestError;
+    }
+  };
+
+  /**
+   * Saves one student's optional details. Only `studentDetails` is taken from
+   * the response and merged into the case as it is in the store right now, so
+   * nothing else on the case (e.g. seating not yet sent) is overwritten.
+   */
+  const handleSaveStudentDetails = async (studentNumber, payload) => {
+    const currentCase = () =>
+      useCaseStore.getState().cases.find((c) => c._id === activeCase._id) || activeCase;
+
+    if (!userInfo?.token) {
+      updateCase(applyLocalStudentDetails(currentCase(), studentNumber, payload));
+      syncCasesToStorage();
+      return;
+    }
+
+    try {
+      const saved = await saveStudentDetails(activeCase._id, studentNumber, payload, userInfo.token);
+      updateCase(mergeStudentDetails(currentCase(), saved.studentDetails));
+      syncCasesToStorage();
     } catch (requestError) {
       handleLostAccess(requestError);
       throw requestError;
@@ -514,6 +553,13 @@ const CaseScreen = () => {
           <p className={styles.value}>
             Number of Students: {activeCase.studentNumber || "—"}
           </p>
+          <button
+            type="button"
+            className={styles.viewStudentsButton}
+            onClick={() => setStudentListOpen(true)}
+          >
+            View Students
+          </button>
         </section>
 
         {/* Questions */}
@@ -1170,6 +1216,26 @@ const CaseScreen = () => {
             </div>
           )}
         </Modal>
+
+        {studentListOpen && (
+          <StudentListModal
+            activeCase={activeCase}
+            onSelectStudent={setReportStudentNumber}
+            onClose={() => setStudentListOpen(false)}
+          />
+        )}
+
+        {reportStudentNumber !== null && (
+          <StudentReportModal
+            key={reportStudentNumber}
+            activeCase={activeCase}
+            studentNumber={reportStudentNumber}
+            onClose={() => setReportStudentNumber(null)}
+            onSaveDetails={(payload) =>
+              handleSaveStudentDetails(reportStudentNumber, payload)
+            }
+          />
+        )}
       </div>
     </React.Fragment>
   );

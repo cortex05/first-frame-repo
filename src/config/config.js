@@ -18,6 +18,7 @@ export const CASE_API = {
   OWNERS: (id) => `/cases/${id}/owners`,
   START: (id) => `/cases/${id}/start`,
   ARCHIVE: (id) => `/cases/${id}/archive`,
+  STUDENT_DETAILS: (id, number) => `/cases/${id}/students/${number}/details`,
 };
 
 export const ARCHIVE_API = {

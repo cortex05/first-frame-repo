@@ -1,16 +1,17 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import CaseScreen from './CaseScreen';
-import { archiveCase, saveCase, startCase } from '../../api/case';
+import { archiveCase, saveCase, saveStudentDetails, startCase } from '../../api/case';
 import useAuthStore from '../../store/useAuthStore';
 import useCaseStore from '../../store/useCaseStore';
 
 vi.mock('../../api/case', () => ({
   archiveCase: vi.fn(),
   saveCase: vi.fn(),
+  saveStudentDetails: vi.fn(),
   setCaseOwners: vi.fn(),
   startCase: vi.fn(),
   getUserCases: vi.fn(async () => []),
@@ -74,6 +75,7 @@ beforeEach(() => {
   vi.mocked(archiveCase).mockReset();
   vi.mocked(saveCase).mockReset();
   vi.mocked(startCase).mockReset();
+  vi.mocked(saveStudentDetails).mockReset();
   window.scrollTo = vi.fn();
 });
 
@@ -214,5 +216,96 @@ describe('CaseScreen start session', () => {
 
     expect(await screen.findByText('Save failed')).toBeInTheDocument();
     expect(startCase).not.toHaveBeenCalled();
+  });
+});
+
+describe('CaseScreen student details', () => {
+  const openStudent = async (number) => {
+    await userEvent.click(screen.getByRole('button', { name: 'View Students' }));
+    await userEvent.click(screen.getByRole('button', { name: new RegExp(`^#${number} — `) }));
+  };
+
+  const report = () => within(screen.getByRole('dialog', { name: /Student Report/ }));
+
+  const editAge = async (age) => {
+    await userEvent.click(report().getByRole('button', { name: 'Edit' }));
+    await userEvent.type(report().getByLabelText('Age'), age);
+    await userEvent.click(report().getByRole('button', { name: 'Save' }));
+  };
+
+  it('opens the list under the student count, then a report, and × goes back to the list', async () => {
+    useAuthStore.setState({ userInfo: session() });
+    useCaseStore.setState({ cases: [makeCase({ seated: false })] });
+
+    renderCase();
+    const viewStudents = screen.getByRole('button', { name: 'View Students' });
+    expect(screen.getByText(/Number of Students:/).nextElementSibling).toBe(viewStudents);
+
+    await openStudent(2);
+
+    expect(screen.getByRole('dialog', { name: 'Students' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Student Report - #2 = 0 Points' })).toBeInTheDocument();
+
+    const [, reportClose] = screen.getAllByRole('button', { name: 'Close' });
+    await userEvent.click(reportClose);
+
+    expect(screen.queryByRole('heading', { name: /Student Report/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'Students' })).toBeInTheDocument();
+  });
+
+  it('saves details and merges only studentDetails into the stored case', async () => {
+    vi.mocked(saveStudentDetails).mockResolvedValue({
+      caseId: 'case-1',
+      studentNumber: 2,
+      studentDetails: { 2: { age: 30 } },
+    });
+    useAuthStore.setState({ userInfo: session() });
+    // Seating the server hasn't seen yet: it must survive the save.
+    const localChart = { rects: [{ id: 'r1', assignedStudents: [{ id: 1 }, { id: 2 }] }] };
+    useCaseStore.setState({ cases: [makeCase({ chartData: localChart })] });
+
+    renderCase();
+    await openStudent(2);
+    await editAge('30');
+
+    await waitFor(() => expect(report().getByRole('button', { name: 'Edit' })).toBeInTheDocument());
+    expect(saveStudentDetails).toHaveBeenCalledWith(
+      'case-1',
+      2,
+      { age: 30, occupation: null, gender: null, race: null },
+      'token',
+    );
+    const [stored] = useCaseStore.getState().cases;
+    expect(stored.studentDetails).toEqual({ 2: { age: 30 } });
+    expect(stored.chartData).toEqual(localChart);
+    expect(JSON.parse(localStorage.getItem('cases'))[0].studentDetails).toEqual({ 2: { age: 30 } });
+    expect(screen.getByText('Age', { selector: 'dt' }).nextElementSibling).toHaveTextContent('30');
+  });
+
+  it('drops the case and goes to the dashboard when the save returns 404', async () => {
+    vi.mocked(saveStudentDetails).mockRejectedValue({ response: { status: 404, data: {} } });
+    useAuthStore.setState({ userInfo: session() });
+    useCaseStore.setState({ cases: [makeCase()] });
+
+    renderCase();
+    await openStudent(1);
+    await editAge('30');
+
+    expect(await screen.findByText('Dashboard screen')).toBeInTheDocument();
+    await waitFor(() => expect(useCaseStore.getState().cases).toEqual([]));
+  });
+
+  it('saves locally without a request when signed out', async () => {
+    useAuthStore.setState({ userInfo: null });
+    useCaseStore.setState({ cases: [makeCase()] });
+
+    renderCase();
+    await openStudent(1);
+    await editAge('45');
+
+    await waitFor(() =>
+      expect(useCaseStore.getState().cases[0].studentDetails).toEqual({ 1: { age: 45 } }),
+    );
+    expect(saveStudentDetails).not.toHaveBeenCalled();
   });
 });

@@ -69,6 +69,18 @@ export const startCase = async (caseId, token) => {
   return res.data.data;
 };
 
+// Replaces one student's optional details. Returns
+// { caseId, studentNumber, studentDetails } with the case's whole details map.
+export const saveStudentDetails = async (caseId, studentNumber, details, token) => {
+  const res = await axiosInstance.put(CASE_API.STUDENT_DETAILS(caseId, studentNumber), details, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return res.data.data;
+};
+
 // Moves a complete case into the archive. Returns the archived snapshot.
 export const archiveCase = async (caseId, token) => {
   const res = await axiosInstance.post(CASE_API.ARCHIVE(caseId), null, {

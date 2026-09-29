@@ -106,4 +106,16 @@ describe('ArchivedCaseScreen', () => {
     const cards = await screen.findAllByRole('region', { name: /^Student \d+$/ });
     expect(cards.map((card) => card.getAttribute('aria-label'))).toEqual(['Student 2', 'Student 5']);
   });
+
+  it('never shows student details, even if an archive somehow carried them', async () => {
+    vi.mocked(getArchivedCase).mockResolvedValue(
+      archivedCase({ studentDetails: { 1: { age: 34, occupation: 'Teacher', gender: 'female', race: 'Hispanic' } } }),
+    );
+    renderScreen();
+
+    await screen.findAllByRole('region', { name: /^Student \d+$/ });
+    for (const text of ['Occupation', 'Teacher', 'Hispanic', 'Female']) {
+      expect(screen.queryByText(new RegExp(text))).not.toBeInTheDocument();
+    }
+  });
 });

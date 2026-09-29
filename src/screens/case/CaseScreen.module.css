@@ -28,6 +28,17 @@
 	font-size: 24px;
 }
 
+.viewStudentsButton {
+	padding: 10px 20px;
+	font-size: 15px;
+	font-weight: 600;
+	color: var(--light-text);
+	background: var(--blue-background);
+	border: none;
+	border-radius: 6px;
+	cursor: pointer;
+}
+
 .startModal {
 	color: var(--modal-text);
 	font-size: 20px;
