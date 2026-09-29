@@ -3,17 +3,17 @@ import { useParams, Link } from "react-router-dom";
 import { Stage, Layer, Rect, Circle, Text, Group } from "react-konva";
 import useCaseStore from "../../store/useCaseStore";
 import useAuthStore from "../../store/useAuthStore";
-import { saveCase } from "../../api/case";
+import { saveCase, saveStudentDetails } from "../../api/case";
 import { QuestionType } from "../../types/ENUMS";
 import { cssVar } from "../../utils/cssVars";
+import { getRiskTiers, getStudentTotal } from "../../utils/studentScores";
 import {
-  getAnswer,
-  getAnswerTier,
-  getRiskTiers,
-  getStudentTotal,
-} from "../../utils/studentScores";
+  applyLocalStudentDetails,
+  mergeStudentDetails,
+} from "../../utils/studentDetails";
 
 import Modal from "../../components/modal/Modal";
+import StudentReportModal from "../../components/student-report/StudentReportModal";
 
 import styles from "./QuestionsScreen.module.css";
 
@@ -247,6 +247,27 @@ const QuestionsScreen = () => {
     } finally {
       setIsSavingAnswers(false);
     }
+  };
+
+  // ── student details ────────────────────────────────────────────
+  // Only `studentDetails` is merged into the stored case, so answers still being
+  // tapped (currentAnswers) and seating not yet sent to the server are untouched.
+  // Errors, 404 included, are shown in the report modal.
+  const handleSaveStudentDetails = async (studentNumber, payload) => {
+    const currentCase = () =>
+      useCaseStore.getState().cases.find((c) => c._id === activeCase._id) || activeCase;
+
+    if (!userInfo?.token) {
+      updateCase(applyLocalStudentDetails(currentCase(), studentNumber, payload));
+    } else {
+      const saved = await saveStudentDetails(activeCase._id, studentNumber, payload, userInfo.token);
+      updateCase(mergeStudentDetails(currentCase(), saved.studentDetails));
+    }
+
+    localStorage.setItem(
+      "cases",
+      JSON.stringify(useCaseStore.getState().cases),
+    );
   };
 
   // ── zoom / pan ─────────────────────────────────────────────────
@@ -708,131 +729,17 @@ const QuestionsScreen = () => {
         })()}
 
       {/* ── Student Report modal ── */}
-      {studentReport !== null &&
-        (() => {
-          // Tier of this answer's points among the question's option values
-          // (utils/studentScores), or null for "N/A" -- shown as a white badge.
-          const getAnswerBadgeTier = (question, answerObj) =>
-            answerObj?.value === null || answerObj?.value === undefined
-              ? null
-              : getAnswerTier(question, answerObj);
-
-          return (
-            <div
-              style={{
-                position: "fixed",
-                inset: 0,
-                background: "var(--shadow-soft)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                zIndex: 600,
-              }}
-            >
-              <div
-                style={{
-                  background: "var(--surface)",
-                  borderRadius: 10,
-                  padding: 24,
-                  minWidth: 320,
-                  maxWidth: 480,
-                  maxHeight: "75vh",
-                  display: "flex",
-                  flexDirection: "column",
-                  boxShadow: "0 4px 24px var(--shadow-soft)",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    marginBottom: 16,
-                  }}
-                >
-                  <h3 style={{ margin: 0, fontSize: 16, color: "var(--modal-text)" }}>
-                    Student Report - #{studentReport}
-                  </h3>
-                  <button
-                    onClick={() => setStudentReport(null)}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      fontSize: 20,
-                      cursor: "pointer",
-                      color: "var(--text-secondary)",
-                      lineHeight: 1,
-                    }}
-                  >
-                    ×
-                  </button>
-                </div>
-                <div style={{ overflowY: "auto" }}>
-                  {activeCase.questions.map((q) => {
-                    const answerObj = getAnswer(activeCase, q.id, studentReport);
-                    let value = null;
-                    let answerText = null
-                    if (answerObj !== undefined) {
-                      value = answerObj.value;
-                      answerText = answerObj.label;
-                    }
-                    const tier = getAnswerBadgeTier(q, answerObj);
-                    const bg = tier ? `var(--risk-${tier}-bg)` : "var(--surface)";
-                    const textColor = tier ? `var(--risk-${tier}-text)` : "var(--text-strong)";
-                    return (
-                      <div
-                        key={q.id}
-                        style={{
-                          display: "flex",
-                          alignItems: "stretch",
-                          justifyContent: "space-between",
-                          gap: 12,
-                          marginBottom: 8,
-                          border: "1px solid var(--border-subtle)",
-                          borderRadius: 6,
-                          overflow: "hidden",
-                        }}
-                      >
-                        <span
-                          style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            flex: 1,
-                            padding: "10px 14px",
-                            fontSize: 13,
-                            color: "var(--modal-text)",
-                          }}
-                        >
-                          {q.text  + " - " + answerText}
-                        </span>
-                        <span
-                          style={{
-                            background: bg,
-                            color: textColor,
-                            padding: "10px 14px",
-                            fontSize: 14,
-                            fontWeight: 700,
-                            minWidth: 48,
-                            textAlign: "center",
-                            flexShrink: 0,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        >
-                          {value !== null && value !== undefined
-                            ? value
-                            : "N/A"}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          );
-        })()}
+      {studentReport !== null && (
+        <StudentReportModal
+          key={studentReport}
+          activeCase={activeCase}
+          studentNumber={studentReport}
+          onClose={() => setStudentReport(null)}
+          onSaveDetails={(payload) =>
+            handleSaveStudentDetails(studentReport, payload)
+          }
+        />
+      )}
 
       {/* Save Warning modal */}
       <Modal
