@@ -9,6 +9,7 @@ import OwnerPicker from "../../components/owner-picker/OwnerPicker";
 import TopNavbar from "../../components/top-navbar/TopNavbar";
 import StudentListModal from "../../components/student-report/StudentListModal";
 import StudentReportModal from "../../components/student-report/StudentReportModal";
+import PdfExportModal from "../../components/pdf-export/PdfExportModal";
 import {
   archiveCase,
   saveCase,
@@ -53,6 +54,7 @@ const CaseScreen = () => {
   const [deleteQuestionId, setDeleteQuestionId] = useState(null);
 
   const [startModal, setStartModal] = useState(false);
+  const [pdfExportOpen, setPdfExportOpen] = useState(false);
   const [startError, setStartError] = useState("");
   const [isStarting, setIsStarting] = useState(false);
   const [editStudentNumber, setEditStudentNumber] = useState(false);
@@ -644,20 +646,34 @@ const CaseScreen = () => {
             </div>
           ))}
 
-          <div className={styles.questionActionRow}>
-            <button
-              onClick={openQuestionModal}
-              className={`${styles.questionActionButton} ${styles.addQuestionButton}`}
-            >
-              + Add Question
-            </button>
+          <div className={styles.questionActions}>
+            <div className={styles.questionActionRow}>
+              <button
+                onClick={openQuestionModal}
+                className={`${styles.questionActionButton} ${styles.addQuestionButton}`}
+              >
+                + Add Question
+              </button>
+
+              <button
+                onClick={handleOpenPlaylistModal}
+                className={`${styles.questionActionButton} ${styles.accessPlaylistsButton}`}
+              >
+                Access Playlists
+              </button>
+            </div>
 
             <button
-              onClick={handleOpenPlaylistModal}
-              className={`${styles.questionActionButton} ${styles.accessPlaylistsButton}`}
+              type="button"
+              onClick={() => setPdfExportOpen(true)}
+              disabled={activeCase.questions.length === 0}
+              className={`${styles.questionActionButton} ${styles.offlineExportButton}`}
             >
-              Access Playlists
+              For offline use
             </button>
+            {activeCase.questions.length === 0 && (
+              <p className={styles.offlineExportHint}>Add a question to export.</p>
+            )}
           </div>
 
         
@@ -1216,6 +1232,12 @@ const CaseScreen = () => {
             </div>
           )}
         </Modal>
+
+        <PdfExportModal
+          isOpen={pdfExportOpen}
+          onClose={() => setPdfExportOpen(false)}
+          activeCase={activeCase}
+        />
 
         {studentListOpen && (
           <StudentListModal

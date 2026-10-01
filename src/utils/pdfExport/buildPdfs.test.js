@@ -1,0 +1,180 @@
+import { jsPDF } from 'jspdf';
+import { describe, expect, it } from 'vitest';
+
+import { LEFT_X, RIGHT_X, buildAnswersPdf } from './buildAnswersPdf';
+import { buildQuestionsPdf } from './buildQuestionsPdf';
+import { END_MARKER } from './pdfContent';
+import { PAGE_WIDTH } from './pdfLayout';
+
+// Records every text call with the page it landed on, and keeps the last doc.
+const recordingJsPdf = () => {
+  const calls = [];
+  let lastDoc = null;
+  class RecordingJsPdf extends jsPDF {
+    constructor(options) {
+      super(options);
+      lastDoc = this;
+      const text = this.text.bind(this);
+      this.text = (value, x, y, opts) => {
+        calls.push({ value, x, y, opts, page: this.getCurrentPageInfo().pageNumber });
+        return text(value, x, y, opts);
+      };
+    }
+  }
+  return { RecordingJsPdf, calls, doc: () => lastDoc };
+};
+
+const makeCase = (overrides = {}) => ({
+  clientName: 'Jane Client',
+  attorney: 'Alex Attorney',
+  category: 'criminal.theft',
+  studentNumber: 5,
+  questions: [
+    {
+      id: 'q-1',
+      type: 'TRUE_FALSE',
+      text: 'Intent?',
+      options: [
+        { label: true, value: 3 },
+        { label: false, value: 0 },
+      ],
+    },
+    {
+      id: 'q-2',
+      type: 'MULTIPLE_CHOICE',
+      text: 'Rate the officer',
+      options: [
+        { label: 'Trustworthy', value: 3 },
+        { label: 'Neutral', value: 1 },
+      ],
+    },
+  ],
+  ...overrides,
+});
+
+const manyQuestions = (count) =>
+  Array.from({ length: count }, (_, i) => ({
+    id: `q-${i + 1}`,
+    type: 'MULTIPLE_CHOICE',
+    text: `Question ${i + 1} is long enough that it has to wrap onto a second line of the page when it is printed out.`,
+    options: [
+      { label: 'Yes', value: 2 },
+      { label: 'No', value: 0 },
+      { label: 'Unsure', value: 1 },
+    ],
+  }));
+
+const texts = (calls) => calls.map((c) => c.value);
+
+describe('buildQuestionsPdf', () => {
+  it('returns a PDF blob', () => {
+    const blob = buildQuestionsPdf(jsPDF, makeCase());
+    expect(blob).toBeInstanceOf(Blob);
+    expect(blob.type).toBe('application/pdf');
+    expect(blob.size).toBeGreaterThan(0);
+  });
+
+  it('writes the header, every question, its points and tally lines, then END', () => {
+    const { RecordingJsPdf, calls } = recordingJsPdf();
+    buildQuestionsPdf(RecordingJsPdf, makeCase());
+
+    const written = texts(calls);
+    expect(written.slice(0, 4)).toEqual([
+      'Client: Jane Client',
+      'Attorney: Alex Attorney',
+      'Case Category: Criminal — Theft',
+      'Number of Students: 5',
+    ]);
+    expect(written).toEqual(
+      expect.arrayContaining([
+        '1. "Intent?"',
+        'Points: True: 3 - False: 0',
+        'Students Answered True:',
+        '2. "Rate the officer"',
+        'Points: Trustworthy: 3 - Neutral: 1',
+        'Students Answered Trustworthy:',
+        'Students Answered Neutral:',
+      ]),
+    );
+
+    const endIndex = written.indexOf(END_MARKER);
+    expect(endIndex).toBeGreaterThan(written.indexOf('Students Answered Neutral:'));
+    expect(calls[endIndex].x).toBe(PAGE_WIDTH / 2);
+    // jsPDF adds its own keys to the options object, so match only `align`.
+    expect(calls[endIndex].opts).toMatchObject({ align: 'center' });
+    // Only footers come after END.
+    expect(written.slice(endIndex + 1).every((t) => /^Page \d+ of \d+$/.test(t))).toBe(true);
+  });
+
+  it('flows onto more pages without splitting a question, with a footer on each', () => {
+    const { RecordingJsPdf, calls, doc } = recordingJsPdf();
+    buildQuestionsPdf(RecordingJsPdf, makeCase({ questions: manyQuestions(40) }));
+
+    const pages = doc().getNumberOfPages();
+    expect(pages).toBeGreaterThan(1);
+
+    // Group the body calls by question: a question starts at its "N. " line.
+    const body = calls.slice(4, calls.findIndex((c) => c.value === END_MARKER));
+    const pagesByQuestion = new Map();
+    let current = null;
+    body.forEach((call) => {
+      const match = /^(\d+)\. /.exec(call.value);
+      if (match) current = Number(match[1]);
+      if (!pagesByQuestion.has(current)) pagesByQuestion.set(current, new Set());
+      pagesByQuestion.get(current).add(call.page);
+    });
+    expect(pagesByQuestion.size).toBe(40);
+    pagesByQuestion.forEach((pageSet) => expect(pageSet.size).toBe(1));
+
+    for (let page = 1; page <= pages; page += 1) {
+      const footer = calls.find((c) => c.value === `Page ${page} of ${pages}`);
+      expect(footer?.page).toBe(page);
+    }
+  });
+});
+
+describe('buildAnswersPdf', () => {
+  it('returns a PDF blob with the case header', () => {
+    const { RecordingJsPdf, calls } = recordingJsPdf();
+    const blob = buildAnswersPdf(RecordingJsPdf, makeCase());
+    expect(blob.type).toBe('application/pdf');
+    expect(texts(calls).slice(0, 4)).toEqual([
+      'Client: Jane Client',
+      'Attorney: Alex Attorney',
+      'Case Category: Criminal — Theft',
+      'Number of Students: 5',
+    ]);
+  });
+
+  it('writes one block per student, two per row', () => {
+    const { RecordingJsPdf, calls } = recordingJsPdf();
+    buildAnswersPdf(RecordingJsPdf, makeCase({ studentNumber: 5 }));
+
+    const headings = calls.filter((c) => /^# \d+$/.test(c.value));
+    expect(headings.map((c) => c.value)).toEqual(['# 1', '# 2', '# 3', '# 4', '# 5']);
+    expect(headings.map((c) => c.x)).toEqual([LEFT_X, RIGHT_X, LEFT_X, RIGHT_X, LEFT_X]);
+    // Each pair shares a row.
+    expect(headings[0].y).toBe(headings[1].y);
+    expect(headings[2].y).toBe(headings[3].y);
+    expect(headings[4].y).toBeGreaterThan(headings[2].y);
+
+    expect(calls.filter((c) => c.value === 'Points:')).toHaveLength(5);
+    expect(calls.filter((c) => c.value === 'Total:')).toHaveLength(5);
+  });
+
+  it('keeps every row on one page for a large class', () => {
+    const { RecordingJsPdf, calls, doc } = recordingJsPdf();
+    buildAnswersPdf(RecordingJsPdf, makeCase({ studentNumber: 60 }));
+
+    expect(doc().getNumberOfPages()).toBeGreaterThan(1);
+    const headings = calls.filter((c) => /^# \d+$/.test(c.value));
+    expect(headings).toHaveLength(60);
+
+    // Each student's heading, Points and Total land on the same page.
+    const blockCalls = calls.filter((c) => /^(# \d+|Points:|Total:)$/.test(c.value));
+    for (let i = 0; i < blockCalls.length; i += 6) {
+      const row = blockCalls.slice(i, i + 6);
+      expect(new Set(row.map((c) => c.page)).size).toBe(1);
+    }
+  });
+});

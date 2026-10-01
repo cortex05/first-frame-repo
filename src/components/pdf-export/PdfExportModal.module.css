@@ -1,0 +1,50 @@
+/* Mirrors CaseScreen's modal text and confirm/decline buttons. */
+.modalText {
+	margin: 0 0 16px;
+	max-width: 420px;
+	color: var(--modal-text);
+}
+
+.modalError {
+	margin: 0 0 12px;
+	max-width: 420px;
+	color: var(--decline);
+	font-size: 14px;
+}
+
+.modalButtons {
+	display: flex;
+	gap: 12px;
+	justify-content: center;
+	margin-bottom: 8px;
+	width: 100%;
+}
+
+.modalButtons button {
+	padding: 10px 16px;
+	font-size: 15px;
+	width: 100%;
+	border: none;
+	border-radius: 6px;
+	cursor: pointer;
+	transition: box-shadow 0.5s ease, color 0.5s ease;
+}
+
+.modalButtons button:hover:not(:disabled) {
+	box-shadow: 0 4px 12px var(--shadow-strong);
+}
+
+.modalButtons button:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.confirm {
+	background: var(--confirm);
+	color: var(--light-text);
+}
+
+.decline {
+	background: var(--decline);
+	color: var(--light-text);
+}

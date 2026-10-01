@@ -26,6 +26,18 @@ vi.mock('../../api/playlist', () => ({
 vi.mock('../../hooks/useRecommendedPlaylist', () => ({
   default: () => ({ recommended: null, isLoading: false, error: '', load: () => {} }),
 }));
+// Stub the export modal so these tests don't depend on jsPDF; it echoes what
+// CaseScreen hands it.
+vi.mock('../../components/pdf-export/PdfExportModal', () => ({
+  default: ({ isOpen, activeCase }) =>
+    isOpen ? (
+      <div data-testid="pdf-export-modal">
+        {activeCase.questions.map((q) => (
+          <span key={q.id}>{`export: ${q.text}`}</span>
+        ))}
+      </div>
+    ) : null,
+}));
 
 const QUESTIONS = [
   { id: 'q-1', text: 'Intent?', type: 'TRUE_FALSE', options: [] },
@@ -307,5 +319,84 @@ describe('CaseScreen student details', () => {
       expect(useCaseStore.getState().cases[0].studentDetails).toEqual({ 1: { age: 45 } }),
     );
     expect(saveStudentDetails).not.toHaveBeenCalled();
+  });
+});
+
+describe('CaseScreen offline PDF export', () => {
+  const offlineButton = () => screen.getByRole('button', { name: 'For offline use' });
+
+  it('sits under the Add Question / Access Playlists row, in the same container', () => {
+    useAuthStore.setState({ userInfo: session() });
+    useCaseStore.setState({ cases: [makeCase()] });
+
+    renderCase();
+
+    const playlists = screen.getByRole('button', { name: 'Access Playlists' });
+    const addQuestion = screen.getByRole('button', { name: '+ Add Question' });
+    expect(playlists.compareDocumentPosition(offlineButton())).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+    // The row and the offline button share one wrapper, so the button spans the row.
+    expect(addQuestion.parentElement.parentElement).toBe(offlineButton().parentElement);
+  });
+
+  it('is disabled with a hint when the case has no questions', () => {
+    useAuthStore.setState({ userInfo: session() });
+    useCaseStore.setState({ cases: [makeCase({ questions: [] })] });
+
+    renderCase();
+
+    expect(offlineButton()).toBeDisabled();
+    expect(screen.getByText('Add a question to export.')).toBeInTheDocument();
+  });
+
+  it('is enabled with questions, before and after seating', () => {
+    useAuthStore.setState({ userInfo: session() });
+    useCaseStore.setState({ cases: [makeCase({ seated: false })] });
+
+    const { unmount } = renderCase();
+    expect(offlineButton()).toBeEnabled();
+    expect(screen.queryByText('Add a question to export.')).not.toBeInTheDocument();
+    unmount();
+
+    useCaseStore.setState({ cases: [makeCase({ seated: true })] });
+    renderCase();
+    expect(offlineButton()).toBeEnabled();
+  });
+
+  it('opens the export modal without calling the API', async () => {
+    useAuthStore.setState({ userInfo: session() });
+    useCaseStore.setState({ cases: [makeCase()] });
+
+    renderCase();
+    expect(screen.queryByTestId('pdf-export-modal')).not.toBeInTheDocument();
+    await userEvent.click(offlineButton());
+
+    expect(screen.getByTestId('pdf-export-modal')).toBeInTheDocument();
+    expect(saveCase).not.toHaveBeenCalled();
+    expect(startCase).not.toHaveBeenCalled();
+  });
+
+  it('exports the questions as they are after an edit', async () => {
+    vi.mocked(saveCase).mockImplementation(async (_id, updatedCase) => updatedCase);
+    useAuthStore.setState({ userInfo: session() });
+    useCaseStore.setState({ cases: [makeCase()] });
+
+    renderCase();
+    await userEvent.click(screen.getAllByRole('button', { name: 'Edit' })[0]);
+    const text = screen.getByPlaceholderText('Enter question...');
+    await userEvent.clear(text);
+    await userEvent.type(text, 'Did they intend it?');
+    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(() =>
+      expect(screen.queryByPlaceholderText('Enter question...')).not.toBeInTheDocument(),
+    );
+
+    await userEvent.click(offlineButton());
+
+    const modal = within(screen.getByTestId('pdf-export-modal'));
+    expect(modal.getByText('export: Did they intend it?')).toBeInTheDocument();
+    expect(modal.queryByText('export: Intent?')).not.toBeInTheDocument();
+    expect(modal.getByText('export: Credible?')).toBeInTheDocument();
   });
 });
