@@ -300,19 +300,18 @@ const StartScreen = () => {
             }}
           >
             <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
+              width="8"
+              height="24"
+              viewBox="0 0 8 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
+              strokeWidth="1.5"
             >
-              <rect x="3" y="3" width="18" height="18" rx="2" />
-              <line x1="3" y1="9" x2="21" y2="9" />
-              <line x1="3" y1="15" x2="21" y2="15" />
+              <rect x="1" y="1" width="6" height="6" rx="1" />
+              <rect x="1" y="9" width="6" height="6" rx="1" />
+              <rect x="1" y="17" width="6" height="6" rx="1" />
             </svg>
-            <span style={{ lineHeight: 1 }}>Rows</span>
+            <span style={{ lineHeight: 1 }}>Rows/Depth</span>
           </label>
           <input
             style={inputStyle}
@@ -337,19 +336,19 @@ const StartScreen = () => {
               }}
             >
               <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
+                width="32"
+                height="8"
+                viewBox="0 0 32 8"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
+                strokeWidth="1.5"
               >
-                <rect x="3" y="3" width="18" height="18" rx="2" />
-                <line x1="9" y1="3" x2="9" y2="21" />
-                <line x1="15" y1="3" x2="15" y2="21" />
+                <rect x="1" y="1" width="6" height="6" rx="1" />
+                <rect x="9" y="1" width="6" height="6" rx="1" />
+                <rect x="17" y="1" width="6" height="6" rx="1" />
+                <rect x="25" y="1" width="6" height="6" rx="1" />
               </svg>
-              <span style={{ lineHeight: 1 }}>Columns</span>
+              <span style={{ lineHeight: 1 }}>Seats/width</span>
             </label>
           </div>
           <input
