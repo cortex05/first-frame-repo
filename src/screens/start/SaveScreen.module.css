@@ -29,3 +29,30 @@
 	background: var(--decline);
 	color: var(--light-text);
 }
+.directionToggle {
+	padding: 10px 0;
+	font-size: 14px;
+	font-weight: 600;
+	border: none;
+	border-radius: 6px;
+	cursor: pointer;
+	transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.directionToggle:hover {
+	box-shadow: 0 4px 12px var(--shadow-strong);
+}
+
+.leftToRight {
+	background: var(--orange-edit);
+	color: var(--light-text);
+}
+
+.rightToLeft {
+	background: var(--recommend-bg);
+	color: var(--modal-text);
+}
+
+.rightToLeft:hover {
+	background: var(--recommend-bg-hover);
+}

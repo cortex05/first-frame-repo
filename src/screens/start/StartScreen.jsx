@@ -27,10 +27,11 @@ function getRectSize(rows, cols) {
 }
 
 // Returns { x, y } relative to the rect's top-left corner.
-// Circles are numbered left→right, bottom→top (idx=0 is bottom-left).
-// When students < rows×cols, empty cells appear at the top rows.
-function getCircleRelPos(idx, rows, cols) {
-  const col = idx % cols;
+// Circles are numbered bottom→top, and left→right within a row (idx=0 is
+// bottom-left) unless `rightToLeft`, which mirrors each row (idx=0 is
+// bottom-right). When students < rows×cols, empty cells appear at the top rows.
+function getCircleRelPos(idx, rows, cols, rightToLeft = false) {
+  const col = rightToLeft ? cols - 1 - (idx % cols) : idx % cols;
   const gridRow = Math.floor(idx / cols); // 0 = bottom row
   const screenRow = rows - 1 - gridRow; // 0 = top on screen
   return {
@@ -52,6 +53,7 @@ const StartScreen = () => {
 
   const [rowInput, setRowInput] = useState(2);
   const [colInput, setColInput] = useState(3);
+  const [rightToLeft, setRightToLeft] = useState(false);
 
   const stageRef = useRef(null);
   const lastPinchDist = useRef(0);
@@ -129,7 +131,7 @@ const StartScreen = () => {
       rows,
       cols,
       assignedStudents: toAssign.map((s, i) => {
-        const pos = getCircleRelPos(i, rows, cols);
+        const pos = getCircleRelPos(i, rows, cols, rightToLeft);
         return { id: s.number, xRel: pos.x, yRel: pos.y };
       }),
     });
@@ -348,7 +350,7 @@ const StartScreen = () => {
                 <rect x="17" y="1" width="6" height="6" rx="1" />
                 <rect x="25" y="1" width="6" height="6" rx="1" />
               </svg>
-              <span style={{ lineHeight: 1 }}>Seats/width</span>
+              <span style={{ lineHeight: 1 }}>Seats/Width</span>
             </label>
           </div>
           <input
@@ -359,6 +361,18 @@ const StartScreen = () => {
             onChange={(e) => setColInput(e.target.value)}
           />
         </div>
+
+        <button
+          type="button"
+          onClick={() => setRightToLeft((v) => !v)}
+          aria-pressed={rightToLeft}
+          title="Order of student numbers in the next row added"
+          className={`${styles.directionToggle} ${
+            rightToLeft ? styles.rightToLeft : styles.leftToRight
+          }`}
+        >
+          {rightToLeft ? "Right to Left" : "Left to Right"}
+        </button>
 
         <button
           onClick={handleAddRect}
