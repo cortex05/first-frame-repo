@@ -1,5 +1,13 @@
-import { useState, useRef, useMemo } from "react";
-import { Stage, Layer, Rect, Circle, Text, Group } from "react-konva";
+import { useState, useRef, useMemo, useEffect } from "react";
+import {
+  Stage,
+  Layer,
+  Rect,
+  Circle,
+  Text,
+  Group,
+  Transformer,
+} from "react-konva";
 import useCaseStore from "../../store/useCaseStore";
 import { useNavigate, useParams } from "react-router-dom";
 import { initialStudentGeneration } from "../../utilities/studentUtilities";
@@ -40,6 +48,21 @@ function getCircleRelPos(idx, rows, cols, rightToLeft = false) {
   };
 }
 
+// Snap angles for the rotate handle, every 45°.
+const ROTATION_SNAPS = [0, 45, 90, 135, 180, 225, 270, 315];
+
+// `r.x`/`r.y` stay the unrotated top-left corner; a rect turns about its
+// center by `r.rotation` degrees (clockwise, as Konva draws it).
+function seatToAbsolute(r, s) {
+  const rad = ((r.rotation || 0) * Math.PI) / 180;
+  const dx = s.xRel - r.width / 2;
+  const dy = s.yRel - r.height / 2;
+  return {
+    x: r.x + r.width / 2 + dx * Math.cos(rad) - dy * Math.sin(rad),
+    y: r.y + r.height / 2 + dx * Math.sin(rad) + dy * Math.cos(rad),
+  };
+}
+
 const StartScreen = () => {
   const { caseId } = useParams();
   const navigate = useNavigate();
@@ -57,6 +80,9 @@ const StartScreen = () => {
 
   const stageRef = useRef(null);
   const lastPinchDist = useRef(0);
+  const transformerRef = useRef(null);
+  const rectNodes = useRef(new Map());
+  const [selectedRectId, setSelectedRectId] = useState(null);
 
   // Canvas can't resolve `var(--x)` — Konva needs the literal hex.
   const canvas = {
@@ -71,6 +97,7 @@ const StartScreen = () => {
     canUndo,
     addRect,
     moveRect,
+    rotateRect,
     clearRects,
     undo,
     setView,
@@ -104,6 +131,16 @@ const StartScreen = () => {
       return false;
     }
   }, [caseId]);
+
+  // Attach the rotate handle to the selected row. Undo or Clear All can remove
+  // that row, which leaves the handle detached.
+  useEffect(() => {
+    const transformer = transformerRef.current;
+    if (!transformer) return;
+    const node = rectNodes.current.get(selectedRectId);
+    transformer.nodes(node ? [node] : []);
+    transformer.getLayer()?.batchDraw();
+  }, [selectedRectId, rects]);
 
   if (!activeCase) {
     return (
@@ -143,8 +180,7 @@ const StartScreen = () => {
       ...r,
       assignedStudents: r.assignedStudents.map((s) => ({
         id: s.id,
-        x: r.x + s.xRel,
-        y: r.y + s.yRel,
+        ...seatToAbsolute(r, s),
       })),
     }));
     const seatedStudents = rects.flatMap((r) =>
@@ -451,7 +487,8 @@ const StartScreen = () => {
             paddingTop: 12,
           }}
         >
-          Drag rows to reposition. Scroll or pinch to zoom.
+          Drag rows to reposition. Tap a row, then drag its round handle to
+          rotate it. Scroll or pinch to zoom.
         </p>
       </div>
 
@@ -469,6 +506,12 @@ const StartScreen = () => {
           onWheel={handleWheel}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
+          onClick={(e) => {
+            if (e.target === stageRef.current) setSelectedRectId(null);
+          }}
+          onTap={(e) => {
+            if (e.target === stageRef.current) setSelectedRectId(null);
+          }}
           onDragEnd={(e) => {
             // Only the stage itself — a rect drag bubbles up through here too.
             if (e.target !== stageRef.current) return;
@@ -477,12 +520,41 @@ const StartScreen = () => {
         >
           <Layer>
             {rects.map((r) => (
+              // The group's origin is the rect's center so it rotates in place;
+              // `r.x`/`r.y` remain the unrotated top-left corner.
               <Group
                 key={r.id}
-                x={r.x}
-                y={r.y}
+                ref={(node) => {
+                  if (node) rectNodes.current.set(r.id, node);
+                  else rectNodes.current.delete(r.id);
+                }}
+                x={r.x + r.width / 2}
+                y={r.y + r.height / 2}
+                offsetX={r.width / 2}
+                offsetY={r.height / 2}
+                rotation={r.rotation || 0}
                 draggable
-                onDragEnd={(e) => moveRect(r.id, e.target.x(), e.target.y())}
+                onClick={() => setSelectedRectId(r.id)}
+                onTap={() => setSelectedRectId(r.id)}
+                onDragEnd={(e) =>
+                  moveRect(
+                    r.id,
+                    e.target.x() - r.width / 2,
+                    e.target.y() - r.height / 2,
+                  )
+                }
+                onTransformEnd={(e) => {
+                  const node = e.target;
+                  const rotation = ((Math.round(node.rotation()) % 360) + 360) % 360;
+                  node.rotation(rotation);
+                  if (rotation === (r.rotation || 0)) return;
+                  rotateRect(
+                    r.id,
+                    node.x() - r.width / 2,
+                    node.y() - r.height / 2,
+                    rotation,
+                  );
+                }}
               >
                 <Rect
                   width={r.width}
@@ -493,7 +565,13 @@ const StartScreen = () => {
                   cornerRadius={4}
                 />
                 {r.assignedStudents.map((s) => (
-                  <Group key={s.id} x={s.xRel} y={s.yRel}>
+                  // Counter-rotated so the numbers stay upright.
+                  <Group
+                    key={s.id}
+                    x={s.xRel}
+                    y={s.yRel}
+                    rotation={-(r.rotation || 0)}
+                  >
                     <Circle
                       radius={CIRCLE_R}
                       fill={canvas.light}
@@ -516,6 +594,18 @@ const StartScreen = () => {
                 ))}
               </Group>
             ))}
+            <Transformer
+              ref={transformerRef}
+              resizeEnabled={false}
+              rotateEnabled
+              rotationSnaps={ROTATION_SNAPS}
+              rotationSnapTolerance={8}
+              rotateAnchorOffset={30}
+              anchorSize={16}
+              borderStroke={cssVar("--orange-edit", "#f79306")}
+              anchorStroke={cssVar("--orange-edit", "#f79306")}
+              anchorFill={canvas.light}
+            />
           </Layer>
         </Stage>
 

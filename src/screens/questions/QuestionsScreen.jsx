@@ -798,7 +798,16 @@ const QuestionsScreen = () => {
               <Layer>
                 {/* Row rectangles */}
                 {rects.map((r) => (
-                  <Group key={r.id} x={r.x} y={r.y}>
+                  // Rotates about the rect's center, matching StartScreen.
+                  // Seat circles are saved already rotated, as absolute x/y.
+                  <Group
+                    key={r.id}
+                    x={r.x + r.width / 2}
+                    y={r.y + r.height / 2}
+                    offsetX={r.width / 2}
+                    offsetY={r.height / 2}
+                    rotation={r.rotation || 0}
+                  >
                     <Rect
                       width={r.width}
                       height={r.height}

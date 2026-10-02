@@ -119,6 +119,16 @@ const useSeatingDraft = (caseId, studentNumber) => {
     [commit],
   );
 
+  // A rotation can also shift the rect, so position and angle land as one
+  // undo step.
+  const rotateRect = useCallback(
+    (id, x, y, rotation) =>
+      commit((rects) =>
+        rects.map((r) => (r.id === id ? { ...r, x, y, rotation } : r)),
+      ),
+    [commit],
+  );
+
   const clearRects = useCallback(
     () => commit((rects) => (rects.length === 0 ? rects : [])),
     [commit],
@@ -157,6 +167,7 @@ const useSeatingDraft = (caseId, studentNumber) => {
       canUndo: state.past.length > 0,
       addRect,
       moveRect,
+      rotateRect,
       clearRects,
       undo,
       setView,
@@ -169,6 +180,7 @@ const useSeatingDraft = (caseId, studentNumber) => {
       state.past.length,
       addRect,
       moveRect,
+      rotateRect,
       clearRects,
       undo,
       setView,
