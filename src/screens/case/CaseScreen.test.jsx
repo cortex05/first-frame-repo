@@ -251,7 +251,10 @@ describe('CaseScreen student details', () => {
 
     renderCase();
     const viewStudents = screen.getByRole('button', { name: 'View Students' });
-    expect(screen.getByText(/Number of Students:/).nextElementSibling).toBe(viewStudents);
+    const infoSection = screen.getByText(/Number of Students:/).parentElement;
+    // The button sits in the panel section, after the info section and its divider.
+    expect(infoSection.nextElementSibling.tagName).toBe('HR');
+    expect(infoSection.nextElementSibling.nextElementSibling).toBe(viewStudents.parentElement);
 
     await openStudent(2);
 
@@ -336,8 +339,8 @@ describe('CaseScreen offline PDF export', () => {
     expect(playlists.compareDocumentPosition(offlineButton())).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING,
     );
-    // The row and the offline button share one wrapper, so the button spans the row.
-    expect(addQuestion.parentElement.parentElement).toBe(offlineButton().parentElement);
+    // The offline button sits in its own wrapper inside the same action container.
+    expect(addQuestion.parentElement).toBe(offlineButton().parentElement.parentElement);
   });
 
   it('is disabled with a hint when the case has no questions', () => {

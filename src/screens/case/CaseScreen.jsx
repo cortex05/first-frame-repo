@@ -744,35 +744,35 @@ const CaseScreen = () => {
           ))}
 
           <div className={styles.questionActions}>
-            <div className={styles.questionActionRow}>
-              <button
-                onClick={openQuestionModal}
-                className={`${styles.questionActionButton} ${styles.addQuestionButton}`}
-              >
-                + Add Question
-              </button>
-
-              <button
-                onClick={handleOpenPlaylistModal}
-                className={`${styles.questionActionButton} ${styles.accessPlaylistsButton}`}
-              >
-                Access Playlists
-              </button>
-            </div>
+            <button
+              onClick={openQuestionModal}
+              className={`${styles.questionActionButton} ${styles.addQuestionButton}`}
+            >
+              + Add Question
+            </button>
 
             <button
-              type="button"
-              onClick={() => setPdfExportOpen(true)}
-              disabled={activeCase.questions.length === 0}
-              className={`${styles.questionActionButton} ${styles.offlineExportButton}`}
+              onClick={handleOpenPlaylistModal}
+              className={`${styles.questionActionButton} ${styles.accessPlaylistsButton}`}
             >
-              For offline use
+              Access Playlists
             </button>
-            {activeCase.questions.length === 0 && (
-              <p className={styles.offlineExportHint}>
-                Add a question to export.
-              </p>
-            )}
+
+            <div className={styles.offlineExportWrapper}>
+              <button
+                type="button"
+                onClick={() => setPdfExportOpen(true)}
+                disabled={activeCase.questions.length === 0}
+                className={`${styles.questionActionButton} ${styles.offlineExportButton}`}
+              >
+                For offline use
+              </button>
+              {activeCase.questions.length === 0 && (
+                <p className={styles.offlineExportHint}>
+                  Add a question to export.
+                </p>
+              )}
+            </div>
           </div>
         </section>
 
