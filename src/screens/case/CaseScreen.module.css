@@ -324,15 +324,34 @@
 	border-radius: 6px;
 	cursor: pointer;
 }
-/* Owners & archive */
-.manageSection {
+/* Panel Section */
+.panelSection {
 	display: flex;
-	flex-wrap: wrap;
-	align-items: flex-start;
-	gap: 12px;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 16px;
 	margin-top: 32px;
-	padding-top: 24px;
-	border-top: 1px solid var(--label-light);
+	margin-bottom: 32px;
+}
+
+/* Lets its buttons act as direct items of .panelSection. */
+.manageSection {
+	display: contents;
+}
+
+.archiveWrapper {
+	display: flex;
+	flex-direction: column;
+}
+
+@media (min-width: 601px) {
+	.panelSection {
+		flex-direction: row;
+		flex-wrap: nowrap;
+		justify-content: center;
+		align-items: flex-start;
+		gap: 32px;
+	}
 }
 
 .manageOwnersButton,

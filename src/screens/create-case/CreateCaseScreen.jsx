@@ -106,7 +106,7 @@ const CreateCaseScreen = () => {
       <div className={styles.container}>
         <h1>Create New Case</h1>
 
-      {/* Basic Info */}
+      {/* Basic Info */} 
       <section style={{ marginBottom: 32,  }}>
         <h2 style={{ marginBottom: 16 }}>Basic Info</h2>
 

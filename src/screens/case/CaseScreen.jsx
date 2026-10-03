@@ -65,9 +65,11 @@ const CaseScreen = () => {
   const [saveError, setSaveError] = useState("");
   const [playlistModalOpen, setPlaylistModalOpen] = useState(false);
   const [selectedPlaylist, setSelectedPlaylist] = useState(null);
-  const [selectedPlaylistQuestionIds, setSelectedPlaylistQuestionIds] = useState([]);
+  const [selectedPlaylistQuestionIds, setSelectedPlaylistQuestionIds] =
+    useState([]);
   const [isLoadingPlaylist, setIsLoadingPlaylist] = useState(false);
-  const [isLoadingPlaylistDetails, setIsLoadingPlaylistDetails] = useState(false);
+  const [isLoadingPlaylistDetails, setIsLoadingPlaylistDetails] =
+    useState(false);
 
   const {
     recommended,
@@ -101,7 +103,9 @@ const CaseScreen = () => {
   if (!activeCase) return <p>Case not found.</p>;
 
   const selectedCharge = getCaseCategory(activeCase.category)?.matter || "";
-  const isOwner = (activeCase.owners || []).map(String).includes(String(userInfo?.userId));
+  const isOwner = (activeCase.owners || [])
+    .map(String)
+    .includes(String(userInfo?.userId));
   const canArchive = isAccountAdmin || isOwner;
   const isComplete = isCaseComplete(activeCase);
 
@@ -137,7 +141,11 @@ const CaseScreen = () => {
     }
 
     try {
-      const savedCase = await saveCase(activeCase._id, updatedCase, userInfo.token);
+      const savedCase = await saveCase(
+        activeCase._id,
+        updatedCase,
+        userInfo.token,
+      );
       updateCase(savedCase || updatedCase);
       syncCasesToStorage();
       return savedCase || updatedCase;
@@ -154,16 +162,24 @@ const CaseScreen = () => {
    */
   const handleSaveStudentDetails = async (studentNumber, payload) => {
     const currentCase = () =>
-      useCaseStore.getState().cases.find((c) => c._id === activeCase._id) || activeCase;
+      useCaseStore.getState().cases.find((c) => c._id === activeCase._id) ||
+      activeCase;
 
     if (!userInfo?.token) {
-      updateCase(applyLocalStudentDetails(currentCase(), studentNumber, payload));
+      updateCase(
+        applyLocalStudentDetails(currentCase(), studentNumber, payload),
+      );
       syncCasesToStorage();
       return;
     }
 
     try {
-      const saved = await saveStudentDetails(activeCase._id, studentNumber, payload, userInfo.token);
+      const saved = await saveStudentDetails(
+        activeCase._id,
+        studentNumber,
+        payload,
+        userInfo.token,
+      );
       updateCase(mergeStudentDetails(currentCase(), saved.studentDetails));
       syncCasesToStorage();
     } catch (requestError) {
@@ -183,13 +199,19 @@ const CaseScreen = () => {
     setIsSavingOwners(true);
 
     try {
-      const savedCase = await setCaseOwners(activeCase._id, draftOwners, userInfo.token);
+      const savedCase = await setCaseOwners(
+        activeCase._id,
+        draftOwners,
+        userInfo.token,
+      );
       updateCase(savedCase);
       syncCasesToStorage();
       setOwnersModalOpen(false);
     } catch (requestError) {
       if (!handleLostAccess(requestError)) {
-        setOwnersError(requestError?.response?.data?.message || "Unable to save the owners.");
+        setOwnersError(
+          requestError?.response?.data?.message || "Unable to save the owners.",
+        );
       }
     } finally {
       setIsSavingOwners(false);
@@ -207,7 +229,10 @@ const CaseScreen = () => {
       navigate(`/archive/${archived._id}`, { replace: true });
     } catch (requestError) {
       if (!handleLostAccess(requestError)) {
-        setArchiveError(requestError?.response?.data?.message || "Unable to archive the case.");
+        setArchiveError(
+          requestError?.response?.data?.message ||
+            "Unable to archive the case.",
+        );
       }
       setIsArchiving(false);
     }
@@ -260,7 +285,8 @@ const CaseScreen = () => {
     } catch (requestError) {
       if (!handleLostAccess(requestError)) {
         setStartError(
-          requestError?.response?.data?.message || "Unable to start the session.",
+          requestError?.response?.data?.message ||
+            "Unable to start the session.",
         );
       }
       setIsStarting(false);
@@ -275,11 +301,15 @@ const CaseScreen = () => {
 
   const handleNumberOfStudentsChange = async () => {
     try {
-      await persistCaseUpdate({ ...activeCase, studentNumber: Number(numberOfStudents) });
+      await persistCaseUpdate({
+        ...activeCase,
+        studentNumber: Number(numberOfStudents),
+      });
       setEditStudentNumber(false);
     } catch (requestError) {
       setSaveError(
-        requestError?.response?.data?.message || "Unable to save student count.",
+        requestError?.response?.data?.message ||
+          "Unable to save student count.",
       );
     }
   };
@@ -380,7 +410,8 @@ const CaseScreen = () => {
       closeQuestionModal();
     } catch (requestError) {
       setSaveError(
-        requestError?.response?.data?.message || "Unable to save the new question.",
+        requestError?.response?.data?.message ||
+          "Unable to save the new question.",
       );
     }
   };
@@ -444,7 +475,8 @@ const CaseScreen = () => {
       setDeleteQuestionId(null);
     } catch (requestError) {
       setSaveError(
-        requestError?.response?.data?.message || "Unable to delete the question.",
+        requestError?.response?.data?.message ||
+          "Unable to delete the question.",
       );
     }
   };
@@ -474,7 +506,8 @@ const CaseScreen = () => {
     setSelectedPlaylistQuestionIds([]);
   };
 
-  const getPlaylistQuestionKey = (question, index) => question.id || `index-${index}`;
+  const getPlaylistQuestionKey = (question, index) =>
+    question.id || `index-${index}`;
 
   const handleTogglePlaylistQuestionSelection = (question, index) => {
     const key = getPlaylistQuestionKey(question, index);
@@ -493,12 +526,16 @@ const CaseScreen = () => {
     setIsLoadingPlaylistDetails(true);
 
     try {
-      const playlistDetails = await getPlaylistById(playlist._id, userInfo.token);
+      const playlistDetails = await getPlaylistById(
+        playlist._id,
+        userInfo.token,
+      );
       setSelectedPlaylist(playlistDetails);
       setSelectedPlaylistQuestionIds([]);
     } catch (requestError) {
       setSaveError(
-        requestError?.response?.data?.message || "Unable to load playlist details.",
+        requestError?.response?.data?.message ||
+          "Unable to load playlist details.",
       );
     } finally {
       setIsLoadingPlaylistDetails(false);
@@ -517,7 +554,9 @@ const CaseScreen = () => {
     try {
       const loadedQuestions = (selectedPlaylist.questions || [])
         .filter((question, index) =>
-          selectedPlaylistQuestionIds.includes(getPlaylistQuestionKey(question, index)),
+          selectedPlaylistQuestionIds.includes(
+            getPlaylistQuestionKey(question, index),
+          ),
         )
         .map((question) => normalizeQuestionForCase(question));
 
@@ -555,6 +594,12 @@ const CaseScreen = () => {
           <p className={styles.value}>
             Number of Students: {activeCase.studentNumber || "—"}
           </p>
+        </section>
+
+        <hr />
+
+        {/* Panel buttons */}
+        <section className={styles.panelSection}>
           <button
             type="button"
             className={styles.viewStudentsButton}
@@ -562,14 +607,56 @@ const CaseScreen = () => {
           >
             View Students
           </button>
+
+          {/* Owners & archive */}
+          {(isAccountAdmin || canArchive) && (
+            <section className={styles.manageSection}>
+              {isAccountAdmin && (
+                <button
+                  onClick={openOwnersModal}
+                  className={styles.manageOwnersButton}
+                >
+                  Manage Owners
+                </button>
+              )}
+
+              {canArchive && (
+                <div className={styles.archiveWrapper}>
+                  <button
+                    onClick={() => {
+                      setArchiveError("");
+                      setArchiveModalOpen(true);
+                    }}
+                    disabled={!isComplete}
+                    className={styles.archiveButton}
+                  >
+                    Archive Case
+                  </button>
+                  {!isComplete && (
+                    <p className={styles.archiveHint}>
+                      Answer every question to archive.
+                    </p>
+                  )}
+                </div>
+              )}
+            </section>
+          )}
         </section>
+
+        <hr />
 
         {/* Questions */}
         <section style={{ marginBottom: 32 }}>
           <h2 style={{ marginBottom: 12 }}>Questions</h2>
 
           {activeCase.questions.length === 0 && (
-            <p style={{ color: "var(--text-muted)", fontSize: 14, marginBottom: 12 }}>
+            <p
+              style={{
+                color: "var(--text-muted)",
+                fontSize: 14,
+                marginBottom: 12,
+              }}
+            >
               No questions added yet.
             </p>
           )}
@@ -588,10 +675,16 @@ const CaseScreen = () => {
                 border: "1px solid var(--color-text-primary)",
                 borderRadius: 6,
                 fontSize: 14,
-                color: "var(--modal-text)"
+                color: "var(--modal-text)",
               }}
             >
-              <span style={{ fontWeight: 600, color: "var(--modal-text)", minWidth: 24 }}>
+              <span
+                style={{
+                  fontWeight: 600,
+                  color: "var(--modal-text)",
+                  minWidth: 24,
+                }}
+              >
                 {i + 1}.
               </span>
               <span style={{ flex: 1 }}>{q.text}</span>
@@ -635,9 +728,13 @@ const CaseScreen = () => {
                   fontWeight: 600,
                   padding: "2px 8px",
                   background:
-                    q.type === QuestionType.TRUE_FALSE ? "var(--tf-bg)" : "var(--light-text)3cd",
+                    q.type === QuestionType.TRUE_FALSE
+                      ? "var(--tf-bg)"
+                      : "var(--light-text)3cd",
                   color:
-                    q.type === QuestionType.TRUE_FALSE ? "var(--tf-text)" : "var(--warning-text)",
+                    q.type === QuestionType.TRUE_FALSE
+                      ? "var(--tf-text)"
+                      : "var(--warning-text)",
                   borderRadius: 12,
                 }}
               >
@@ -672,11 +769,11 @@ const CaseScreen = () => {
               For offline use
             </button>
             {activeCase.questions.length === 0 && (
-              <p className={styles.offlineExportHint}>Add a question to export.</p>
+              <p className={styles.offlineExportHint}>
+                Add a question to export.
+              </p>
             )}
           </div>
-
-        
         </section>
 
         {/* Start link */}
@@ -719,35 +816,6 @@ const CaseScreen = () => {
           </Link>
         )}
 
-        {/* Owners & archive */}
-        {(isAccountAdmin || canArchive) && (
-          <section className={styles.manageSection}>
-            {isAccountAdmin && (
-              <button onClick={openOwnersModal} className={styles.manageOwnersButton}>
-                Manage Owners
-              </button>
-            )}
-
-            {canArchive && (
-              <div>
-                <button
-                  onClick={() => {
-                    setArchiveError("");
-                    setArchiveModalOpen(true);
-                  }}
-                  disabled={!isComplete}
-                  className={styles.archiveButton}
-                >
-                  Archive Case
-                </button>
-                {!isComplete && (
-                  <p className={styles.archiveHint}>Answer every question to archive.</p>
-                )}
-              </div>
-            )}
-          </section>
-        )}
-
         {/* Owners Modal */}
         <Modal
           isOpen={ownersModalOpen}
@@ -766,10 +834,17 @@ const CaseScreen = () => {
           />
           {ownersError && <p className={styles.modalError}>{ownersError}</p>}
           <div className={styles.startModalButtons}>
-            <button onClick={handleSaveOwners} disabled={isSavingOwners} className={styles.confirm}>
+            <button
+              onClick={handleSaveOwners}
+              disabled={isSavingOwners}
+              className={styles.confirm}
+            >
               {isSavingOwners ? "Saving..." : "Save"}
             </button>
-            <button onClick={() => setOwnersModalOpen(false)} className={styles.decline}>
+            <button
+              onClick={() => setOwnersModalOpen(false)}
+              className={styles.decline}
+            >
               Cancel
             </button>
           </div>
@@ -783,15 +858,22 @@ const CaseScreen = () => {
           hideDefaultClose
         >
           <p className={styles.modalText}>
-            Archiving moves this case to the account&apos;s archive. It can still be viewed
-            there, but it can no longer be changed.
+            Archiving moves this case to the account&apos;s archive. It can
+            still be viewed there, but it can no longer be changed.
           </p>
           {archiveError && <p className={styles.modalError}>{archiveError}</p>}
           <div className={styles.startModalButtons}>
-            <button onClick={handleArchive} disabled={isArchiving} className={styles.confirm}>
+            <button
+              onClick={handleArchive}
+              disabled={isArchiving}
+              className={styles.confirm}
+            >
               {isArchiving ? "Archiving..." : "Archive"}
             </button>
-            <button onClick={() => setArchiveModalOpen(false)} className={styles.decline}>
+            <button
+              onClick={() => setArchiveModalOpen(false)}
+              className={styles.decline}
+            >
               Cancel
             </button>
           </div>
@@ -812,7 +894,13 @@ const CaseScreen = () => {
               marginBottom: 16,
             }}
           >
-            <label style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)" }}>
+            <label
+              style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: "var(--text-secondary)",
+              }}
+            >
               Question Text
             </label>
             <textarea
@@ -835,7 +923,13 @@ const CaseScreen = () => {
               marginBottom: 16,
             }}
           >
-            <label style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)" }}>
+            <label
+              style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: "var(--text-secondary)",
+              }}
+            >
               Type
             </label>
             <select
@@ -971,7 +1065,9 @@ const CaseScreen = () => {
                   padding: "12px 0",
                   fontSize: 15,
                   fontWeight: 600,
-                  background: questionForm.text.trim() ? "var(--blue-background)" : "var(--grey-disabled)",
+                  background: questionForm.text.trim()
+                    ? "var(--blue-background)"
+                    : "var(--grey-disabled)",
                   color: "var(--light-text)",
                   border: "none",
                   borderRadius: 6,
@@ -1003,7 +1099,13 @@ const CaseScreen = () => {
           )}
 
           {saveError && (
-            <p style={{ color: "var(--decline)", fontSize: 14, margin: "4px 0 0" }}>
+            <p
+              style={{
+                color: "var(--decline)",
+                fontSize: 14,
+                margin: "4px 0 0",
+              }}
+            >
               {saveError}
             </p>
           )}
@@ -1077,7 +1179,11 @@ const CaseScreen = () => {
               <p style={{ marginBottom: 16 }}>Is this correct?</p>
               {startError && <p className={styles.modalError}>{startError}</p>}
               <div className={styles.startModalButtons}>
-                <button onClick={handleStart} disabled={isStarting} className={styles.confirm}>
+                <button
+                  onClick={handleStart}
+                  disabled={isStarting}
+                  className={styles.confirm}
+                >
                   {isStarting ? "Starting..." : "Yes"}
                 </button>
                 <button
@@ -1167,7 +1273,9 @@ const CaseScreen = () => {
                     key={playlist._id}
                     onClick={() => handleSelectPlaylist(playlist)}
                     className={`${styles.playlistListItem} ${
-                      isLoadingPlaylistDetails ? styles.playlistLoadingState : ""
+                      isLoadingPlaylistDetails
+                        ? styles.playlistLoadingState
+                        : ""
                     }`}
                   >
                     <span>{playlist.title}</span>
@@ -1191,16 +1299,22 @@ const CaseScreen = () => {
                   <div
                     key={`${selectedPlaylist._id}-${question.id || index}`}
                     className={`${styles.playlistQuestionItem} ${styles.playlistQuestionSelectable} ${
-                      selectedPlaylistQuestionIds.includes(getPlaylistQuestionKey(question, index))
+                      selectedPlaylistQuestionIds.includes(
+                        getPlaylistQuestionKey(question, index),
+                      )
                         ? styles.playlistQuestionSelected
                         : ""
                     }`}
-                    onClick={() => handleTogglePlaylistQuestionSelection(question, index)}
+                    onClick={() =>
+                      handleTogglePlaylistQuestionSelection(question, index)
+                    }
                   >
                     <span className={styles.playlistQuestionNumber}>
                       {index + 1}.
                     </span>
-                    <span className={styles.playlistQuestionText}>{question.text}</span>
+                    <span className={styles.playlistQuestionText}>
+                      {question.text}
+                    </span>
                   </div>
                 ))}
               </div>
