@@ -1,0 +1,111 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: var(--overlay);
+}
+
+.dialog {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  max-width: 640px;
+  max-height: 85vh;
+  padding: 24px;
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--modal-text);
+  box-shadow: 0 4px 24px var(--shadow-soft);
+  text-align: left;
+}
+
+.title {
+  margin: 0 0 12px;
+  padding-bottom: 12px;
+  font-size: 22px;
+  color: var(--modal-text);
+  border-bottom: 3px solid var(--blue-background);
+}
+
+.notice {
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  font-size: 14px;
+  border-radius: 6px;
+  background: var(--warning-bg);
+  color: var(--warning-text);
+}
+
+/* The agreement itself: plain text with its line breaks kept. */
+.text {
+  flex: 1;
+  min-height: 120px;
+  overflow-y: auto;
+  padding: 12px 14px;
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  background: var(--surface-subtle);
+}
+
+.agree {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.agree input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.error {
+  margin: 12px 0 0;
+  font-size: 14px;
+  color: var(--decline);
+}
+
+.footer {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.submit,
+.cancel {
+  flex: 1;
+  padding: 10px 16px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--light-text);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.submit {
+  background: var(--confirm);
+}
+
+.cancel {
+  background: var(--decline);
+}
+
+.submit:disabled,
+.cancel:disabled {
+  background: var(--grey-disabled);
+  cursor: not-allowed;
+}

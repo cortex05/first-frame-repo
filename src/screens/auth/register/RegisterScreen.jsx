@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { register } from '../../../api/auth';
+import { getCurrentAgreement } from '../../../api/agreement';
+import AgreementModal from '../../../components/agreement-modal/AgreementModal';
 import useAuthStore from '../../../store/useAuthStore';
 import useCaseStore from '../../../store/useCaseStore';
 
@@ -12,9 +14,16 @@ const MIN_PASSWORD_LENGTH = 8;
 const ADMIN_NOTICE =
   "You will be the administrator of this account and can add other users once it's created.";
 
+const TERMS_UNAVAILABLE =
+  'Terms of Service are unavailable right now. Please try again later.';
+const TERMS_UPDATED = 'The terms were just updated. Please review them again.';
+
 /**
  * Creates a new account together with its first user. Everyone else joins an
  * account by being added by one of its administrators.
+ *
+ * Create Account only validates the form and shows the Terms of Service; the
+ * account is created when the person accepts them in the modal.
  */
 const RegisterScreen = () => {
   const navigate = useNavigate();
@@ -28,7 +37,16 @@ const RegisterScreen = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoadingTerms, setIsLoadingTerms] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // The terms shown in the modal; null while it is closed.
+  const [agreement, setAgreement] = useState(null);
+  const [agreementNotice, setAgreementNotice] = useState('');
+
+  const closeAgreement = () => {
+    setAgreement(null);
+    setAgreementNotice('');
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -44,6 +62,18 @@ const RegisterScreen = () => {
     }
 
     setError('');
+    setIsLoadingTerms(true);
+
+    try {
+      setAgreement(await getCurrentAgreement());
+    } catch {
+      setError(TERMS_UNAVAILABLE);
+    } finally {
+      setIsLoadingTerms(false);
+    }
+  };
+
+  const handleAccept = async () => {
     setIsSubmitting(true);
 
     try {
@@ -52,6 +82,7 @@ const RegisterScreen = () => {
         username: username.trim(),
         email: email.trim(),
         password,
+        termsVersion: agreement.termsVersion,
       });
 
       setUserInfo(session);
@@ -61,6 +92,20 @@ const RegisterScreen = () => {
       ]);
       navigate('/dashboard', { replace: true });
     } catch (requestError) {
+      // The terms changed while the modal was open: show the new ones.
+      if (requestError?.response?.data?.code === 'TERMS_OUTDATED') {
+        try {
+          setAgreement(await getCurrentAgreement());
+          setAgreementNotice(TERMS_UPDATED);
+          return;
+        } catch {
+          closeAgreement();
+          setError(TERMS_UNAVAILABLE);
+          return;
+        }
+      }
+
+      closeAgreement();
       setError(
         requestError?.response?.data?.message || 'Unable to create the account. Please try again.'
       );
@@ -156,10 +201,20 @@ const RegisterScreen = () => {
 
         {error && <p className={styles.error}>{error}</p>}
 
-        <button className={styles.submitButton} type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Creating account...' : 'Create Account'}
+        <button className={styles.submitButton} type="submit" disabled={isLoadingTerms}>
+          {isLoadingTerms ? 'Loading terms...' : 'Create Account'}
         </button>
       </form>
+
+      {agreement && (
+        <AgreementModal
+          agreement={agreement}
+          notice={agreementNotice}
+          isSubmitting={isSubmitting}
+          onSubmit={handleAccept}
+          onCancel={closeAgreement}
+        />
+      )}
 
       <p className={styles.footerText}>
         Already have an account? <Link to="/login">Sign in</Link>

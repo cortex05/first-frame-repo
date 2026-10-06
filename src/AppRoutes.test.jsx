@@ -24,6 +24,7 @@ vi.mock('./screens/edit-recommended/EditRecommendedScreen', () => stub('Edit rec
 vi.mock('./screens/auth/login/LoginScreen', () => stub('Login'));
 vi.mock('./screens/auth/register/RegisterScreen', () => stub('Register'));
 vi.mock('./screens/auth/change-password/ChangePasswordScreen', () => stub('Change password'));
+vi.mock('./screens/auth/accept-terms/AcceptTermsScreen', () => stub('Accept terms'));
 vi.mock('./screens/account/AccountScreen', () => stub('Account'));
 vi.mock('./screens/archive/ArchiveScreen', () => stub('Archive'));
 vi.mock('./screens/archive/ArchivedCaseScreen', () => stub('Archived case'));
@@ -37,6 +38,7 @@ const session = (overrides = {}) => ({
   accountName: 'Firm',
   role: 'member',
   mustChangePassword: false,
+  mustAcceptTerms: false,
   ...overrides,
 });
 
@@ -123,6 +125,34 @@ describe('AppRoutes guards', () => {
 
     renderAt('/dashboard');
     expect(screen.getByText('Change password screen')).toBeInTheDocument();
+  });
+
+  it.each(['/dashboard', '/case/abc', '/account', '/recommended'])(
+    'holds an account with pending terms on the accept-terms page (%s)',
+    (path) => {
+      useAuthStore.setState({
+        userInfo: session({ role: 'admin', isAdmin: true, mustAcceptTerms: true }),
+      });
+
+      renderAt(path);
+      expect(screen.getByText('Accept terms screen')).toBeInTheDocument();
+    },
+  );
+
+  it('puts a pending password change before pending terms', () => {
+    useAuthStore.setState({
+      userInfo: session({ mustChangePassword: true, mustAcceptTerms: true }),
+    });
+
+    renderAt('/dashboard');
+    expect(screen.getByText('Change password screen')).toBeInTheDocument();
+  });
+
+  it('sends a user with nothing pending away from the accept-terms page', () => {
+    useAuthStore.setState({ userInfo: session() });
+
+    renderAt('/accept-terms');
+    expect(screen.getByText('Dashboard screen')).toBeInTheDocument();
   });
 
   it('keeps an account admin who is not a platform admin out of Recommended', () => {

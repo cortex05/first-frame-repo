@@ -4,6 +4,11 @@ export const AUTH_API = {
   CHANGE_PASSWORD: "/auth/change-password",
 }
 
+export const AGREEMENT_API = {
+  CURRENT: "/agreements/current",
+  ACCEPT: "/agreements/accept",
+};
+
 export const ACCOUNT_API = {
   GET: "/account",
   UPDATE: "/account",

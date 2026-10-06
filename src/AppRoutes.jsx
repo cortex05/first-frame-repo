@@ -15,6 +15,7 @@ import EditRecommendedScreen from './screens/edit-recommended/EditRecommendedScr
 import LoginScreen from './screens/auth/login/LoginScreen';
 import RegisterScreen from './screens/auth/register/RegisterScreen';
 import ChangePasswordScreen from './screens/auth/change-password/ChangePasswordScreen';
+import AcceptTermsScreen from './screens/auth/accept-terms/AcceptTermsScreen';
 import AccountScreen from './screens/account/AccountScreen';
 import ArchiveScreen from './screens/archive/ArchiveScreen';
 import ArchivedCaseScreen from './screens/archive/ArchivedCaseScreen';
@@ -34,6 +35,25 @@ const ProtectedRoutes = ({ isAuthenticated }) => {
 const PasswordChangeGate = ({ mustChangePassword }) => {
 	if (mustChangePassword) {
 		return <Navigate to="/change-password" replace />;
+	}
+
+	return <Outlet />;
+};
+
+// An account that has not accepted the current Terms of Service can only
+// reach the accept-terms page (spec 008).
+const TermsGate = ({ mustAcceptTerms }) => {
+	if (mustAcceptTerms) {
+		return <Navigate to="/accept-terms" replace />;
+	}
+
+	return <Outlet />;
+};
+
+// The accept-terms page itself, only while acceptance is pending.
+const PendingTermsOnly = ({ mustAcceptTerms }) => {
+	if (!mustAcceptTerms) {
+		return <Navigate to="/dashboard" replace />;
 	}
 
 	return <Outlet />;
@@ -76,6 +96,7 @@ const AppRoutes = () => {
 	const isAuthenticated = Boolean(userInfo?.token && userInfo?.userId && userInfo?.username);
 	const isPlatformAdmin = Boolean(isAuthenticated && userInfo?.isAdmin);
 	const mustChangePassword = Boolean(isAuthenticated && userInfo?.mustChangePassword);
+	const mustAcceptTerms = Boolean(isAuthenticated && userInfo?.mustAcceptTerms);
 
 	return (
 		<Routes>
@@ -89,23 +110,29 @@ const AppRoutes = () => {
 				<Route path="/change-password" element={<ChangePasswordScreen />} />
 
 				<Route element={<PasswordChangeGate mustChangePassword={mustChangePassword} />}>
-					<Route path="/dashboard" element={<DashboardScreen />} />
-					<Route path="/start/:caseId" element={<Start />} />
-					<Route path="/case/:id" element={<CaseScreen />} />
-					<Route path="/make-playlist" element={<MakePlaylistScreen />} />
-					<Route path="/questions/:caseId" element={<QuestionsScreen />} />
-					<Route path="/archive" element={<ArchiveScreen />} />
-					<Route path="/archive/:id" element={<ArchivedCaseScreen />} />
-
-					<Route element={<AccountAdminRoutes isAccountAdmin={isAccountAdmin} />}>
-						<Route path="/account" element={<AccountScreen />} />
-						<Route path="/create-case" element={<CreateCaseScreen />} />
+					<Route element={<PendingTermsOnly mustAcceptTerms={mustAcceptTerms} />}>
+						<Route path="/accept-terms" element={<AcceptTermsScreen />} />
 					</Route>
 
-					<Route element={<PlatformAdminRoutes isPlatformAdmin={isPlatformAdmin} />}>
-						<Route path="/recommended" element={<RecommendedScreen />} />
-						<Route path="/create-recommended" element={<CreateRecommendedScreen />} />
-						<Route path="/recommended/:charge" element={<EditRecommendedScreen />} />
+					<Route element={<TermsGate mustAcceptTerms={mustAcceptTerms} />}>
+						<Route path="/dashboard" element={<DashboardScreen />} />
+						<Route path="/start/:caseId" element={<Start />} />
+						<Route path="/case/:id" element={<CaseScreen />} />
+						<Route path="/make-playlist" element={<MakePlaylistScreen />} />
+						<Route path="/questions/:caseId" element={<QuestionsScreen />} />
+						<Route path="/archive" element={<ArchiveScreen />} />
+						<Route path="/archive/:id" element={<ArchivedCaseScreen />} />
+
+						<Route element={<AccountAdminRoutes isAccountAdmin={isAccountAdmin} />}>
+							<Route path="/account" element={<AccountScreen />} />
+							<Route path="/create-case" element={<CreateCaseScreen />} />
+						</Route>
+
+						<Route element={<PlatformAdminRoutes isPlatformAdmin={isPlatformAdmin} />}>
+							<Route path="/recommended" element={<RecommendedScreen />} />
+							<Route path="/create-recommended" element={<CreateRecommendedScreen />} />
+							<Route path="/recommended/:charge" element={<EditRecommendedScreen />} />
+						</Route>
 					</Route>
 				</Route>
 			</Route>

@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { setTermsRequiredHandler } from '../api/axiosInstance';
 import { getUserPlaylists } from '../api/playlist';
 import { getRecommendedNames } from '../api/recommended';
 import useAccountStore from './useAccountStore';
@@ -23,6 +24,8 @@ const normalizeUserInfo = (raw) => ({
   accountName: raw?.accountName ?? '',
   role: raw?.role === 'admin' ? 'admin' : 'member',
   mustChangePassword: Boolean(raw?.mustChangePassword),
+  // The account has not accepted the current Terms of Service (spec 008).
+  mustAcceptTerms: Boolean(raw?.mustAcceptTerms),
 });
 
 // A session saved before accounts existed has no accountId and is discarded,
@@ -162,5 +165,10 @@ const useAuthStore = create((set, get) => ({
     set({ userInfo: null, playlists: [], recommendedNames: [] });
   },
 }));
+
+// New terms went live mid-session: flag the session so TermsGate redirects.
+setTermsRequiredHandler(() => {
+  useAuthStore.getState().updateSession({ mustAcceptTerms: true });
+});
 
 export default useAuthStore;

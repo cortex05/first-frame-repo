@@ -7,12 +7,14 @@ export const login = async (credentials) => {
 };
 
 // Creates an account and its first user (the account admin), and signs them in.
-export const register = async ({ accountName, username, email, password }) => {
+// termsVersion is the Terms of Service version the registrant accepted.
+export const register = async ({ accountName, username, email, password, termsVersion }) => {
   const res = await axiosInstance.post(AUTH_API.REGISTER, {
     accountName,
     username,
     email,
     password,
+    termsVersion,
   });
   return res.data.data;
 };

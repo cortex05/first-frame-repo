@@ -16,9 +16,11 @@ function App() {
 
 	const isAuthenticated = Boolean(userInfo?.token && userInfo?.userId && userInfo?.username);
 	const isPlatformAdmin = Boolean(isAuthenticated && userInfo?.isAdmin);
-	// A user with a temporary password gets 403 from everything but the
-	// password change, so there is nothing to rehydrate for them yet.
-	const canLoadData = isAuthenticated && !userInfo?.mustChangePassword;
+	// A user with a temporary password, or whose account has not accepted the
+	// current terms, gets 403 from almost everything, so there is nothing to
+	// rehydrate for them yet.
+	const canLoadData =
+		isAuthenticated && !userInfo?.mustChangePassword && !userInfo?.mustAcceptTerms;
 
 	useEffect(() => {
 		const storedCases = localStorage.getItem('cases') || [];

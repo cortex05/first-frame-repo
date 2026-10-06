@@ -9,6 +9,7 @@ const SESSION = {
   accountName: 'Cortes Law',
   role: 'admin',
   mustChangePassword: false,
+  mustAcceptTerms: false,
 };
 
 // The store reads localStorage when it is created, so each test seeds storage
@@ -57,6 +58,44 @@ describe('useAuthStore', () => {
       mustChangePassword: true,
     });
     expect(module.selectIsAccountAdmin(useAuthStore.getState())).toBe(true);
+  });
+
+  it('keeps mustAcceptTerms as a boolean, false when missing', async () => {
+    const { useAuthStore } = await loadStore();
+
+    useAuthStore.getState().setUserInfo({ ...SESSION, mustAcceptTerms: 'yes' });
+    expect(useAuthStore.getState().userInfo.mustAcceptTerms).toBe(true);
+
+    const withoutFlag = { ...SESSION };
+    delete withoutFlag.mustAcceptTerms;
+    useAuthStore.getState().setUserInfo(withoutFlag);
+    expect(useAuthStore.getState().userInfo.mustAcceptTerms).toBe(false);
+  });
+
+  it('flags the session when an API call reports pending terms', async () => {
+    const { useAuthStore } = await loadStore();
+    const { default: axiosInstance } = await import('../api/axiosInstance');
+    useAuthStore.getState().setUserInfo(SESSION);
+
+    const [{ rejected }] = axiosInstance.interceptors.response.handlers;
+    const error = { response: { status: 403, data: { code: 'TERMS_ACCEPTANCE_REQUIRED' } } };
+    await expect(rejected(error)).rejects.toBe(error);
+
+    expect(useAuthStore.getState().userInfo.mustAcceptTerms).toBe(true);
+    expect(JSON.parse(window.localStorage.getItem('userInfo')).mustAcceptTerms).toBe(true);
+  });
+
+  it('leaves the session alone on other 403s', async () => {
+    const { useAuthStore } = await loadStore();
+    const { default: axiosInstance } = await import('../api/axiosInstance');
+    useAuthStore.getState().setUserInfo(SESSION);
+
+    const [{ rejected }] = axiosInstance.interceptors.response.handlers;
+    await expect(
+      rejected({ response: { status: 403, data: { code: 'PASSWORD_CHANGE_REQUIRED' } } }),
+    ).rejects.toBeTruthy();
+
+    expect(useAuthStore.getState().userInfo.mustAcceptTerms).toBe(false);
   });
 
   it('merges partial updates with updateSession', async () => {

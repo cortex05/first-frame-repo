@@ -35,6 +35,12 @@ const LoginScreen = () => {
         return;
       }
 
+      // Same for an account that has not accepted the current terms.
+      if (userInfo.mustAcceptTerms) {
+        navigate('/accept-terms', { replace: true });
+        return;
+      }
+
       await Promise.all([
         fetchUserPlaylists(userInfo.token),
         fetchUserCases(userInfo.token),
