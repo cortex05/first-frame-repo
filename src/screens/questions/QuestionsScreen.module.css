@@ -57,3 +57,44 @@
 	background: var(--decline);
 	color: var(--light-text);
 }
+
+.toast {
+	position: fixed;
+	top: 32px;
+	left: 50%;
+	width: 70vw;
+	box-sizing: border-box;
+	padding: 8px;
+	border: 2px solid var(--light-text);
+	z-index: 1000;
+	opacity: 0.90;
+	transform: translate(-50%, calc(-100% - 32px));
+	animation: toastSlide 1.8s linear both;
+}
+
+.toastError {
+	background: var(--decline);
+	color: var(--label-light);
+}
+
+.toastSuccess {
+	background: var(--confirm);
+	color: var(--light-text);
+}
+
+@keyframes toastSlide {
+	0% {
+		transform: translate(-50%, calc(-100% - 32px));
+		animation-timing-function: ease-out;
+	}
+	10.714% {
+		transform: translate(-50%, 0);
+	}
+	82.143% {
+		transform: translate(-50%, 0);
+		animation-timing-function: ease-in;
+	}
+	100% {
+		transform: translate(-50%, calc(-100% - 32px));
+	}
+}

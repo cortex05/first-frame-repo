@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Stage, Layer, Rect, Circle, Text, Group } from "react-konva";
 import useCaseStore from "../../store/useCaseStore";
@@ -42,11 +42,25 @@ const QuestionsScreen = () => {
   const [studentReport, setStudentReport] = useState(null); // studentId | null
   const [saveWarning, setSaveWarning] = useState(false); // boolean
   const [isSavingAnswers, setIsSavingAnswers] = useState(false);
+  const [toast, setToast] = useState(null);
+  const toastId = useRef(0);
+
+  useEffect(() => {
+    if (!toast) return undefined;
+
+    const timeoutId = window.setTimeout(() => setToast(null), 1800);
+    return () => window.clearTimeout(timeoutId);
+  }, [toast]);
 
   const [scale, setScale] = useState(1);
   const [stagePos, setStagePos] = useState({ x: 0, y: 0 });
   const stageRef = useRef(null);
   const lastPinchDist = useRef(0);
+
+  const showToast = (message, type) => {
+    toastId.current += 1;
+    setToast({ id: toastId.current, message, type });
+  };
 
   if (!activeCase) return <p style={{ padding: 32 }}>Case not found.</p>;
 
@@ -82,7 +96,7 @@ const QuestionsScreen = () => {
   );
   const getScoreTier = (studentId) => scoreTiers.get(studentId) ?? "low";
 
-  // ── colour helpers ─────────────────────────────────────────────
+  // ── color helpers ─────────────────────────────────────────────
   // Canvas can't resolve `var(--x)`, so read the variables into literal hex
   // once per render and compare against these instead of raw color literals.
   const canvas = {
@@ -201,7 +215,7 @@ const QuestionsScreen = () => {
     if (!selectedQuestion) return;
 
     if (!userInfo?.token) {
-      alert("You must be logged in to save answers.");
+      showToast("You must be logged in to save answers.", "error");
       return;
     }
 
@@ -238,11 +252,12 @@ const QuestionsScreen = () => {
         "cases",
         JSON.stringify(useCaseStore.getState().cases),
       );
-      alert("Answers saved!");
+      showToast("Answers saved!", "success");
     } catch (requestError) {
-      alert(
+      showToast(
         requestError?.response?.data?.message ||
           "Unable to save answers. Please try again.",
+        "error",
       );
     } finally {
       setIsSavingAnswers(false);
@@ -344,6 +359,16 @@ const QuestionsScreen = () => {
 
   return (
     <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
+      {toast && (
+        <div
+          key={toast.id}
+          role={toast.type === "error" ? "alert" : "status"}
+          className={`${styles.toast} ${toast.type === "error" ? styles.toastError : styles.toastSuccess}`}
+        >
+          {toast.message}
+        </div>
+      )}
+
       {/* ── Sidebar ── */}
       <div
         style={{

@@ -4,7 +4,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import QuestionsScreen from './QuestionsScreen';
-import { saveStudentDetails } from '../../api/case';
+import { saveCase, saveStudentDetails } from '../../api/case';
 import useAuthStore from '../../store/useAuthStore';
 import useCaseStore from '../../store/useCaseStore';
 
@@ -64,9 +64,47 @@ const sortRows = () =>
     .map((b) => [b.textContent, b.style.background]);
 
 beforeEach(() => {
+  vi.mocked(saveCase).mockReset();
   vi.mocked(saveStudentDetails).mockReset();
   useAuthStore.setState({ userInfo: { token: 'token', userId: 'u-owner', role: 'member' } });
   useCaseStore.setState({ cases: [makeCase()] });
+});
+
+describe('QuestionsScreen save-answer toasts', () => {
+  const openSaveAnswers = async (user) => {
+    await user.click(screen.getByText('Intent?'));
+    return screen.getByRole('button', { name: 'Save Answers' });
+  };
+
+  it('shows the missing-login message as an error toast', async () => {
+    useAuthStore.setState({ userInfo: { userId: 'u-owner', role: 'member' } });
+    const user = userEvent.setup();
+    renderQuestions();
+
+    await user.click(await openSaveAnswers(user));
+
+    expect(screen.getByRole('alert')).toHaveTextContent('You must be logged in to save answers.');
+  });
+
+  it('shows a successful save as a success toast', async () => {
+    vi.mocked(saveCase).mockResolvedValue(makeCase());
+    const user = userEvent.setup();
+    renderQuestions();
+
+    await user.click(await openSaveAnswers(user));
+
+    expect(await screen.findByRole('status')).toHaveTextContent('Answers saved!');
+  });
+
+  it('shows save failures as error toasts', async () => {
+    vi.mocked(saveCase).mockRejectedValue({ response: { data: { message: 'Unable to save this case.' } } });
+    const user = userEvent.setup();
+    renderQuestions();
+
+    await user.click(await openSaveAnswers(user));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Unable to save this case.');
+  });
 });
 
 describe('QuestionsScreen student report', () => {
