@@ -70,4 +70,9 @@ export const activeUsersOf = (users) => users.filter((user) => user.status === '
 export const usernameFor = (users, userId) =>
   users.find((user) => user._id === String(userId))?.username ?? 'Unknown';
 
+// Who archived a case, as it reads after "Archived <date>". The automatic
+// archive a week after purchase (spec 007) has no user behind it.
+export const archivedByLabel = (archived, users) =>
+  archived.archiveReason === 'purchase' ? 'automatically' : `by ${usernameFor(users, archived.archivedBy)}`;
+
 export default useAccountStore;

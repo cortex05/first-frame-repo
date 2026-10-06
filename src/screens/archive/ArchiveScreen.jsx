@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 import TopNavbar from '../../components/top-navbar/TopNavbar';
 import { getArchivedCases } from '../../api/archive';
-import useAccountStore, { usernameFor } from '../../store/useAccountStore';
+import useAccountStore, { archivedByLabel } from '../../store/useAccountStore';
 import useAuthStore from '../../store/useAuthStore';
 import { caseCategoryLabel } from '../../types/caseCategories';
 import { formatDate } from '../../utils/formatDate';
@@ -61,7 +61,7 @@ const ArchiveScreen = () => {
                   </span>
                   <span className={styles.itemMeta}>{caseCategoryLabel(archived.category)}</span>
                   <span className={styles.itemMeta}>
-                    Archived {formatDate(archived.archivedAt)} by {usernameFor(users, archived.archivedBy)}
+                    Archived {formatDate(archived.archivedAt)} {archivedByLabel(archived, users)}
                   </span>
                 </Link>
               </li>

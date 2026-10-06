@@ -87,6 +87,21 @@ describe('ArchivedCaseScreen', () => {
     expect(screen.queryByText('No answers recorded.')).not.toBeInTheDocument();
   });
 
+  it('names who archived a manual archive', async () => {
+    vi.mocked(getArchivedCase).mockResolvedValue(archivedCase({ archiveReason: 'manual' }));
+    renderScreen();
+
+    expect(await screen.findByText(/^Archived: .* by owner$/)).toBeInTheDocument();
+  });
+
+  it('says an automatic archive was archived automatically', async () => {
+    vi.mocked(getArchivedCase).mockResolvedValue(archivedCase({ archiveReason: 'purchase', archivedBy: null }));
+    renderScreen();
+
+    expect(await screen.findByText(/^Archived: .* automatically$/)).toBeInTheDocument();
+    expect(screen.queryByText(/Unknown/)).not.toBeInTheDocument();
+  });
+
   it('says so when no students were seated or answered', async () => {
     vi.mocked(getArchivedCase).mockResolvedValue(archivedCase({ chartData: {}, answers: {} }));
     renderScreen();

@@ -4,7 +4,7 @@ import { Link, useParams } from 'react-router-dom';
 import StudentReportCard from '../../components/student-report/StudentReportCard';
 import TopNavbar from '../../components/top-navbar/TopNavbar';
 import { getArchivedCase } from '../../api/archive';
-import useAccountStore, { usernameFor } from '../../store/useAccountStore';
+import useAccountStore, { archivedByLabel, usernameFor } from '../../store/useAccountStore';
 import useAuthStore from '../../store/useAuthStore';
 import { caseCategoryLabel } from '../../types/caseCategories';
 import { formatDate } from '../../utils/formatDate';
@@ -79,7 +79,7 @@ const ArchivedCaseScreen = () => {
           <p>Number of Students: {archived.studentNumber}</p>
           <p>Created: {formatDate(archived.createdOn)}</p>
           <p>
-            Archived: {formatDate(archived.archivedAt)} by {usernameFor(users, archived.archivedBy)}
+            Archived: {formatDate(archived.archivedAt)} {archivedByLabel(archived, users)}
           </p>
           <p>
             Owners:{' '}
