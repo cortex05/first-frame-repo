@@ -2,6 +2,7 @@ import { useState, useRef, useMemo, useEffect } from "react";
 import {
   Stage,
   Layer,
+  Line,
   Rect,
   Circle,
   Text,
@@ -21,6 +22,7 @@ const SIDEBAR_W = 260;
 const CIRCLE_R = 24;
 const CELL_PAD = 8;
 const CELL_SIZE = CIRCLE_R * 2 + CELL_PAD; //
+const GRID_SPACING = 40;
 
 const SCALE_MIN = 0.1;
 const SCALE_MAX = 5;
@@ -153,6 +155,15 @@ const StartScreen = () => {
   const rows = Math.max(1, parseInt(rowInput, 10) || 1);
   const cols = Math.max(1, parseInt(colInput, 10) || 1);
   const totalCells = rows * cols;
+  const stageWidth = window.innerWidth - SIDEBAR_W;
+  const stageHeight = window.innerHeight;
+  const isLightTheme = document.documentElement.dataset.theme === "light";
+  const gridStartX = Math.floor((-view.x / view.scale) / GRID_SPACING) * GRID_SPACING - GRID_SPACING;
+  const gridStartY = Math.floor((-view.y / view.scale) / GRID_SPACING) * GRID_SPACING - GRID_SPACING;
+  const gridColumnCount = Math.ceil(stageWidth / view.scale / GRID_SPACING) + 3;
+  const gridRowCount = Math.ceil(stageHeight / view.scale / GRID_SPACING) + 3;
+  const gridXs = Array.from({ length: gridColumnCount }, (_, index) => gridStartX + index * GRID_SPACING);
+  const gridYs = Array.from({ length: gridRowCount }, (_, index) => gridStartY + index * GRID_SPACING);
 
   const handleAddRect = () => {
     if (remaining.length === 0) return;
@@ -252,7 +263,7 @@ const StartScreen = () => {
       lastPinchDist.current = dist;
       return;
     }
-    const stage = stageRef.current;
+    const stage = stageRef.current; 
     const oldScale = stage.scaleX();
     const midX = (t1.clientX + t2.clientX) / 2;
     const midY = (t1.clientY + t2.clientY) / 2;
@@ -277,7 +288,7 @@ const StartScreen = () => {
     width: "100%",
     padding: "8px 10px",
     fontSize: 14,
-    border: "1px solid var(--light-blue-background)",
+    border: "2px solid var(--color-text-primary)",
     borderRadius: 6,
     boxSizing: "border-box",
   };
@@ -301,7 +312,7 @@ const StartScreen = () => {
           width: SIDEBAR_W,
           flexShrink: 0,
           background: "var(--surface-subtle)",
-          borderRight: "1px solid var(--light-blue-background)",
+          borderRight: "1px solid var(--page-text)",
           display: "flex",
           flexDirection: "column",
           padding: 16,
@@ -496,8 +507,8 @@ const StartScreen = () => {
       <div style={{ flex: 1, position: "relative" }}>
         <Stage
           ref={stageRef}
-          width={window.innerWidth - SIDEBAR_W}
-          height={window.innerHeight}
+          width={stageWidth}
+          height={stageHeight}
           scaleX={view.scale}
           scaleY={view.scale}
           x={view.x}
@@ -519,6 +530,36 @@ const StartScreen = () => {
           }}
         >
           <Layer>
+            {isLightTheme && (
+              <>
+                {gridXs.map((x) => (
+                  <Line
+                    key={`grid-x-${x}`}
+                    points={[x, gridStartY, x, gridStartY + gridRowCount * GRID_SPACING]}
+                    stroke={
+                      Math.round(x / GRID_SPACING) % 5 === 0
+                        ? cssVar("--light-blue-background", "#e4edf8")
+                        : cssVar("--border-subtle", "#d5dbe3")
+                    }
+                    strokeWidth={1 / view.scale}
+                    listening={false}
+                  />
+                ))}
+                {gridYs.map((y) => (
+                  <Line
+                    key={`grid-y-${y}`}
+                    points={[gridStartX, y, gridStartX + gridColumnCount * GRID_SPACING, y]}
+                    stroke={
+                      Math.round(y / GRID_SPACING) % 5 === 0
+                        ? cssVar("--light-blue-background", "#e4edf8")
+                        : cssVar("--border-subtle", "#d5dbe3")
+                    }
+                    strokeWidth={1 / view.scale}
+                    listening={false}
+                  />
+                ))}
+              </>
+            )}
             {rects.map((r) => (
               // The group's origin is the rect's center so it rotates in place;
               // `r.x`/`r.y` remain the unrotated top-left corner.
