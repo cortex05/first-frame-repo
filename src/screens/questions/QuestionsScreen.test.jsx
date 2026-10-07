@@ -14,6 +14,7 @@ vi.mock('react-konva', () => {
   return {
     Stage: Passthrough,
     Layer: Passthrough,
+    Line: ({ points }) => <div data-testid="canvas-grid-line" data-points={points.join(',')} />,
     Group: Passthrough,
     Rect: () => null,
     Circle: () => null,
@@ -64,10 +65,25 @@ const sortRows = () =>
     .map((b) => [b.textContent, b.style.background]);
 
 beforeEach(() => {
+  document.documentElement.dataset.theme = 'dark';
   vi.mocked(saveCase).mockReset();
   vi.mocked(saveStudentDetails).mockReset();
   useAuthStore.setState({ userInfo: { token: 'token', userId: 'u-owner', role: 'member' } });
   useCaseStore.setState({ cases: [makeCase()] });
+});
+
+describe('QuestionsScreen canvas grid', () => {
+  it('renders the grid in light mode only', () => {
+    document.documentElement.dataset.theme = 'light';
+    const { unmount } = renderQuestions();
+
+    expect(screen.getAllByTestId('canvas-grid-line').length).toBeGreaterThan(0);
+
+    unmount();
+    document.documentElement.dataset.theme = 'dark';
+    renderQuestions();
+    expect(screen.queryByTestId('canvas-grid-line')).not.toBeInTheDocument();
+  });
 });
 
 describe('QuestionsScreen save-answer toasts', () => {

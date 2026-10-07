@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Stage, Layer, Rect, Circle, Text, Group } from "react-konva";
+import { Stage, Layer, Line, Rect, Circle, Text, Group } from "react-konva";
 import useCaseStore from "../../store/useCaseStore";
 import useAuthStore from "../../store/useAuthStore";
 import { saveCase, saveStudentDetails } from "../../api/case";
@@ -22,6 +22,7 @@ const SCALE_MIN = 0.1;
 const SCALE_MAX = 5;
 const SCALE_STEP = 1.2;
 const SIDEBAR_W = 300;
+const GRID_SPACING = 40;
 
 const isTrueLabel = (label) => label === true || label === "true";
 const isFalseLabel = (label) => label === false || label === "false";
@@ -71,6 +72,15 @@ const QuestionsScreen = () => {
     selectedQuestionId === null
       ? null
       : activeCase.questions.findIndex((q) => q.id === selectedQuestionId) + 1;
+  const stageWidth = window.innerWidth - SIDEBAR_W;
+  const stageHeight = window.innerHeight;
+  const isLightTheme = document.documentElement.dataset.theme === "light";
+  const gridStartX = Math.floor((-stagePos.x / scale) / GRID_SPACING) * GRID_SPACING - GRID_SPACING;
+  const gridStartY = Math.floor((-stagePos.y / scale) / GRID_SPACING) * GRID_SPACING - GRID_SPACING;
+  const gridColumnCount = Math.ceil(stageWidth / scale / GRID_SPACING) + 3;
+  const gridRowCount = Math.ceil(stageHeight / scale / GRID_SPACING) + 3;
+  const gridXs = Array.from({ length: gridColumnCount }, (_, index) => gridStartX + index * GRID_SPACING);
+  const gridYs = Array.from({ length: gridRowCount }, (_, index) => gridStartY + index * GRID_SPACING);
 
   const getAllSeatedStudents = () => rects.flatMap((r) => r.assignedStudents);
 
@@ -375,7 +385,7 @@ const QuestionsScreen = () => {
           width: SIDEBAR_W,
           flexShrink: 0,
           background: "var(--surface-subtle)", // mod this color
-          borderRight: "1px solid var(--light-blue-background)",
+          borderRight: "2px solid var(--color-text-primary)",
           display: "flex",
           flexDirection: "column",
           overflowY: "auto",
@@ -806,8 +816,8 @@ const QuestionsScreen = () => {
           <React.Fragment>
             <Stage
               ref={stageRef}
-              width={window.innerWidth - SIDEBAR_W}
-              height={window.innerHeight}
+              width={stageWidth}
+              height={stageHeight}
               scaleX={scale}
               scaleY={scale}
               x={stagePos.x}
@@ -821,6 +831,36 @@ const QuestionsScreen = () => {
               onTouchEnd={handleTouchEnd}
             >
               <Layer>
+                {isLightTheme && (
+                  <React.Fragment>
+                    {gridXs.map((x) => (
+                      <Line
+                        key={`grid-x-${x}`}
+                        points={[x, gridStartY, x, gridStartY + gridRowCount * GRID_SPACING]}
+                        stroke={
+                          Math.round(x / GRID_SPACING) % 5 === 0
+                            ? cssVar("--light-blue-background", "#e4edf8")
+                            : cssVar("--border-subtle", "#d5dbe3")
+                        }
+                        strokeWidth={1 / scale}
+                        listening={false}
+                      />
+                    ))}
+                    {gridYs.map((y) => (
+                      <Line
+                        key={`grid-y-${y}`}
+                        points={[gridStartX, y, gridStartX + gridColumnCount * GRID_SPACING, y]}
+                        stroke={
+                          Math.round(y / GRID_SPACING) % 5 === 0
+                            ? cssVar("--light-blue-background", "#e4edf8")
+                            : cssVar("--border-subtle", "#d5dbe3")
+                        }
+                        strokeWidth={1 / scale}
+                        listening={false}
+                      />
+                    ))}
+                  </React.Fragment>
+                )}
                 {/* Row rectangles */}
                 {rects.map((r) => (
                   // Rotates about the rect's center, matching StartScreen.
@@ -900,6 +940,7 @@ const QuestionsScreen = () => {
                 alignItems: "center",
                 gap: 6,
                 background: "var(--surface-overlay-control)",
+                border: "2px solid var(--color-text-primary)",
                 borderRadius: 8,
                 padding: "6px 10px",
                 boxShadow: "0 2px 8px var(--shadow-soft)",
