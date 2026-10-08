@@ -33,6 +33,14 @@
   margin-bottom: 16px;
 }
 
+.titleGroup {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
 .title {
   margin: 0;
   font-size: 16px;
@@ -50,6 +58,18 @@
 
 .body {
   overflow-y: auto;
+}
+
+/* Same pill as StudentReportCard's risk badge in the archive report. */
+.riskBadge {
+  flex-shrink: 0;
+  min-width: 56px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--modal-text);
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
 }
 
 /* Details */

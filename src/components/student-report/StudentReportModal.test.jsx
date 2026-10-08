@@ -62,6 +62,20 @@ describe('StudentReportModal', () => {
     expect(screen.getByRole('heading', { name: 'Student Report - #4 = 7 Points' })).toBeInTheDocument();
   });
 
+  it('shows the risk badge banded over the seated students', () => {
+    const chartData = { rects: [{ assignedStudents: [{ id: 1 }, { id: 4 }] }] };
+    renderModal({ activeCase: makeCase({ chartData }) });
+
+    expect(screen.getByText('Risk: High')).toBeInTheDocument();
+  });
+
+  it('shows no risk badge for a student who is not seated', () => {
+    const chartData = { rects: [{ assignedStudents: [{ id: 1 }] }] };
+    renderModal({ activeCase: makeCase({ chartData }) });
+
+    expect(screen.queryByText(/^Risk:/)).not.toBeInTheDocument();
+  });
+
   it('shows ? for every empty detail', () => {
     renderModal();
 

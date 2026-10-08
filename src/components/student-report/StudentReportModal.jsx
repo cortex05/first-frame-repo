@@ -10,9 +10,12 @@ import {
   validateStudentDetails,
 } from '../../utils/studentDetails';
 import {
+  RISK_LABELS,
   formatAnswerLabel,
   getAnswer,
   getAnswerTier,
+  getReportStudentNumbers,
+  getRiskTiers,
   getStudentTotal,
 } from '../../utils/studentScores';
 
@@ -31,6 +34,9 @@ const StudentReportModal = ({ activeCase, studentNumber, onClose, onSaveDetails 
   const idPrefix = useId();
   const details = getStudentDetails(activeCase, studentNumber);
   const total = getStudentTotal(activeCase, studentNumber);
+  // Banded over the same students as the Scores view and the archive report,
+  // so the badge matches the student's color there. Unseated students have none.
+  const risk = getRiskTiers(activeCase, getReportStudentNumbers(activeCase)).get(Number(studentNumber));
 
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState(() => toDraft(details));
@@ -112,9 +118,16 @@ const StudentReportModal = ({ activeCase, studentNumber, onClose, onSaveDetails 
     <div className={styles.backdrop}>
       <div className={styles.dialog} role="dialog" aria-modal="true" aria-labelledby={`${idPrefix}-title`}>
         <div className={styles.header}>
-          <h3 id={`${idPrefix}-title`} className={styles.title}>
-            Student Report - #{studentNumber} = {total} Points
-          </h3>
+          <div className={styles.titleGroup}>
+            <h3 id={`${idPrefix}-title`} className={styles.title}>
+              Student Report - #{studentNumber} = {total} Points
+            </h3>
+            {risk && (
+              <span className={`${styles.riskBadge} ${styles[`risk_${risk}`]}`}>
+                Risk: {RISK_LABELS[risk]}
+              </span>
+            )}
+          </div>
           <button type="button" className={styles.close} aria-label="Close" onClick={onClose}>
             ×
           </button>
