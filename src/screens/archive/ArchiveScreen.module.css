@@ -3,7 +3,7 @@
   max-width: 50%;
   margin: 0 auto;
   padding: 32px;
-  color: var(--light-text);
+  color: var(--page-text); 
   text-align: left;
 }
 
@@ -41,18 +41,19 @@
 }
 
 .item:hover {
-  background: var(--light-blue-background);
-  border-color: var(--blue-background);
+  background: var(--blue-background);
+  border-color: var(--light-blue-background);
+  color: var(--modal-text);
 }
 
 .itemTitle {
   font-weight: 600;
-  color: var(--modal-text);
+  color: var(--page-bg);
 }
 
 .itemMeta {
   font-size: 13px;
-  color: var(--modal-text);
+  color: var(--page-bg);
 }
 
 .muted {
@@ -84,7 +85,7 @@
 }
 
 .backLink:hover {
-  color: var(--light-text);
+  color: var(--modal-text);
 }
 
 .readOnlyTag {
