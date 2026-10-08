@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { caseHeaderLines, questionBlocks, studentNumbers } from './pdfContent';
+import { caseHeaderLines, questionBlocks, slideBlocks, studentNumbers } from './pdfContent';
 
 const tf = (text, options) => ({ id: text, type: 'TRUE_FALSE', text, options });
 const mc = (text, options) => ({ id: text, type: 'MULTIPLE_CHOICE', text, options });
@@ -105,5 +105,34 @@ describe('studentNumbers', () => {
   it('is empty for zero or a missing count', () => {
     expect(studentNumbers(0)).toEqual([]);
     expect(studentNumbers(undefined)).toEqual([]);
+  });
+});
+
+describe('slideBlocks', () => {
+  it('numbers each question with its trimmed, unquoted text', () => {
+    expect(
+      slideBlocks([
+        tf('  Intent?  ', [{ label: true, value: 3 }]),
+        mc('Rate the officer', [{ label: 'Trustworthy', value: 3 }]),
+      ]),
+    ).toEqual([
+      { number: 1, label: 'Question 1', text: 'Intent?' },
+      { number: 2, label: 'Question 2', text: 'Rate the officer' },
+    ]);
+  });
+
+  it('carries no options, points or answers', () => {
+    const [block] = slideBlocks([mc('Rate', [{ label: 'Trustworthy', value: 3 }])]);
+    expect(Object.keys(block).sort()).toEqual(['label', 'number', 'text']);
+  });
+
+  it('gives empty text for whitespace-only or missing text', () => {
+    expect(slideBlocks([{ text: '   ' }, {}]).map((b) => b.text)).toEqual(['', '']);
+  });
+
+  it('is empty for a missing or empty list', () => {
+    expect(slideBlocks(undefined)).toEqual([]);
+    expect(slideBlocks(null)).toEqual([]);
+    expect(slideBlocks([])).toEqual([]);
   });
 });

@@ -10,6 +10,7 @@ import TopNavbar from "../../components/top-navbar/TopNavbar";
 import StudentListModal from "../../components/student-report/StudentListModal";
 import StudentReportModal from "../../components/student-report/StudentReportModal";
 import PdfExportModal from "../../components/pdf-export/PdfExportModal";
+import ExportSlidesButton from "../../components/pdf-export/ExportSlidesButton";
 import {
   archiveCase,
   saveCase,
@@ -776,45 +777,27 @@ const CaseScreen = () => {
           </div>
         </section>
 
-        {/* Start link */}
-        {!activeCase.seated && (
-          <button
-            onClick={openStartModal}
-            style={{
-              display: "inline-block",
-              padding: "14px 36px",
-              fontSize: 17,
-              fontWeight: 600,
-              background: "var(--blue-background)",
-              color: "var(--light-text)",
-              borderRadius: 8,
-              textDecoration: "none",
-            }}
-          >
-            Start Session
-          </button>
-        )}
+        {/* Export slides + start/questions link */}
+        <div className={styles.sessionActions}>
+          <ExportSlidesButton
+            activeCase={activeCase}
+            wrapperClassName={styles.exportSlidesWrapper}
+            className={`${styles.sessionButton} ${styles.exportSlidesButton}`}
+            hintClassName={styles.offlineExportHint}
+          />
 
-        {/* questions link */}
-        {activeCase.seated && (
-          <Link to={`/questions/${activeCase._id}`}>
-            <button
-              // onClick={() => setStartModal(true)}
-              style={{
-                display: "inline-block",
-                padding: "14px 36px",
-                fontSize: 17,
-                fontWeight: 600,
-                background: "var(--blue-background)",
-                color: "var(--light-text)",
-                borderRadius: 8,
-                textDecoration: "none",
-              }}
-            >
-              Access Questions
+          {!activeCase.seated && (
+            <button onClick={openStartModal} className={styles.sessionButton}>
+              Start Session
             </button>
-          </Link>
-        )}
+          )}
+
+          {activeCase.seated && (
+            <Link to={`/questions/${activeCase._id}`} className={styles.sessionLink}>
+              <button className={styles.sessionButton}>Access Questions</button>
+            </Link>
+          )}
+        </div>
 
         {/* Owners Modal */}
         <Modal

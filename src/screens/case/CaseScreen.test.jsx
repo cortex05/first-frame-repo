@@ -26,6 +26,10 @@ vi.mock('../../api/playlist', () => ({
 vi.mock('../../hooks/useRecommendedPlaylist', () => ({
   default: () => ({ recommended: null, isLoading: false, error: '', load: () => {} }),
 }));
+// The Export PDF button preloads jsPDF on mount; never let it load the real one.
+vi.mock('../../utils/pdfExport/loadJsPdf', () => ({
+  loadJsPdf: vi.fn(() => new Promise(() => {})),
+}));
 // Stub the export modal so these tests don't depend on jsPDF; it echoes what
 // CaseScreen hands it.
 vi.mock('../../components/pdf-export/PdfExportModal', () => ({
@@ -350,7 +354,7 @@ describe('CaseScreen offline PDF export', () => {
     renderCase();
 
     expect(offlineButton()).toBeDisabled();
-    expect(screen.getByText('Add a question to export.')).toBeInTheDocument();
+    expect(offlineButton().nextElementSibling).toHaveTextContent('Add a question to export.');
   });
 
   it('is enabled with questions, before and after seating', () => {
@@ -401,5 +405,58 @@ describe('CaseScreen offline PDF export', () => {
     expect(modal.getByText('export: Did they intend it?')).toBeInTheDocument();
     expect(modal.queryByText('export: Intent?')).not.toBeInTheDocument();
     expect(modal.getByText('export: Credible?')).toBeInTheDocument();
+  });
+});
+
+describe('CaseScreen export slides PDF', () => {
+  const exportButton = () => screen.getByRole('button', { name: /Export PDF|Preparing/ });
+
+  it('comes before Start Session in the same row when the case is not seated', () => {
+    useAuthStore.setState({ userInfo: session() });
+    useCaseStore.setState({ cases: [makeCase({ seated: false })] });
+
+    renderCase();
+
+    const start = screen.getByRole('button', { name: 'Start Session' });
+    expect(exportButton().compareDocumentPosition(start)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    // The button sits in its own wrapper inside the session row.
+    expect(exportButton().parentElement.parentElement).toBe(start.parentElement);
+  });
+
+  it('comes before Access Questions, which still links to the questions screen', () => {
+    useAuthStore.setState({ userInfo: session() });
+    useCaseStore.setState({ cases: [makeCase({ seated: true })] });
+
+    renderCase();
+
+    const access = screen.getByRole('button', { name: 'Access Questions' });
+    expect(exportButton().compareDocumentPosition(access)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+    expect(access.closest('a')).toHaveAttribute('href', '/questions/case-1');
+    expect(exportButton().parentElement.parentElement).toBe(access.closest('a').parentElement);
+  });
+
+  it('is disabled with a hint when the case has no questions', () => {
+    useAuthStore.setState({ userInfo: session() });
+    useCaseStore.setState({ cases: [makeCase({ questions: [] })] });
+
+    renderCase();
+
+    expect(exportButton()).toBeDisabled();
+    // One hint under For offline use, one under Export PDF.
+    expect(screen.getAllByText('Add a question to export.')).toHaveLength(2);
+  });
+
+  it('leaves Start Session opening its modal', async () => {
+    useAuthStore.setState({ userInfo: session() });
+    useCaseStore.setState({ cases: [makeCase({ seated: false })] });
+
+    renderCase();
+    await userEvent.click(screen.getByRole('button', { name: 'Start Session' }));
+
+    expect(screen.getByRole('button', { name: 'Yes' })).toBeInTheDocument();
+    expect(saveCase).not.toHaveBeenCalled();
+    expect(startCase).not.toHaveBeenCalled();
   });
 });

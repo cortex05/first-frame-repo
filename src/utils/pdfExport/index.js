@@ -2,5 +2,6 @@
 // so the dynamic import can be mocked on its own.
 export { buildQuestionsPdf } from './buildQuestionsPdf';
 export { buildAnswersPdf } from './buildAnswersPdf';
+export { buildSlidesPdf } from './buildSlidesPdf';
 export { savePdfFiles, toPdfFile } from './savePdfFiles';
-export { answersFileName, questionsFileName } from './pdfFileNames';
+export { answersFileName, questionsFileName, slidesFileName } from './pdfFileNames';

@@ -44,5 +44,14 @@ export const questionBlocks = (questions) =>
       : trueFalseBlock(question)),
   }));
 
+// One slide per question (spec 009). Only the number and text: options,
+// points and answers must never reach the slides (AC-15).
+export const slideBlocks = (questions) =>
+  (Array.isArray(questions) ? questions : []).map((question, index) => ({
+    number: index + 1,
+    label: `Question ${index + 1}`,
+    text: String(question?.text ?? '').trim(),
+  }));
+
 export const studentNumbers = (studentNumber) =>
   Array.from({ length: Math.max(0, Math.floor(Number(studentNumber) || 0)) }, (_, i) => i + 1);

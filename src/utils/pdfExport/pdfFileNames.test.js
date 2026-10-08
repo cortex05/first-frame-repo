@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { answersFileName, questionsFileName, sanitizeClientName } from './pdfFileNames';
+import {
+  answersFileName,
+  questionsFileName,
+  sanitizeClientName,
+  slidesFileName,
+} from './pdfFileNames';
 
 describe('sanitizeClientName', () => {
   it.each([
@@ -29,5 +34,15 @@ describe('file names', () => {
   it('falls back to "case" when nothing usable is left', () => {
     expect(questionsFileName('  ')).toBe('client_case_questions.pdf');
     expect(answersFileName('  ')).toBe('client_case_answers.pdf');
+  });
+});
+
+describe('slidesFileName', () => {
+  it.each([
+    ['Jane Doe', 'client_Jane_Doe_QUESTIONS_SLIDE.pdf'],
+    ["O'Neil & Sons", 'client_ONeil_Sons_QUESTIONS_SLIDE.pdf'],
+    ['  ', 'client_case_QUESTIONS_SLIDE.pdf'],
+  ])('%j -> %j', (input, expected) => {
+    expect(slidesFileName(input)).toBe(expected);
   });
 });

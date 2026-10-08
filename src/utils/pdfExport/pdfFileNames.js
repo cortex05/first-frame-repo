@@ -15,3 +15,7 @@ export const questionsFileName = (clientName) =>
 
 export const answersFileName = (clientName) =>
   `client_${sanitizeClientName(clientName)}_answers.pdf`;
+
+// The question slides PDF (spec 009, AC-10).
+export const slidesFileName = (clientName) =>
+  `client_${sanitizeClientName(clientName)}_QUESTIONS_SLIDE.pdf`;

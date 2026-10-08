@@ -3,8 +3,9 @@ import { describe, expect, it } from 'vitest';
 
 import { LEFT_X, RIGHT_X, buildAnswersPdf } from './buildAnswersPdf';
 import { buildQuestionsPdf } from './buildQuestionsPdf';
+import { SLIDE_BOTTOM, SLIDE_TEXT_MAX, SLIDE_TEXT_MIN, buildSlidesPdf } from './buildSlidesPdf';
 import { END_MARKER } from './pdfContent';
-import { PAGE_WIDTH } from './pdfLayout';
+import { FOOTER_Y, PAGE_WIDTH, SLIDE_PAGE_HEIGHT, SLIDE_PAGE_WIDTH } from './pdfLayout';
 
 // Records every text call with the page it landed on, and keeps the last doc.
 const recordingJsPdf = () => {
@@ -16,7 +17,14 @@ const recordingJsPdf = () => {
       lastDoc = this;
       const text = this.text.bind(this);
       this.text = (value, x, y, opts) => {
-        calls.push({ value, x, y, opts, page: this.getCurrentPageInfo().pageNumber });
+        calls.push({
+          value,
+          x,
+          y,
+          opts,
+          page: this.getCurrentPageInfo().pageNumber,
+          fontSize: this.getFontSize(),
+        });
         return text(value, x, y, opts);
       };
     }
@@ -129,6 +137,9 @@ describe('buildQuestionsPdf', () => {
     for (let page = 1; page <= pages; page += 1) {
       const footer = calls.find((c) => c.value === `Page ${page} of ${pages}`);
       expect(footer?.page).toBe(page);
+      // Portrait footers are unchanged by the page-size-aware drawFooters.
+      expect(footer?.x).toBe(PAGE_WIDTH / 2);
+      expect(footer?.y).toBe(FOOTER_Y);
     }
   });
 });
@@ -176,5 +187,110 @@ describe('buildAnswersPdf', () => {
       const row = blockCalls.slice(i, i + 6);
       expect(new Set(row.map((c) => c.page)).size).toBe(1);
     }
+  });
+});
+
+describe('buildSlidesPdf', () => {
+  const slidesCase = () =>
+    makeCase({
+      questions: [
+        {
+          id: 'q-1',
+          type: 'TRUE_FALSE',
+          text: 'Did the defendant intend it?',
+          options: [
+            { label: true, value: 3 },
+            { label: false, value: 0 },
+          ],
+        },
+        {
+          id: 'q-2',
+          type: 'MULTIPLE_CHOICE',
+          text: 'How credible was the officer?',
+          options: [
+            { label: 'Zebra', value: 7 },
+            { label: 'Yak', value: 5 },
+          ],
+        },
+        { id: 'q-3', type: 'TRUE_FALSE', text: 'Was it fair?', options: [] },
+      ],
+    });
+
+  it('returns a landscape PDF with one page per question', () => {
+    const { RecordingJsPdf, doc } = recordingJsPdf();
+    const blob = buildSlidesPdf(RecordingJsPdf, slidesCase());
+
+    expect(blob.type).toBe('application/pdf');
+    expect(doc().getNumberOfPages()).toBe(3);
+    expect(doc().internal.pageSize.getWidth()).toBeCloseTo(SLIDE_PAGE_WIDTH, 0);
+    expect(doc().internal.pageSize.getHeight()).toBeCloseTo(SLIDE_PAGE_HEIGHT, 0);
+  });
+
+  it('puts the client, question label, centered text and footer on each page', () => {
+    const { RecordingJsPdf, calls } = recordingJsPdf();
+    buildSlidesPdf(RecordingJsPdf, slidesCase());
+    const { questions } = slidesCase();
+
+    for (let page = 1; page <= 3; page += 1) {
+      const onPage = calls.filter((c) => c.page === page);
+      expect(onPage.map((c) => c.value)).toEqual([
+        'Client: Jane Client',
+        `Question ${page}`,
+        questions[page - 1].text,
+        `Page ${page} of 3`,
+      ]);
+      const [, label, text, footer] = onPage;
+      [label, text, footer].forEach((call) => {
+        expect(call.x).toBe(SLIDE_PAGE_WIDTH / 2);
+        expect(call.opts).toMatchObject({ align: 'center' });
+      });
+      expect(text.fontSize).toBe(SLIDE_TEXT_MAX);
+      expect(text.y).toBeGreaterThan(label.y);
+    }
+  });
+
+  it('leaves out points, options and tally lines', () => {
+    const { RecordingJsPdf, calls } = recordingJsPdf();
+    buildSlidesPdf(RecordingJsPdf, slidesCase());
+
+    const written = texts(calls).join(' ');
+    ['Points:', 'Students Answered', 'True:', 'False:', 'Zebra', 'Yak'].forEach((word) =>
+      expect(written).not.toContain(word),
+    );
+  });
+
+  it('shrinks a long question to fit on its own page', () => {
+    const { RecordingJsPdf, calls, doc } = recordingJsPdf();
+    const long = 'The witness said the light was red. '.repeat(10).trim();
+    buildSlidesPdf(RecordingJsPdf, makeCase({ questions: [{ id: 'q-1', text: long }] }));
+
+    expect(doc().getNumberOfPages()).toBe(1);
+    const body = calls.filter((c) => !/^(Client: |Question 1$|Page )/.test(c.value));
+    expect(body.length).toBeGreaterThan(1);
+    expect(body[0].fontSize).toBeLessThan(SLIDE_TEXT_MAX);
+    expect(body[0].fontSize).toBeGreaterThanOrEqual(SLIDE_TEXT_MIN);
+    expect(body.map((c) => c.value).join(' ')).toBe(long);
+    body.forEach((call) => expect(call.y).toBeLessThanOrEqual(SLIDE_BOTTOM));
+  });
+
+  it('clips text that does not fit at the minimum size instead of adding a page', () => {
+    const { RecordingJsPdf, calls, doc } = recordingJsPdf();
+    buildSlidesPdf(
+      RecordingJsPdf,
+      makeCase({ questions: [{ id: 'q-1', text: 'word '.repeat(2000).trim() }] }),
+    );
+
+    expect(doc().getNumberOfPages()).toBe(1);
+    const body = calls.filter((c) => /^word/.test(c.value));
+    expect(body[0].fontSize).toBe(SLIDE_TEXT_MIN);
+    body.forEach((call) => expect(call.y).toBeLessThanOrEqual(SLIDE_BOTTOM));
+  });
+
+  it('still renders a page for a question with empty text', () => {
+    const { RecordingJsPdf, calls, doc } = recordingJsPdf();
+    buildSlidesPdf(RecordingJsPdf, makeCase({ questions: [{ id: 'q-1', text: '   ' }] }));
+
+    expect(doc().getNumberOfPages()).toBe(1);
+    expect(texts(calls)).toEqual(['Client: Jane Client', 'Question 1', 'Page 1 of 1']);
   });
 });

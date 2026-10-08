@@ -10,7 +10,9 @@ export const LINE_HEIGHT = 16;
 export const TOP_Y = MARGIN;
 // Baseline of the first line on a continuation page.
 export const CONTENT_TOP = TOP_Y + LINE_HEIGHT;
-export const FOOTER_Y = PAGE_HEIGHT - 30;
+// Distance of the footer baseline from the bottom edge, on any page size.
+export const FOOTER_OFFSET = 30;
+export const FOOTER_Y = PAGE_HEIGHT - FOOTER_OFFSET;
 // Content stops here so it never runs into the footer.
 export const BOTTOM_Y = FOOTER_Y - 24;
 
@@ -25,6 +27,13 @@ const RULE_GAP = 4;
 
 export const createDoc = (JsPDF) =>
   new JsPDF({ unit: 'pt', format: 'letter', orientation: 'portrait' });
+
+// The question slides (spec 009) are US Letter landscape.
+export const SLIDE_PAGE_WIDTH = PAGE_HEIGHT;
+export const SLIDE_PAGE_HEIGHT = PAGE_WIDTH;
+
+export const createSlideDoc = (JsPDF) =>
+  new JsPDF({ unit: 'pt', format: 'letter', orientation: 'landscape' });
 
 export const setFont = (doc, size, style = 'normal') => {
   doc.setFont('helvetica', style);
@@ -67,11 +76,14 @@ export const drawHeader = (doc, lines) => {
   return y + LINE_HEIGHT * 1.75;
 };
 
+// Reads the page size from the doc, so portrait and landscape both center.
 export const drawFooters = (doc) => {
   const total = doc.getNumberOfPages();
+  const width = doc.internal.pageSize.getWidth();
+  const footerY = doc.internal.pageSize.getHeight() - FOOTER_OFFSET;
   setFont(doc, FONT.footer);
   for (let page = 1; page <= total; page += 1) {
     doc.setPage(page);
-    doc.text(`Page ${page} of ${total}`, PAGE_WIDTH / 2, FOOTER_Y, { align: 'center' });
+    doc.text(`Page ${page} of ${total}`, width / 2, footerY, { align: 'center' });
   }
 };
