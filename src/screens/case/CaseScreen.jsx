@@ -777,6 +777,8 @@ const CaseScreen = () => {
           </div>
         </section>
 
+        <hr />
+
         {/* Export slides + start/questions link */}
         <div className={styles.sessionActions}>
           <ExportSlidesButton
