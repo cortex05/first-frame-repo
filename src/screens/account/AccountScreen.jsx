@@ -217,7 +217,7 @@ const AccountScreen = () => {
           <h2 className={styles.sectionHeading}>Add a User</h2>
           <p className={styles.hint}>
             Give the new user a temporary password. They will have to choose their own the
-            first time they log in.
+            first time they log in. 
           </p>
 
           <form className={styles.form} onSubmit={handleCreateUser}>
@@ -225,6 +225,7 @@ const AccountScreen = () => {
               <label className={styles.labelStyle} htmlFor="new-user-username">Username</label>
               <input
                 id="new-user-username"
+                placeholder='Username'
                 className={styles.inputStyle}
                 type="text"
                 value={newUser.username}
@@ -238,6 +239,7 @@ const AccountScreen = () => {
               <label className={styles.labelStyle} htmlFor="new-user-email">Email</label>
               <input
                 id="new-user-email"
+                placeholder='Email'
                 className={styles.inputStyle}
                 type="email"
                 value={newUser.email}

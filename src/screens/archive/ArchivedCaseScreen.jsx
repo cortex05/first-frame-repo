@@ -71,7 +71,7 @@ const ArchivedCaseScreen = () => {
     return (
       <React.Fragment>
         <h1>Client: {archived.clientName}</h1>
-        <p className={styles.readOnlyTag}>Archived — read only</p>
+        <p className={styles.readOnlyTag}>Archived — read only</p> 
 
         <section className={styles.details}>
           <p>Attorney: {archived.attorney || '—'}</p>
