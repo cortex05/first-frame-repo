@@ -4,7 +4,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import QuestionsScreen from './QuestionsScreen';
-import { saveCase, saveStudentDetails } from '../../api/case';
+import { getUserCases, saveQuestionAnswers, saveSeating, saveStudentDetails } from '../../api/case';
 import useAuthStore from '../../store/useAuthStore';
 import useCaseStore from '../../store/useCaseStore';
 
@@ -23,7 +23,11 @@ vi.mock('react-konva', () => {
 });
 
 vi.mock('../../api/case', () => ({
-  saveCase: vi.fn(),
+  getUserCases: vi.fn(),
+  isCaseConflict: (error) =>
+    error?.response?.status === 409 && error?.response?.data?.code === 'CASE_CONFLICT',
+  saveQuestionAnswers: vi.fn(),
+  saveSeating: vi.fn(),
   saveStudentDetails: vi.fn(),
 }));
 
@@ -66,7 +70,9 @@ const sortRows = () =>
 
 beforeEach(() => {
   document.documentElement.dataset.theme = 'dark';
-  vi.mocked(saveCase).mockReset();
+  vi.mocked(getUserCases).mockReset();
+  vi.mocked(saveQuestionAnswers).mockReset();
+  vi.mocked(saveSeating).mockReset();
   vi.mocked(saveStudentDetails).mockReset();
   useAuthStore.setState({ userInfo: { token: 'token', userId: 'u-owner', role: 'member' } });
   useCaseStore.setState({ cases: [makeCase()] });
@@ -103,7 +109,7 @@ describe('QuestionsScreen save-answer toasts', () => {
   });
 
   it('shows a successful save as a success toast', async () => {
-    vi.mocked(saveCase).mockResolvedValue(makeCase());
+    vi.mocked(saveQuestionAnswers).mockResolvedValue(makeCase());
     const user = userEvent.setup();
     renderQuestions();
 
@@ -112,14 +118,62 @@ describe('QuestionsScreen save-answer toasts', () => {
     expect(await screen.findByRole('status')).toHaveTextContent('Answers saved!');
   });
 
+  it('sends only the selected question and takes the server copy of the case', async () => {
+    const fromServer = makeCase({ clientName: 'Saved by someone else', revision: 4 });
+    vi.mocked(saveQuestionAnswers).mockResolvedValue(fromServer);
+    const user = userEvent.setup();
+    renderQuestions();
+
+    await user.click(await openSaveAnswers(user));
+
+    await screen.findByRole('status');
+    expect(saveQuestionAnswers).toHaveBeenCalledWith('case-1', 'q-1', expect.any(Object), 'token');
+    expect(saveSeating).not.toHaveBeenCalled();
+    expect(useCaseStore.getState().cases[0]).toEqual(fromServer);
+    expect(JSON.parse(localStorage.getItem('cases'))[0].revision).toBe(4);
+  });
+
+  it('sends seating kept only in this browser once, so the server copy keeps it', async () => {
+    vi.mocked(saveQuestionAnswers).mockResolvedValue(makeCase({ seated: false, chartData: {} }));
+    vi.mocked(saveSeating).mockResolvedValue(makeCase({ revision: 2 }));
+    const user = userEvent.setup();
+    renderQuestions();
+
+    await user.click(await openSaveAnswers(user));
+
+    await screen.findByRole('status');
+    expect(saveSeating).toHaveBeenCalledWith(
+      'case-1',
+      expect.objectContaining({ chartData: makeCase().chartData }),
+      'token',
+    );
+    expect(useCaseStore.getState().cases[0]).toMatchObject({ seated: true, revision: 2 });
+  });
+
   it('shows save failures as error toasts', async () => {
-    vi.mocked(saveCase).mockRejectedValue({ response: { data: { message: 'Unable to save this case.' } } });
+    vi.mocked(saveQuestionAnswers).mockRejectedValue({ response: { data: { message: 'Unable to save this case.' } } });
     const user = userEvent.setup();
     renderQuestions();
 
     await user.click(await openSaveAnswers(user));
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Unable to save this case.');
+    expect(getUserCases).not.toHaveBeenCalled();
+  });
+
+  it('reloads the cases when the question was removed by someone else', async () => {
+    vi.mocked(saveQuestionAnswers).mockRejectedValue({
+      response: { status: 409, data: { code: 'CASE_CONFLICT', message: 'Someone else changed this case.' } },
+    });
+    vi.mocked(getUserCases).mockResolvedValue([makeCase({ questions: [], revision: 9 })]);
+    const user = userEvent.setup();
+    renderQuestions();
+
+    await user.click(await openSaveAnswers(user));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Someone else changed this case.');
+    expect(getUserCases).toHaveBeenCalledWith('token');
+    expect(useCaseStore.getState().cases[0].revision).toBe(9);
   });
 });
 

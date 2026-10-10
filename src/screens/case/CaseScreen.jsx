@@ -13,6 +13,7 @@ import PdfExportModal from "../../components/pdf-export/PdfExportModal";
 import ExportSlidesButton from "../../components/pdf-export/ExportSlidesButton";
 import {
   archiveCase,
+  isCaseConflict,
   saveCase,
   saveStudentDetails,
   setCaseOwners,
@@ -80,6 +81,7 @@ const CaseScreen = () => {
   } = useRecommendedPlaylist(userInfo?.token);
 
   const removeCase = useCaseStore((state) => state.removeCase);
+  const fetchUserCases = useCaseStore((state) => state.fetchUserCases);
   const isAccountAdmin = useAuthStore(selectIsAccountAdmin);
   const accountUsers = useAccountStore((state) => state.users);
   const fetchAccountUsers = useAccountStore((state) => state.fetchAccountUsers);
@@ -134,6 +136,20 @@ const CaseScreen = () => {
     return true;
   };
 
+  const reloadCases = async () => {
+    try {
+      await fetchUserCases(userInfo.token);
+      syncCasesToStorage();
+    } catch {
+      // The conflict message is shown either way.
+    }
+  };
+
+  /**
+   * Whole-case save. `updatedCase` carries the revision of the copy it was
+   * built from, so the server refuses it (409 CASE_CONFLICT) if someone else
+   * saved the case since.
+   */
   const persistCaseUpdate = async (updatedCase) => {
     if (!userInfo?.token) {
       updateCase(updatedCase);
@@ -151,6 +167,11 @@ const CaseScreen = () => {
       syncCasesToStorage();
       return savedCase || updatedCase;
     } catch (requestError) {
+      // Someone else changed the case first and nothing was saved. Show the
+      // latest version; the caller shows the server's message.
+      if (isCaseConflict(requestError)) {
+        await reloadCases();
+      }
       handleLostAccess(requestError);
       throw requestError;
     }

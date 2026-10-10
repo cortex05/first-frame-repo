@@ -4,12 +4,14 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import CaseScreen from './CaseScreen';
-import { archiveCase, saveCase, saveStudentDetails, startCase } from '../../api/case';
+import { archiveCase, getUserCases, saveCase, saveStudentDetails, startCase } from '../../api/case';
 import useAuthStore from '../../store/useAuthStore';
 import useCaseStore from '../../store/useCaseStore';
 
 vi.mock('../../api/case', () => ({
   archiveCase: vi.fn(),
+  isCaseConflict: (error) =>
+    error?.response?.status === 409 && error?.response?.data?.code === 'CASE_CONFLICT',
   saveCase: vi.fn(),
   saveStudentDetails: vi.fn(),
   setCaseOwners: vi.fn(),
@@ -232,6 +234,25 @@ describe('CaseScreen start session', () => {
 
     expect(await screen.findByText('Save failed')).toBeInTheDocument();
     expect(startCase).not.toHaveBeenCalled();
+  });
+
+  it('reloads the case and starts nothing when someone else changed it first', async () => {
+    vi.mocked(saveCase).mockRejectedValue({
+      response: { status: 409, data: { code: 'CASE_CONFLICT', message: 'Someone else changed this case.' } },
+    });
+    vi.mocked(getUserCases).mockResolvedValueOnce([
+      makeCase({ seated: false, clientName: 'Renamed elsewhere', revision: 3 }),
+    ]);
+    useAuthStore.setState({ userInfo: session() });
+    useCaseStore.setState({ cases: [makeCase({ seated: false, revision: 2 })] });
+
+    renderCase();
+    await startSession();
+
+    expect(await screen.findByText('Someone else changed this case.')).toBeInTheDocument();
+    expect(startCase).not.toHaveBeenCalled();
+    expect(useCaseStore.getState().cases[0]).toMatchObject({ clientName: 'Renamed elsewhere', revision: 3 });
+    expect(JSON.parse(localStorage.getItem('cases'))[0].revision).toBe(3);
   });
 });
 

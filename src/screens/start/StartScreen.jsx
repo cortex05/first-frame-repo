@@ -10,6 +10,8 @@ import {
   Transformer,
 } from "react-konva";
 import useCaseStore from "../../store/useCaseStore";
+import useAuthStore from "../../store/useAuthStore";
+import { saveSeating } from "../../api/case";
 import { useNavigate, useParams } from "react-router-dom";
 import { initialStudentGeneration } from "../../utilities/studentUtilities";
 import useSeatingDraft from "../../hooks/useSeatingDraft";
@@ -72,9 +74,12 @@ const StartScreen = () => {
     state.cases.find((c) => c._id === caseId),
   );
   const updateCase = useCaseStore((state) => state.updateCase);
+  const userInfo = useAuthStore((state) => state.userInfo);
 
   const [saveWarning, setSaveWarning] = useState(false);
   const [saveCheck, setSaveCheck] = useState(false);
+  const [isSavingChart, setIsSavingChart] = useState(false);
+  const [saveChartError, setSaveChartError] = useState("");
 
   const [rowInput, setRowInput] = useState(2);
   const [colInput, setColInput] = useState(3);
@@ -185,7 +190,7 @@ const StartScreen = () => {
     });
   };
 
-  const saveChart = () => {
+  const saveChart = async () => {
     // Convert relative circle positions to absolute for QuestionsScreen compatibility
     const rectsForSave = rects.map((r) => ({
       ...r,
@@ -199,12 +204,25 @@ const StartScreen = () => {
         .map((s) => roster.find((student) => student.number === s.id))
         .filter(Boolean),
     );
-    updateCase({
-      ...activeCase,
-      chartData: { rects: rectsForSave },
-      students: seatedStudents,
-      seated: true,
-    });
+    const seating = { chartData: { rects: rectsForSave }, students: seatedStudents };
+
+    // Saved on its own endpoint, so it never overwrites answers or questions
+    // someone else saved meanwhile. The draft is kept until the save succeeds.
+    setSaveChartError("");
+    setIsSavingChart(true);
+    try {
+      const savedCase = userInfo?.token
+        ? await saveSeating(activeCase._id, seating, userInfo.token)
+        : { ...activeCase, ...seating, seated: true };
+      updateCase(savedCase);
+    } catch (requestError) {
+      setSaveChartError(
+        requestError?.response?.data?.message ||
+          "Unable to save the seating chart. Please try again.",
+      );
+      setIsSavingChart(false);
+      return;
+    }
     localStorage.setItem(
       "cases",
       JSON.stringify(useCaseStore.getState().cases),
@@ -768,16 +786,26 @@ const StartScreen = () => {
         >
          Seating cannot be changed after saving. Do you want to proceed?
         </h3>
+        {saveChartError && (
+          <p role="alert" style={{ color: "var(--error-text-light)" }}>
+            {saveChartError}
+          </p>
+        )}
         <div className={styles.saveModalButtons}>
-          <button 
+          <button
             className={styles.confirm}
             onClick={saveChart}
+            disabled={isSavingChart}
           >
-            Proceed
+            {isSavingChart ? "Saving..." : "Proceed"}
           </button>
           <button
             className={styles.decline}
-            onClick={() => setSaveCheck(false)}
+            onClick={() => {
+              setSaveChartError("");
+              setSaveCheck(false);
+            }}
+            disabled={isSavingChart}
           >
             Cancel
           </button>

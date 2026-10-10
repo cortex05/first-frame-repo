@@ -3,7 +3,12 @@ import { useParams, Link } from "react-router-dom";
 import { Stage, Layer, Line, Rect, Circle, Text, Group } from "react-konva";
 import useCaseStore from "../../store/useCaseStore";
 import useAuthStore from "../../store/useAuthStore";
-import { saveCase, saveStudentDetails } from "../../api/case";
+import {
+  isCaseConflict,
+  saveQuestionAnswers,
+  saveSeating,
+  saveStudentDetails,
+} from "../../api/case";
 import { QuestionType } from "../../types/ENUMS";
 import { cssVar } from "../../utils/cssVars";
 import { getRiskTiers, getStudentTotal } from "../../utils/studentScores";
@@ -33,6 +38,7 @@ const QuestionsScreen = () => {
     state.cases.find((c) => c._id === caseId),
   );
   const updateCase = useCaseStore((state) => state.updateCase);
+  const fetchUserCases = useCaseStore((state) => state.fetchUserCases);
   const userInfo = useAuthStore((state) => state.userInfo);
 
   const [selectedQuestionId, setSelectedQuestionId] = useState(null);
@@ -220,6 +226,19 @@ const QuestionsScreen = () => {
     }
   };
 
+  // Replaces the local copies with the server's after a conflict.
+  const reloadCases = async () => {
+    try {
+      await fetchUserCases(userInfo.token);
+      localStorage.setItem(
+        "cases",
+        JSON.stringify(useCaseStore.getState().cases),
+      );
+    } catch {
+      // The conflict message is shown either way.
+    }
+  };
+
   // ── save answers ───────────────────────────────────────────────
   const handleSaveAnswers = async () => {
     if (!selectedQuestion) return;
@@ -231,39 +250,31 @@ const QuestionsScreen = () => {
 
     setIsSavingAnswers(true);
 
-    const newAnswers = {
-      ...(activeCase.answers || {}),
-      [selectedQuestionId]: currentAnswers,
-    };
-
-    const questionAnswersAsStrings = Object.fromEntries(
-      Object.entries(currentAnswers).map(([studentId, answer]) => [
-        studentId,
-        answer?.label === undefined || answer?.label === null
-          ? ""
-          : String(answer.label),
-      ]),
-    );
-
-    const updatedQuestions = activeCase.questions.map((q) =>
-      q.id === selectedQuestionId ? { ...q, answers: questionAnswersAsStrings } : q,
-    );
-
-    const updatedCasePayload = {
-      ...activeCase,
-      answers: newAnswers,
-      questions: updatedQuestions,
-    };
-
     try {
-      const savedCase = await saveCase(activeCase._id, updatedCasePayload, userInfo.token);
-      updateCase(savedCase || updatedCasePayload);
+      // Only this question's answers go to the server, so someone answering
+      // another question of the same case at the same time keeps their work.
+      let savedCase = await saveQuestionAnswers(
+        activeCase._id,
+        selectedQuestionId,
+        currentAnswers,
+        userInfo.token,
+      );
+      // A case seated before seating had its own endpoint holds its chart only
+      // in this browser; send it once so taking the server copy keeps it.
+      if (activeCase.seated && !savedCase.seated) {
+        savedCase = await saveSeating(activeCase._id, activeCase, userInfo.token);
+      }
+      updateCase(savedCase);
       localStorage.setItem(
         "cases",
         JSON.stringify(useCaseStore.getState().cases),
       );
       showToast("Answers saved!", "success");
     } catch (requestError) {
+      // The question was removed by someone else: show the current case.
+      if (isCaseConflict(requestError)) {
+        await reloadCases();
+      }
       showToast(
         requestError?.response?.data?.message ||
           "Unable to save answers. Please try again.",
@@ -276,7 +287,7 @@ const QuestionsScreen = () => {
 
   // ── student details ────────────────────────────────────────────
   // Only `studentDetails` is merged into the stored case, so answers still being
-  // tapped (currentAnswers) and seating not yet sent to the server are untouched.
+  // tapped (currentAnswers) are untouched.
   // Errors, 404 included, are shown in the report modal.
   const handleSaveStudentDetails = async (studentNumber, payload) => {
     const currentCase = () =>

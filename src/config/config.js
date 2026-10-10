@@ -24,6 +24,9 @@ export const CASE_API = {
   START: (id) => `/cases/${id}/start`,
   ARCHIVE: (id) => `/cases/${id}/archive`,
   STUDENT_DETAILS: (id, number) => `/cases/${id}/students/${number}/details`,
+  ANSWERS: (id, questionId) =>
+    `/cases/${id}/questions/${encodeURIComponent(questionId)}/answers`,
+  SEATING: (id) => `/cases/${id}/seating`,
 };
 
 export const ARCHIVE_API = {

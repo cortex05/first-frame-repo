@@ -34,6 +34,14 @@ export const createCase = async (casePayload, token) => {
   return normalizeCaseQuestionsPayload(res.data.data);
 };
 
+// The server's answer to a whole-case save carrying an outdated `revision`:
+// someone else changed the case first, and nothing was written.
+export const isCaseConflict = (requestError) =>
+  requestError?.response?.status === 409 &&
+  requestError?.response?.data?.code === 'CASE_CONFLICT';
+
+// Whole-case save. The payload's `revision` (from the last server copy) makes
+// the server refuse it with 409 CASE_CONFLICT if the case changed meanwhile.
 export const saveCase = async (caseId, casePayload, token) => {
   const normalizedPayload = normalizeCaseQuestionsPayload(casePayload);
 
@@ -84,6 +92,31 @@ export const saveStudentDetails = async (caseId, studentNumber, details, token) 
 // Moves a complete case into the archive. Returns the archived snapshot.
 export const archiveCase = async (caseId, token) => {
   const res = await axiosInstance.post(CASE_API.ARCHIVE(caseId), null, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return normalizeCaseQuestionsPayload(res.data.data);
+};
+
+// Replaces the answers to one question only, so people answering different
+// questions of the same case don't overwrite each other. `answers` is
+// { [studentNumber]: option }. Returns the whole updated case.
+export const saveQuestionAnswers = async (caseId, questionId, answers, token) => {
+  const res = await axiosInstance.put(CASE_API.ANSWERS(caseId, questionId), { answers }, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return normalizeCaseQuestionsPayload(res.data.data);
+};
+
+// Saves the seating chart and seated students and marks the case seated,
+// without touching answers or questions. Returns the whole updated case.
+export const saveSeating = async (caseId, { chartData, students }, token) => {
+  const res = await axiosInstance.put(CASE_API.SEATING(caseId), { chartData, students }, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
