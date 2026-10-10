@@ -25,6 +25,44 @@
   border-color: var(--blue-background);
 }
 
+.item input {
+  appearance: none;
+  display: grid;
+  place-content: center;
+  box-sizing: border-box;
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  border: 2px solid var(--blue-primary-dark);
+  border-radius: 3px;
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.item input:checked {
+  border-color: var(--blue-background);
+  background: var(--blue-primary-dark);
+}
+
+.item input::after {
+  width: 8px;
+  height: 4px;
+  border: solid var(--light-blue-background);
+  border-width: 0 0 2px 2px;
+  content: "";
+  transform: rotate(-45deg) scale(0);
+}
+
+.item input:checked::after {
+  transform: rotate(-45deg) scale(1);
+}
+
+.item input:focus-visible {
+  outline: 2px solid var(--blue-background);
+  outline-offset: 2px;
+}
+
 .username {
   flex: 1;
   font-weight: 500;
