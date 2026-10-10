@@ -177,6 +177,66 @@ describe('QuestionsScreen save-answer toasts', () => {
   });
 });
 
+describe('QuestionsScreen polled questions (spec 010)', () => {
+  const FALSE = { label: false, value: 0 };
+  const SECOND = { id: 'q-2', text: 'Credible?', type: 'TRUE_FALSE', options: QUESTIONS[0].options };
+  const card = (text) => screen.getByText(text).closest('div');
+
+  // What the screen has in currentAnswers, read off the save request.
+  const savedPayload = async (user) => {
+    vi.mocked(saveQuestionAnswers).mockResolvedValue(makeCase());
+    await user.click(screen.getByRole('button', { name: 'Save Answers' }));
+    await screen.findByRole('status');
+    return vi.mocked(saveQuestionAnswers).mock.calls[0][2];
+  };
+
+  it('marks a question with saved answers as polled, and one without as not', () => {
+    useCaseStore.setState({ cases: [makeCase({ questions: [...QUESTIONS, SECOND] })] });
+    renderQuestions();
+
+    expect(card('Intent?').className).toMatch(/inactiveAfterFirstPoll/);
+    expect(card('Credible?').className).not.toMatch(/inactiveAfterFirstPoll/);
+  });
+
+  it('starts an unpolled true/false question on false for everyone, without storing a flag', async () => {
+    useCaseStore.setState({ cases: [makeCase({ answers: {} })] });
+    localStorage.clear();
+    const user = userEvent.setup();
+    renderQuestions();
+
+    await user.click(screen.getByText('Intent?'));
+
+    expect(useCaseStore.getState().cases[0].questions[0]).not.toHaveProperty('firstPoll');
+    expect(localStorage.getItem('cases')).toBeNull();
+    expect(await savedPayload(user)).toEqual({ 1: FALSE, 2: FALSE, 3: FALSE });
+  });
+
+  it('reopens a polled true/false question with its saved answers', async () => {
+    const user = userEvent.setup();
+    renderQuestions();
+
+    await user.click(screen.getByText('Intent?'));
+
+    expect(await savedPayload(user)).toEqual(makeCase().answers['q-1']);
+  });
+
+  it('shows a question as polled once its answers are saved', async () => {
+    useCaseStore.setState({ cases: [makeCase({ answers: {}, questions: [...QUESTIONS, SECOND] })] });
+    vi.mocked(saveQuestionAnswers).mockResolvedValue(
+      makeCase({ answers: { 'q-1': { 1: FALSE } }, questions: [...QUESTIONS, SECOND] }),
+    );
+    const user = userEvent.setup();
+    renderQuestions();
+
+    await user.click(screen.getByText('Intent?'));
+    await user.click(screen.getByRole('button', { name: 'Save Answers' }));
+    await screen.findByRole('status');
+    await user.click(screen.getByText('Credible?'));
+
+    expect(card('Intent?').className).toMatch(/inactiveAfterFirstPoll/);
+  });
+});
+
 describe('QuestionsScreen student report', () => {
   it('opens the shared report, with points and details, from High to Low', async () => {
     const user = userEvent.setup();

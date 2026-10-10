@@ -131,13 +131,10 @@ const CreateRecommendedScreen = () => {
   const handleAddQuestion = () => {
     if (!questionForm.text.trim()) return;
 
-    // A recommended playlist is not tied to a case, so caseId stays null until
-    // its questions are pulled into one.
     const q = new Question(
       uuidv4(),
       questionForm.text.trim(),
       questionForm.type,
-      null,
       buildOptionsFromForm(),
     );
 
@@ -189,13 +186,7 @@ const CreateRecommendedScreen = () => {
 
     const recommendedPayload = {
       charge,
-      questions: questions.map((q) =>
-        normalizeQuestion({
-          ...q,
-          caseId: q.caseId || null,
-          firstPoll: Boolean(q.firstPoll),
-        }),
-      ),
+      questions: questions.map(normalizeQuestion),
     };
 
     try {

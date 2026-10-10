@@ -213,13 +213,10 @@ const EditRecommendedScreen = () => {
         )
       : [
           ...questions,
-          // A recommended playlist is not tied to a case, so caseId stays null
-          // until its questions are pulled into one.
           new Question(
             uuidv4(),
             questionForm.text.trim(),
             questionForm.type,
-            null,
             options,
           ),
         ];

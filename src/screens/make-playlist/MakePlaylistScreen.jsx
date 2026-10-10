@@ -131,7 +131,6 @@ const MakePlaylistScreen = () => {
       uuidv4(),
       questionForm.text.trim(),
       questionForm.type,
-      fromCaseId || null,
       options
     );
 
@@ -183,13 +182,7 @@ const MakePlaylistScreen = () => {
 
     const playlistPayload = {
       title: title.trim(),
-      questions: questions.map((q) =>
-        normalizeQuestion({
-          ...q,
-          caseId: q.caseId || fromCaseId || null,
-          firstPoll: Boolean(q.firstPoll),
-        }),
-      ),
+      questions: questions.map(normalizeQuestion),
     };
 
     try {

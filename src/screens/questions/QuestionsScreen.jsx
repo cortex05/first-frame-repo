@@ -11,7 +11,7 @@ import {
 } from "../../api/case";
 import { QuestionType } from "../../types/ENUMS";
 import { cssVar } from "../../utils/cssVars";
-import { getRiskTiers, getStudentTotal } from "../../utils/studentScores";
+import { getRiskTiers, getStudentTotal, isPolled } from "../../utils/studentScores";
 import {
   applyLocalStudentDetails,
   mergeStudentDetails,
@@ -178,16 +178,10 @@ const QuestionsScreen = () => {
       setSelectedQuestionId(questionId);
       setActiveOptionIndex(null);
       if (question?.type === QuestionType.TRUE_FALSE) {
-        if (!question.firstPoll) {
+        // Polled = the case has saved answers for it (spec 010). Until then a
+        // true/false question starts with everyone on "false".
+        if (!isPolled(activeCase, questionId)) {
           setCurrentAnswers(getDefaultFalseAnswers(question));
-          const updatedQuestions = activeCase.questions.map((q) =>
-            q.id === questionId ? { ...q, firstPoll: true } : q,
-          );
-          updateCase({ ...activeCase, questions: updatedQuestions });
-          localStorage.setItem(
-            "cases",
-            JSON.stringify(useCaseStore.getState().cases),
-          );
         } else {
           setCurrentAnswers(
             Object.keys(savedAnswers).length > 0
@@ -522,7 +516,7 @@ const QuestionsScreen = () => {
                     ? styles.selectedQuestion
                     : styles.questionCard
                 } ${
-                  q.firstPoll && selectedQuestionId !== q.id
+                  isPolled(activeCase, q.id) && selectedQuestionId !== q.id
                     ? styles.inactiveAfterFirstPoll
                     : ""
                 }`}

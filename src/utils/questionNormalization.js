@@ -26,6 +26,13 @@ export const normalizeQuestionOption = (option, questionType) => {
   };
 };
 
+/**
+ * A question is `{ id, text, type, options }` everywhere: on a case, a
+ * playlist and a recommended set (spec 010). Built field by field, so the
+ * fields older documents may still carry (`answers`, `firstPoll`, `caseId`)
+ * are dropped on the way in and never sent back out. A case's answers live
+ * only in `case.answers`.
+ */
 export const normalizeQuestion = (question) => {
   if (!question || typeof question !== 'object') {
     return question;
@@ -39,7 +46,7 @@ export const normalizeQuestion = (question) => {
     : [];
 
   return {
-    ...question,
+    id: question.id,
     text: String(question.text ?? '').trim(),
     type: normalizedType,
     options: normalizedOptions,

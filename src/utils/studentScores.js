@@ -28,6 +28,14 @@ export const bandTier = (value, min, max) => {
   return 'high';
 };
 
+/**
+ * Whether the case has saved answers for this question -- even an empty set.
+ * It replaces the stored `firstPoll` flag (spec 010): a polled true/false
+ * question reopens with its saved answers instead of the false defaults.
+ */
+export const isPolled = (caseLike, questionId) =>
+  Object.hasOwn(caseLike?.answers ?? {}, questionId);
+
 export const getAnswer = (caseLike, questionId, studentNumber) =>
   caseLike?.answers?.[questionId]?.[String(studentNumber)];
 

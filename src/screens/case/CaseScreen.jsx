@@ -267,7 +267,6 @@ const CaseScreen = () => {
       uuidv4(),
       normalized.text,
       normalized.type,
-      activeCase._id,
       (normalized.options || []).map((option) => ({
         label: option.label,
         value: Number(option.value) || 0,
@@ -421,7 +420,6 @@ const CaseScreen = () => {
       uuidv4(),
       questionForm.text.trim(),
       questionForm.type,
-      activeCase._id,
       options,
     );
     try {

@@ -9,6 +9,7 @@ import {
   getRiskTiers,
   getSeatedStudentNumbers,
   getStudentTotal,
+  isPolled,
 } from './studentScores';
 
 const TF = (id, trueValue) => ({
@@ -213,5 +214,21 @@ describe('regression: same colors as the Scores view before the refactor', () =>
       }
     }
     expect(bandTier(1, 1, 1)).toBe('low');
+  });
+});
+
+describe('isPolled', () => {
+  it('is true when the case has answers for the question, even an empty set', () => {
+    const caseLike = { answers: { 'q-1': { 1: { label: true, value: 6 } }, 'q-2': {} } };
+
+    expect(isPolled(caseLike, 'q-1')).toBe(true);
+    expect(isPolled(caseLike, 'q-2')).toBe(true);
+  });
+
+  it('is false for a question without answers, or a case without any', () => {
+    expect(isPolled({ answers: { 'q-1': {} } }, 'q-3')).toBe(false);
+    expect(isPolled({}, 'q-1')).toBe(false);
+    expect(isPolled({ answers: null }, 'q-1')).toBe(false);
+    expect(isPolled(undefined, 'q-1')).toBe(false);
   });
 });
