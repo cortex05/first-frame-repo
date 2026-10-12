@@ -6,8 +6,18 @@ import styles from './OwnerPicker.module.css';
 /**
  * Checkbox list of the account's active users. Controlled: `value` is the
  * array of selected user ids and `onChange` receives the next array.
+ *
+ * `labelledBy` / `describedBy` (element ids) turn the list into a named group,
+ * for forms where a heading introduces it. Without them the markup is a plain list.
  */
-const OwnerPicker = ({ users = [], value = [], onChange, disabled = false }) => {
+const OwnerPicker = ({
+  users = [],
+  value = [],
+  onChange,
+  disabled = false,
+  labelledBy,
+  describedBy,
+}) => {
   const activeUsers = activeUsersOf(users);
 
   const toggle = (userId) => {
@@ -18,7 +28,7 @@ const OwnerPicker = ({ users = [], value = [], onChange, disabled = false }) => 
     return <p className={styles.empty}>No users in this account yet.</p>;
   }
 
-  return (
+  const list = (
     <ul className={styles.list}>
       {activeUsers.map((user) => {
         const checked = value.includes(user._id);
@@ -38,6 +48,14 @@ const OwnerPicker = ({ users = [], value = [], onChange, disabled = false }) => 
         );
       })}
     </ul>
+  );
+
+  if (!labelledBy) return list;
+
+  return (
+    <div role="group" aria-labelledby={labelledBy} aria-describedby={describedBy}>
+      {list}
+    </div>
   );
 };
 

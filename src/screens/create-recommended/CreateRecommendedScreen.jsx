@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useId, useMemo, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useNavigate } from "react-router-dom";
 
@@ -28,6 +28,7 @@ const CreateRecommendedScreen = () => {
 
   const [questionModal, setQuestionModal] = useState(false);
   const [questionForm, setQuestionForm] = useState(EMPTY_QUESTION_FORM);
+  const idPrefix = useId();
   const [editingQuestionId, setEditingQuestionId] = useState(null);
   const [deleteQuestionId, setDeleteQuestionId] = useState(null);
 
@@ -219,8 +220,9 @@ const CreateRecommendedScreen = () => {
           <h2 className={styles.sectionHeading}>Charge</h2>
 
           <div className={styles.fieldStyle}>
-            <label className={styles.labelStyle}>Charge</label>
+            <label className={styles.labelStyle} htmlFor={`${idPrefix}-charge`}>Charge</label>
             <select
+              id={`${idPrefix}-charge`}
               className={styles.inputStyle}
               value={charge}
               onChange={(e) => setCharge(e.target.value)}
@@ -299,8 +301,9 @@ const CreateRecommendedScreen = () => {
           hideDefaultClose={Boolean(editingQuestionId)}
         >
           <div className={styles.fieldStyle}>
-            <label className={styles.labelStyle}>Question Text</label>
+            <label htmlFor={`${idPrefix}-q-text`} className={styles.labelStyle}>Question Text</label>
             <textarea
+              id={`${idPrefix}-q-text`}
               className={styles.textAreaStyle}
               value={questionForm.text}
               onChange={(e) => setQuestionForm((prev) => ({ ...prev, text: e.target.value }))}
@@ -310,8 +313,9 @@ const CreateRecommendedScreen = () => {
           </div>
 
           <div className={styles.fieldStyle}>
-            <label className={styles.labelStyle}>Type</label>
+            <label htmlFor={`${idPrefix}-q-type`} className={styles.labelStyle}>Type</label>
             <select
+              id={`${idPrefix}-q-type`}
               className={styles.inputStyle}
               value={questionForm.type}
               onChange={(e) => setQuestionForm((prev) => ({ ...prev, type: e.target.value }))}
@@ -322,8 +326,8 @@ const CreateRecommendedScreen = () => {
           </div>
 
           {questionForm.type === QuestionType.TRUE_FALSE && (
-            <div className={styles.fieldStyle}>
-              <label className={styles.labelStyle}>Point Values</label>
+            <div role="group" aria-labelledby={`${idPrefix}-q-points`} className={styles.fieldStyle}>
+              <span id={`${idPrefix}-q-points`} className={styles.labelStyle}>Point Values</span>
               {questionForm.tfValues.map((opt, i) => (
                 <div key={i} className={styles.trueFalseValueDisplay}>
                   <span>{String(opt.label)}</span>
@@ -333,6 +337,7 @@ const CreateRecommendedScreen = () => {
                     value={opt.value}
                     onChange={(e) => handleTFValueChange(i, e.target.value)}
                     placeholder="Points"
+                    aria-label={`${String(opt.label) === "true" ? "True" : "False"} points`}
                   />
                 </div>
               ))}
@@ -340,8 +345,8 @@ const CreateRecommendedScreen = () => {
           )}
 
           {questionForm.type === QuestionType.MULTIPLE_CHOICE && (
-            <div className={styles.fieldStyle}>
-              <label className={styles.labelStyle}>Options (up to 4)</label>
+            <div role="group" aria-labelledby={`${idPrefix}-q-options`} className={styles.fieldStyle}>
+              <span id={`${idPrefix}-q-options`} className={styles.labelStyle}>Options (up to 4)</span>
               {questionForm.options.map((opt, i) => (
                 <div key={i} className={styles.optionRow}>
                   <input
@@ -350,6 +355,7 @@ const CreateRecommendedScreen = () => {
                     value={opt.label}
                     onChange={(e) => handleOptionChange(i, "label", e.target.value)}
                     placeholder={`Option ${i + 1}`}
+                    aria-label={`Option ${i + 1}`}
                   />
                   <input
                     className={`${styles.inputStyle} ${styles.pointsInput}`}
@@ -357,6 +363,7 @@ const CreateRecommendedScreen = () => {
                     value={opt.value}
                     onChange={(e) => handleOptionChange(i, "value", e.target.value)}
                     placeholder="Points"
+                    aria-label={`Option ${i + 1} points`}
                   />
                 </div>
               ))}

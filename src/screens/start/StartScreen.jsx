@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo, useEffect } from "react";
+import { useState, useRef, useMemo, useEffect, useId } from "react";
 import {
   Stage,
   Layer,
@@ -90,6 +90,7 @@ const StartScreen = () => {
   const transformerRef = useRef(null);
   const rectNodes = useRef(new Map());
   const [selectedRectId, setSelectedRectId] = useState(null);
+  const idPrefix = useId();
 
   // Canvas can't resolve `var(--x)` — Konva needs the literal hex.
   const canvas = {
@@ -363,6 +364,7 @@ const StartScreen = () => {
 
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           <label
+            htmlFor={`${idPrefix}-rows`}
             style={{
               fontSize: 13,
               fontWeight: 600,
@@ -374,6 +376,8 @@ const StartScreen = () => {
             }}
           >
             <svg
+              aria-hidden="true"
+              focusable="false"
               width="8"
               height="24"
               viewBox="0 0 8 24"
@@ -388,6 +392,7 @@ const StartScreen = () => {
             <span style={{ lineHeight: 1 }}>Rows/Depth</span>
           </label>
           <input
+            id={`${idPrefix}-rows`}
             style={inputStyle}
             type="number"
             min={1}
@@ -399,6 +404,7 @@ const StartScreen = () => {
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           <div>
             <label
+              htmlFor={`${idPrefix}-cols`}
               style={{
                 fontSize: 13,
                 fontWeight: 600,
@@ -410,6 +416,8 @@ const StartScreen = () => {
               }}
             >
               <svg
+                aria-hidden="true"
+                focusable="false"
                 width="32"
                 height="8"
                 viewBox="0 0 32 8"
@@ -426,6 +434,7 @@ const StartScreen = () => {
             </label>
           </div>
           <input
+            id={`${idPrefix}-cols`}
             style={inputStyle}
             type="number"
             min={1}

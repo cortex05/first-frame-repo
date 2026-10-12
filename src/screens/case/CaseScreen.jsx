@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useId, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import useCaseStore from "../../store/useCaseStore";
@@ -64,6 +64,7 @@ const CaseScreen = () => {
     activeCase ? activeCase.studentNumber : 0,
   );
   const [isSavingCase, setIsSavingCase] = useState(false);
+  const idPrefix = useId();
   const [saveError, setSaveError] = useState("");
   const [playlistModalOpen, setPlaylistModalOpen] = useState(false);
   const [selectedPlaylist, setSelectedPlaylist] = useState(null);
@@ -904,6 +905,7 @@ const CaseScreen = () => {
             }}
           >
             <label
+              htmlFor={`${idPrefix}-q-text`}
               style={{
                 fontSize: 13,
                 fontWeight: 600,
@@ -913,6 +915,7 @@ const CaseScreen = () => {
               Question Text
             </label>
             <textarea
+              id={`${idPrefix}-q-text`}
               className={styles.inputStyle}
               type="text"
               value={questionForm.text}
@@ -933,6 +936,7 @@ const CaseScreen = () => {
             }}
           >
             <label
+              htmlFor={`${idPrefix}-q-type`}
               style={{
                 fontSize: 13,
                 fontWeight: 600,
@@ -942,6 +946,7 @@ const CaseScreen = () => {
               Type
             </label>
             <select
+              id={`${idPrefix}-q-type`}
               className={styles.inputStyle}
               value={questionForm.type}
               onChange={(e) =>
@@ -956,8 +961,9 @@ const CaseScreen = () => {
           </div>
 
           {questionForm.type === QuestionType.TRUE_FALSE && (
-            <div style={{ marginBottom: 16 }}>
-              <label
+            <div role="group" aria-labelledby={`${idPrefix}-q-points`} style={{ marginBottom: 16 }}>
+              <span
+                id={`${idPrefix}-q-points`}
                 style={{
                   fontSize: 13,
                   fontWeight: 600,
@@ -967,8 +973,8 @@ const CaseScreen = () => {
                 }}
               >
                 Point Values
-              </label>
-              <div style={{ display: "flex", flexDirection: "row" }}>
+              </span>
+              <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
                 {questionForm.tfValues.map((opt, i) => (
                   <div
                     key={i}
@@ -980,7 +986,7 @@ const CaseScreen = () => {
                     }}
                   >
                     <span
-                      style={{ minWidth: 52, fontSize: 14, fontWeight: 600 }}
+                      style={{ minWidth: 52, fontSize: 14, fontWeight: 600, color: 'var(--modal-text)' }}
                     >
                       {String(opt.label)}:
                     </span>
@@ -991,6 +997,7 @@ const CaseScreen = () => {
                       value={opt.value}
                       onChange={(e) => handleTFValueChange(i, e.target.value)}
                       placeholder="Points"
+                      aria-label={`${String(opt.label) === "true" ? "True" : "False"} points`}
                     />
                   </div>
                 ))}
@@ -999,8 +1006,9 @@ const CaseScreen = () => {
           )}
 
           {questionForm.type === QuestionType.MULTIPLE_CHOICE && (
-            <div style={{ marginBottom: 16 }}>
-              <label
+            <div role="group" aria-labelledby={`${idPrefix}-q-options`} style={{ marginBottom: 16 }}>
+              <span
+                id={`${idPrefix}-q-options`}
                 style={{
                   fontSize: 13,
                   fontWeight: 600,
@@ -1010,7 +1018,7 @@ const CaseScreen = () => {
                 }}
               >
                 Options (up to 4)
-              </label>
+              </span>
               {questionForm.options.map((opt, i) => (
                 <div
                   key={i}
@@ -1025,6 +1033,7 @@ const CaseScreen = () => {
                       handleOptionChange(i, "label", e.target.value)
                     }
                     placeholder={`Option ${i + 1}`}
+                    aria-label={`Option ${i + 1}`}
                   />
                   <input
                     className={styles.inputStyle}
@@ -1035,6 +1044,7 @@ const CaseScreen = () => {
                       handleOptionChange(i, "value", e.target.value)
                     }
                     placeholder="Points"
+                    aria-label={`Option ${i + 1} points`}
                   />
                 </div>
               ))}
@@ -1211,8 +1221,11 @@ const CaseScreen = () => {
                 How many students are in this case?
               </p>
               <div className={styles.fieldStyle}>
-                <label className={styles.labelStyle}>Number of Students:</label>
+                <label className={styles.labelStyle} htmlFor={`${idPrefix}-start-students`}>
+                  Number of Students:
+                </label>
                 <input
+                  id={`${idPrefix}-start-students`}
                   className={styles.inputStyle}
                   type="number"
                   min={1}

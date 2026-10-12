@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { changePassword } from '../../../api/auth';
@@ -23,6 +23,7 @@ const ChangePasswordScreen = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const idPrefix = useId();
 
   const isForced = Boolean(userInfo?.mustChangePassword);
 
@@ -67,10 +68,11 @@ const ChangePasswordScreen = () => {
 
       <form onSubmit={handleSubmit} className={styles.form}>
         <div className={styles.fieldStyle}>
-          <label className={styles.labelStyle}>
+          <label className={styles.labelStyle} htmlFor={`${idPrefix}-current`}>
             {isForced ? 'Temporary Password' : 'Current Password'}
           </label>
           <input
+            id={`${idPrefix}-current`}
             className={styles.inputStyle}
             type="password"
             value={currentPassword}
@@ -81,8 +83,9 @@ const ChangePasswordScreen = () => {
         </div>
 
         <div className={styles.fieldStyle}>
-          <label className={styles.labelStyle}>New Password</label>
+          <label className={styles.labelStyle} htmlFor={`${idPrefix}-new`}>New Password</label>
           <input
+            id={`${idPrefix}-new`}
             className={styles.inputStyle}
             type="password"
             value={newPassword}
@@ -94,8 +97,9 @@ const ChangePasswordScreen = () => {
         </div>
 
         <div className={styles.fieldStyle}>
-          <label className={styles.labelStyle}>Confirm New Password</label>
+          <label className={styles.labelStyle} htmlFor={`${idPrefix}-confirm`}>Confirm New Password</label>
           <input
+            id={`${idPrefix}-confirm`}
             className={styles.inputStyle}
             type="password"
             value={confirmPassword}

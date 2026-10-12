@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useId, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { login } from '../../../api/auth';
@@ -18,6 +18,7 @@ const LoginScreen = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const idPrefix = useId();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -64,8 +65,9 @@ const LoginScreen = () => {
 
       <form onSubmit={handleSubmit} className={styles.form}>
         <div className={styles.fieldStyle}>
-          <label className={styles.labelStyle}>Email</label>
+          <label className={styles.labelStyle} htmlFor={`${idPrefix}-email`}>Email</label>
           <input
+            id={`${idPrefix}-email`}
             className={styles.inputStyle}
             type="email"
             value={email}
@@ -77,8 +79,9 @@ const LoginScreen = () => {
         </div>
 
         <div className={styles.fieldStyle}>
-          <label className={styles.labelStyle}>Password</label>
+          <label className={styles.labelStyle} htmlFor={`${idPrefix}-password`}>Password</label>
           <input
+            id={`${idPrefix}-password`}
             className={styles.inputStyle}
             type="password"
             value={password}

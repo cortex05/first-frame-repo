@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import CaseScreen from './CaseScreen';
 import { archiveCase, getUserCases, saveCase, saveStudentDetails, startCase } from '../../api/case';
 import { getPlaylistById } from '../../api/playlist';
+import { expectLabelledQuestionEditor } from '../../test/questionEditor';
 import useAuthStore from '../../store/useAuthStore';
 import useCaseStore from '../../store/useCaseStore';
 
@@ -627,5 +628,29 @@ describe('CaseScreen dialog focus and Escape (spec 012)', () => {
     await user.keyboard('{Escape}');
 
     expect(screen.getByRole('dialog', { name: 'Archive Case' })).toBeInTheDocument();
+  });
+});
+
+describe('CaseScreen form labels (spec 013)', () => {
+  beforeEach(() => {
+    useAuthStore.setState({ userInfo: session() });
+  });
+
+  it('names every control in the Add Question editor', async () => {
+    useCaseStore.setState({ cases: [makeCase()] });
+    renderCase();
+
+    await expectLabelledQuestionEditor(userEvent.setup());
+  });
+
+  it('names the Number of Students field in Start Session', async () => {
+    useCaseStore.setState({ cases: [makeCase({ seated: false })] });
+    const user = userEvent.setup();
+    renderCase();
+
+    await user.click(screen.getByRole('button', { name: 'Start Session' }));
+    await user.click(screen.getByRole('button', { name: 'No' }));
+
+    expect(screen.getByLabelText('Number of Students:')).toHaveAttribute('type', 'number');
   });
 });

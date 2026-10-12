@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useId, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -29,6 +29,7 @@ const MakePlaylistScreen = () => {
 
   const [questionModal, setQuestionModal] = useState(false);
   const [questionForm, setQuestionForm] = useState(EMPTY_QUESTION_FORM);
+  const idPrefix = useId();
   const [editingQuestionId, setEditingQuestionId] = useState(null);
   const [deleteQuestionId, setDeleteQuestionId] = useState(null);
 
@@ -212,8 +213,9 @@ const MakePlaylistScreen = () => {
         <h1 style={{ marginBottom: 32 }}>Make Question Playlist</h1>
 
         <section style={{ marginBottom: 32 }}>
-          <label className={styles.labelStyle}>Title</label>
+          <label className={styles.labelStyle} htmlFor={`${idPrefix}-title`}>Title</label>
           <input
+            id={`${idPrefix}-title`}
             className={styles.inputStyle}
             type="text"
             value={title}
@@ -250,7 +252,7 @@ const MakePlaylistScreen = () => {
               <span style={{ fontWeight: 600, color: 'var(--modal-text)', minWidth: 24 }}>
                 {i + 1}.
               </span>
-              <span style={{ flex: 1 }}>{q.text}</span>
+              <span style={{ flex: 1, color: 'var(--modal-text)' }}>{q.text}</span>
 
               <button
                 onClick={() => openEditQuestionModal(q)}
@@ -369,8 +371,9 @@ const MakePlaylistScreen = () => {
         hideDefaultClose={Boolean(editingQuestion)}
       >
         <div className={styles.fieldStyle}>
-          <label className={styles.labelStyle}>Question Text</label>
+          <label htmlFor={`${idPrefix}-q-text`} className={styles.labelStyle}>Question Text</label>
           <textarea
+            id={`${idPrefix}-q-text`}
             className={styles.inputStyle}
             type="text"
             value={questionForm.text}
@@ -383,8 +386,9 @@ const MakePlaylistScreen = () => {
         </div>
 
         <div className={styles.fieldStyle}>
-          <label className={styles.labelStyle}>Type</label>
+          <label htmlFor={`${idPrefix}-q-type`} className={styles.labelStyle}>Type</label>
           <select
+            id={`${idPrefix}-q-type`}
             className={styles.inputStyle}
             value={questionForm.type}
             onChange={(e) =>
@@ -397,8 +401,9 @@ const MakePlaylistScreen = () => {
         </div>
 
         {questionForm.type === QuestionType.TRUE_FALSE && (
-          <div style={{ marginBottom: 16 }}>
-            <label
+          <div role="group" aria-labelledby={`${idPrefix}-q-points`} style={{ marginBottom: 16 }}>
+            <span
+              id={`${idPrefix}-q-points`}
               style={{
                 fontSize: 13,
                 fontWeight: 600,
@@ -408,8 +413,8 @@ const MakePlaylistScreen = () => {
               }}
             >
               Point Values
-            </label>
-            <div style={{ display: 'flex', flexDirection: 'row' }}>
+            </span>
+            <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
               {questionForm.tfValues.map((opt, i) => (
                 <div
                   key={i}
@@ -418,6 +423,8 @@ const MakePlaylistScreen = () => {
                     alignItems: 'center',
                     gap: 8,
                     marginBottom: 8,
+                    
+                color: 'var(--modal-text)'
                   }}
                 >
                   <span style={{ minWidth: 52, fontSize: 14, fontWeight: 600 }}>
@@ -430,6 +437,7 @@ const MakePlaylistScreen = () => {
                     value={opt.value}
                     onChange={(e) => handleTFValueChange(i, e.target.value)}
                     placeholder="Points"
+                    aria-label={`${String(opt.label) === 'true' ? 'True' : 'False'} points`}
                   />
                 </div>
               ))}
@@ -438,8 +446,9 @@ const MakePlaylistScreen = () => {
         )}
 
         {questionForm.type === QuestionType.MULTIPLE_CHOICE && (
-          <div style={{ marginBottom: 16 }}>
-            <label
+          <div role="group" aria-labelledby={`${idPrefix}-q-options`} style={{ marginBottom: 16 }}>
+            <span
+              id={`${idPrefix}-q-options`}
               style={{
                 fontSize: 13,
                 fontWeight: 600,
@@ -449,7 +458,7 @@ const MakePlaylistScreen = () => {
               }}
             >
               Options (up to 4)
-            </label>
+            </span>
             {questionForm.options.map((opt, i) => (
               <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
                 <input
@@ -459,6 +468,7 @@ const MakePlaylistScreen = () => {
                   value={opt.label}
                   onChange={(e) => handleOptionChange(i, 'label', e.target.value)}
                   placeholder={`Option ${i + 1}`}
+                  aria-label={`Option ${i + 1}`}
                 />
                 <input
                   className={styles.inputStyle}
@@ -467,6 +477,7 @@ const MakePlaylistScreen = () => {
                   value={opt.value}
                   onChange={(e) => handleOptionChange(i, 'value', e.target.value)}
                   placeholder="Points"
+                  aria-label={`Option ${i + 1} points`}
                 />
               </div>
             ))}

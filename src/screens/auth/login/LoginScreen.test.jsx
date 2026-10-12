@@ -71,3 +71,16 @@ describe('LoginScreen', () => {
     expect(getUserCases).toHaveBeenCalledWith('token');
   });
 });
+
+describe('LoginScreen labels (spec 013)', () => {
+  it('names the fields by their labels, and a label click focuses its field', async () => {
+    renderScreen();
+
+    const email = screen.getByLabelText('Email');
+    expect(email).toHaveAttribute('type', 'email');
+    expect(screen.getByLabelText('Password')).toHaveAttribute('type', 'password');
+
+    await userEvent.click(screen.getByText('Email'));
+    expect(email).toHaveFocus();
+  });
+});

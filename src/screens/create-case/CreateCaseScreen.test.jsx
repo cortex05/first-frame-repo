@@ -1,10 +1,11 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import CreateCaseScreen from './CreateCaseScreen';
 import { createCase } from '../../api/case';
+import { getAccountUsers } from '../../api/account';
 import useAuthStore from '../../store/useAuthStore';
 import useCaseStore from '../../store/useCaseStore';
 
@@ -121,5 +122,29 @@ describe('CreateCaseScreen', () => {
     expect(await screen.findByText('Invalid case category')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Confirm Case' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Yes, create case' })).toBeEnabled();
+  });
+});
+
+describe('CreateCaseScreen labels (spec 013)', () => {
+  it('names each field by its label', () => {
+    useAuthStore.setState({ userInfo: session });
+    renderCreate();
+
+    expect(screen.getByLabelText('Client Name')).toHaveAttribute('placeholder', 'Client name');
+    expect(screen.getByLabelText('Attorney')).toHaveAttribute('placeholder', 'Attorney name');
+    expect(screen.getByLabelText('Case Category').tagName).toBe('SELECT');
+    expect(screen.getByLabelText('Number of Students')).toHaveAttribute('type', 'number');
+  });
+
+  it('groups the owner checkboxes under Case Owners, with its hint as the description', async () => {
+    vi.mocked(getAccountUsers).mockResolvedValue([
+      { _id: 'u-2', username: 'bob', role: 'member', status: 'active' },
+    ]);
+    useAuthStore.setState({ userInfo: session });
+    renderCreate();
+
+    const owners = await screen.findByRole('group', { name: 'Case Owners' });
+    expect(owners).toHaveAccessibleDescription(/Owners can open, run and archive this case/);
+    expect(within(owners).getByRole('checkbox', { name: /bob/ })).toBeInTheDocument();
   });
 });

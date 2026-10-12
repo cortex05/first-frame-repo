@@ -37,3 +37,32 @@ describe('OwnerPicker', () => {
     expect(screen.getByText('No users in this account yet.')).toBeInTheDocument();
   });
 });
+
+describe('OwnerPicker group (spec 013)', () => {
+  it('is a plain list without labelledBy', () => {
+    render(<OwnerPicker users={users} value={[]} onChange={() => {}} />);
+
+    expect(screen.queryByRole('group')).not.toBeInTheDocument();
+    expect(screen.getByRole('list')).toBeInTheDocument();
+  });
+
+  it('is a named, described group with labelledBy and describedBy', () => {
+    render(
+      <>
+        <span id="owners-heading">Case Owners</span>
+        <p id="owners-hint">Owners can open this case.</p>
+        <OwnerPicker
+          users={users}
+          value={[]}
+          onChange={() => {}}
+          labelledBy="owners-heading"
+          describedBy="owners-hint"
+        />
+      </>,
+    );
+
+    const group = screen.getByRole('group', { name: 'Case Owners' });
+    expect(group).toHaveAccessibleDescription('Owners can open this case.');
+    expect(group).toContainElement(screen.getByRole('list'));
+  });
+});

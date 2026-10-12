@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useId, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Modal from "../../components/modal/Modal";
@@ -36,6 +36,7 @@ const CreateCaseScreen = () => {
   const [confirmModal, setConfirmModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const idPrefix = useId();
 
   const addCase = useCaseStore((state) => state.addCase);
   const setActiveCase = useCaseStore((state) => state.setActiveCase);
@@ -111,8 +112,9 @@ const CreateCaseScreen = () => {
         <h2 style={{ marginBottom: 16 }}>Basic Info</h2>
 
         <div className={styles.fieldStyle}>
-          <label className={styles.labelStyle}>Client Name</label>
+          <label className={styles.labelStyle} htmlFor={`${idPrefix}-client`}>Client Name</label>
           <input
+            id={`${idPrefix}-client`}
             className={styles.inputStyle}
             type="text"
             value={clientName}
@@ -122,8 +124,9 @@ const CreateCaseScreen = () => {
         </div>
 
         <div className={styles.fieldStyle}>
-          <label className={styles.labelStyle}>Attorney</label>
+          <label className={styles.labelStyle} htmlFor={`${idPrefix}-attorney`}>Attorney</label>
           <input
+            id={`${idPrefix}-attorney`}
             className={styles.inputStyle}
             type="text"
             value={attorney}
@@ -133,8 +136,9 @@ const CreateCaseScreen = () => {
         </div>
 
         <div className={styles.fieldStyle}>
-          <label className={styles.labelStyle}>Case Category</label>
+          <label className={styles.labelStyle} htmlFor={`${idPrefix}-category`}>Case Category</label>
           <select
+            id={`${idPrefix}-category`}
             className={styles.inputStyle}
             value={category}
             onChange={(e) => setCategory(e.target.value)}
@@ -153,8 +157,9 @@ const CreateCaseScreen = () => {
         </div>
 
         <div className={styles.fieldStyle}>
-          <label className={styles.labelStyle}>Number of Students</label>
+          <label className={styles.labelStyle} htmlFor={`${idPrefix}-students`}>Number of Students</label>
           <input
+            id={`${idPrefix}-students`}
             className={styles.inputStyle}
             type="number"
             min={1}
@@ -165,11 +170,17 @@ const CreateCaseScreen = () => {
         </div>
 
         <div className={styles.fieldStyle}>
-          <label className={styles.labelStyle}>Case Owners</label>
-          <p className={styles.ownersHint}>
+          <span className={styles.labelStyle} id={`${idPrefix}-owners`}>Case Owners</span>
+          <p className={styles.ownersHint} id={`${idPrefix}-owners-hint`}>
             Owners can open, run and archive this case. Account admins can always see it.
           </p>
-          <OwnerPicker users={accountUsers} value={owners} onChange={setOwners} />
+          <OwnerPicker
+            users={accountUsers}
+            value={owners}
+            onChange={setOwners}
+            labelledBy={`${idPrefix}-owners`}
+            describedBy={`${idPrefix}-owners-hint`}
+          />
         </div>
       </section>
 

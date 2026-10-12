@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import EditRecommendedScreen from './EditRecommendedScreen';
 import { getRecommendedForCharge } from '../../api/recommended';
 import useAuthStore from '../../store/useAuthStore';
+import { expectLabelledQuestionEditor } from '../../test/questionEditor';
 
 vi.mock('../../api/recommended', () => ({
   getRecommendedForCharge: vi.fn(),
@@ -55,5 +56,19 @@ describe('EditRecommendedScreen back link (spec 011)', () => {
     await user.keyboard('{Enter}');
 
     expect(screen.getByText('Recommended list')).toBeInTheDocument();
+  });
+});
+
+describe('EditRecommendedScreen form labels (spec 013)', () => {
+  it('names every control in the Add Question editor', async () => {
+    vi.mocked(getRecommendedForCharge).mockResolvedValue({
+      _id: 'rec-1',
+      charge: 'Theft',
+      questions: [{ id: 'q-1', text: 'Intent?', type: 'TRUE_FALSE', options: [] }],
+    });
+    renderEdit();
+    await screen.findByRole('heading', { name: 'Charge: Theft' });
+
+    await expectLabelledQuestionEditor(userEvent.setup());
   });
 });
