@@ -18,6 +18,7 @@ import useSeatingDraft from "../../hooks/useSeatingDraft";
 
 import Modal from "../../components/modal/Modal";
 import { cssVar } from "../../utils/cssVars";
+import { rowSummary } from "../../utils/seating";
 import styles from "./SaveScreen.module.css";
 
 const SIDEBAR_W = 260;
@@ -237,6 +238,43 @@ const StartScreen = () => {
   const closeSaveCheck = () => {
     setSaveChartError("");
     setSaveCheck(false);
+  };
+
+  // ── keyboard positioning (spec 014) ───────────────────────────
+  // Undo or Clear All can remove the selected row; then nothing is selected.
+  const selectedRect = rects.find((r) => r.id === selectedRectId) ?? null;
+
+  const nudge = (rect, dx, dy) => moveRect(rect.id, rect.x + dx, rect.y + dy);
+
+  // Rotation is about the center, so the unrotated corner (x, y) stays put.
+  const rotateBy45 = (rect) =>
+    rotateRect(rect.id, rect.x, rect.y, ((rect.rotation || 0) + 45) % 360);
+
+  const ARROW_STEPS = {
+    ArrowUp: [0, -1],
+    ArrowDown: [0, 1],
+    ArrowLeft: [-1, 0],
+    ArrowRight: [1, 0],
+  };
+
+  // On a row's button in the Rows list: arrows move it (Shift: fine steps),
+  // R rotates it. The first key on an unselected row only selects it.
+  const handleRowKeyDown = (event, rect) => {
+    const step = ARROW_STEPS[event.key];
+    const isRotate = event.key === "r" || event.key === "R";
+    if (!step && !isRotate) return;
+    event.preventDefault();
+
+    if (rect.id !== selectedRectId) {
+      setSelectedRectId(rect.id);
+      return;
+    }
+    if (isRotate) {
+      rotateBy45(rect);
+      return;
+    }
+    const distance = event.shiftKey ? 8 : GRID_SPACING;
+    nudge(rect, step[0] * distance, step[1] * distance);
   };
 
   const clampScale = (s) => Math.min(SCALE_MAX, Math.max(SCALE_MIN, s));
@@ -489,6 +527,57 @@ const StartScreen = () => {
           </button>
         </div>
 
+        <h3 className={styles.rowsHeading}>Rows</h3>
+        {rects.length === 0 ? (
+          <p className={styles.rowsEmpty}>No rows yet.</p>
+        ) : (
+          <ul className={styles.rowList}>
+            {rects.map((r, i) => (
+              <li key={r.id}>
+                <button
+                  type="button"
+                  className={styles.rowButton}
+                  aria-pressed={r.id === selectedRectId}
+                  onClick={() => setSelectedRectId(r.id)}
+                  onKeyDown={(event) => handleRowKeyDown(event, r)}
+                >
+                  Row {i + 1}: {rowSummary(r)}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {selectedRect && (
+          <div role="group" aria-label="Move row" className={styles.moveControls}>
+            <div className={styles.moveGrid}>
+              {[
+                ["Move up", "↑", styles.moveUp, 0, -1],
+                ["Move left", "←", styles.moveLeft, -1, 0],
+                ["Move right", "→", styles.moveRight, 1, 0],
+                ["Move down", "↓", styles.moveDown, 0, 1],
+              ].map(([label, arrow, className, dx, dy]) => (
+                <button
+                  key={label}
+                  type="button"
+                  aria-label={label}
+                  className={`${styles.moveButton} ${className}`}
+                  onClick={() => nudge(selectedRect, dx * GRID_SPACING, dy * GRID_SPACING)}
+                >
+                  {arrow}
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              className={styles.moveButton}
+              onClick={() => rotateBy45(selectedRect)}
+            >
+              Rotate 45°
+            </button>
+          </div>
+        )}
+
         <button
           onClick={() => setSaveWarning(true)}
           style={{
@@ -532,157 +621,160 @@ const StartScreen = () => {
             paddingTop: 12,
           }}
         >
-          Drag rows to reposition. Tap a row, then drag its round handle to
-          rotate it. Scroll or pinch to zoom.
+          Drag rows to reposition, or select a row in the list and use the
+          arrow keys (R to rotate). Scroll or pinch to zoom.
         </p>
       </div>
 
       {/* ── Canvas ── */}
       <div style={{ flex: 1, position: "relative" }}>
-        <Stage
-          ref={stageRef}
-          width={stageWidth}
-          height={stageHeight}
-          scaleX={view.scale}
-          scaleY={view.scale}
-          x={view.x}
-          y={view.y}
-          draggable
-          onWheel={handleWheel}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          onClick={(e) => {
-            if (e.target === stageRef.current) setSelectedRectId(null);
-          }}
-          onTap={(e) => {
-            if (e.target === stageRef.current) setSelectedRectId(null);
-          }}
-          onDragEnd={(e) => {
-            // Only the stage itself — a rect drag bubbles up through here too.
-            if (e.target !== stageRef.current) return;
-            setView({ scale: view.scale, x: e.target.x(), y: e.target.y() });
-          }}
-        >
-          <Layer>
-            {isLightTheme && (
-              <>
-                {gridXs.map((x) => (
-                  <Line
-                    key={`grid-x-${x}`}
-                    points={[x, gridStartY, x, gridStartY + gridRowCount * GRID_SPACING]}
-                    stroke={
-                      Math.round(x / GRID_SPACING) % 5 === 0
-                        ? cssVar("--light-blue-background", "#e4edf8")
-                        : cssVar("--border-subtle", "#d5dbe3")
-                    }
-                    strokeWidth={1 / view.scale}
-                    listening={false}
-                  />
-                ))}
-                {gridYs.map((y) => (
-                  <Line
-                    key={`grid-y-${y}`}
-                    points={[gridStartX, y, gridStartX + gridColumnCount * GRID_SPACING, y]}
-                    stroke={
-                      Math.round(y / GRID_SPACING) % 5 === 0
-                        ? cssVar("--light-blue-background", "#e4edf8")
-                        : cssVar("--border-subtle", "#d5dbe3")
-                    }
-                    strokeWidth={1 / view.scale}
-                    listening={false}
-                  />
-                ))}
-              </>
-            )}
-            {rects.map((r) => (
-              // The group's origin is the rect's center so it rotates in place;
-              // `r.x`/`r.y` remain the unrotated top-left corner.
-              <Group
-                key={r.id}
-                ref={(node) => {
-                  if (node) rectNodes.current.set(r.id, node);
-                  else rectNodes.current.delete(r.id);
-                }}
-                x={r.x + r.width / 2}
-                y={r.y + r.height / 2}
-                offsetX={r.width / 2}
-                offsetY={r.height / 2}
-                rotation={r.rotation || 0}
-                draggable
-                onClick={() => setSelectedRectId(r.id)}
-                onTap={() => setSelectedRectId(r.id)}
-                onDragEnd={(e) =>
-                  moveRect(
-                    r.id,
-                    e.target.x() - r.width / 2,
-                    e.target.y() - r.height / 2,
-                  )
-                }
-                onTransformEnd={(e) => {
-                  const node = e.target;
-                  const rotation = ((Math.round(node.rotation()) % 360) + 360) % 360;
-                  node.rotation(rotation);
-                  if (rotation === (r.rotation || 0)) return;
-                  rotateRect(
-                    r.id,
-                    node.x() - r.width / 2,
-                    node.y() - r.height / 2,
-                    rotation,
-                  );
-                }}
-              >
-                <Rect
-                  width={r.width}
-                  height={r.height}
-                  fill={cssVar("--border-control", "#bfbfbf")}
-                  stroke={canvas.black}
-                  strokeWidth={2}
-                  cornerRadius={4}
-                />
-                {r.assignedStudents.map((s) => (
-                  // Counter-rotated so the numbers stay upright.
-                  <Group
-                    key={s.id}
-                    x={s.xRel}
-                    y={s.yRel}
-                    rotation={-(r.rotation || 0)}
-                  >
-                    <Circle
-                      radius={CIRCLE_R}
-                      fill={canvas.light}
-                      stroke={canvas.black}
-                      strokeWidth={1.5}
-                    />
-                    <Text
-                      x={-CIRCLE_R}
-                      y={-CIRCLE_R}
-                      width={CIRCLE_R * 2}
-                      height={CIRCLE_R * 2}
-                      text={String(s.id)}
-                      fontSize={12}
-                      fill={canvas.black}
-                      align="center"
-                      verticalAlign="middle"
+        {/* Drawn for the eye; the Rows list in the sidebar is its text alternative. */}
+        <div aria-hidden="true">
+          <Stage
+            ref={stageRef}
+            width={stageWidth}
+            height={stageHeight}
+            scaleX={view.scale}
+            scaleY={view.scale}
+            x={view.x}
+            y={view.y}
+            draggable
+            onWheel={handleWheel}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onClick={(e) => {
+              if (e.target === stageRef.current) setSelectedRectId(null);
+            }}
+            onTap={(e) => {
+              if (e.target === stageRef.current) setSelectedRectId(null);
+            }}
+            onDragEnd={(e) => {
+              // Only the stage itself — a rect drag bubbles up through here too.
+              if (e.target !== stageRef.current) return;
+              setView({ scale: view.scale, x: e.target.x(), y: e.target.y() });
+            }}
+          >
+            <Layer>
+              {isLightTheme && (
+                <>
+                  {gridXs.map((x) => (
+                    <Line
+                      key={`grid-x-${x}`}
+                      points={[x, gridStartY, x, gridStartY + gridRowCount * GRID_SPACING]}
+                      stroke={
+                        Math.round(x / GRID_SPACING) % 5 === 0
+                          ? cssVar("--light-blue-background", "#e4edf8")
+                          : cssVar("--border-subtle", "#d5dbe3")
+                      }
+                      strokeWidth={1 / view.scale}
                       listening={false}
                     />
-                  </Group>
-                ))}
-              </Group>
-            ))}
-            <Transformer
-              ref={transformerRef}
-              resizeEnabled={false}
-              rotateEnabled
-              rotationSnaps={ROTATION_SNAPS}
-              rotationSnapTolerance={8}
-              rotateAnchorOffset={30}
-              anchorSize={16}
-              borderStroke={cssVar("--orange-edit", "#f79306")}
-              anchorStroke={cssVar("--orange-edit", "#f79306")}
-              anchorFill={canvas.light}
-            />
-          </Layer>
-        </Stage>
+                  ))}
+                  {gridYs.map((y) => (
+                    <Line
+                      key={`grid-y-${y}`}
+                      points={[gridStartX, y, gridStartX + gridColumnCount * GRID_SPACING, y]}
+                      stroke={
+                        Math.round(y / GRID_SPACING) % 5 === 0
+                          ? cssVar("--light-blue-background", "#e4edf8")
+                          : cssVar("--border-subtle", "#d5dbe3")
+                      }
+                      strokeWidth={1 / view.scale}
+                      listening={false}
+                    />
+                  ))}
+                </>
+              )}
+              {rects.map((r) => (
+                // The group's origin is the rect's center so it rotates in place;
+                // `r.x`/`r.y` remain the unrotated top-left corner.
+                <Group
+                  key={r.id}
+                  ref={(node) => {
+                    if (node) rectNodes.current.set(r.id, node);
+                    else rectNodes.current.delete(r.id);
+                  }}
+                  x={r.x + r.width / 2}
+                  y={r.y + r.height / 2}
+                  offsetX={r.width / 2}
+                  offsetY={r.height / 2}
+                  rotation={r.rotation || 0}
+                  draggable
+                  onClick={() => setSelectedRectId(r.id)}
+                  onTap={() => setSelectedRectId(r.id)}
+                  onDragEnd={(e) =>
+                    moveRect(
+                      r.id,
+                      e.target.x() - r.width / 2,
+                      e.target.y() - r.height / 2,
+                    )
+                  }
+                  onTransformEnd={(e) => {
+                    const node = e.target;
+                    const rotation = ((Math.round(node.rotation()) % 360) + 360) % 360;
+                    node.rotation(rotation);
+                    if (rotation === (r.rotation || 0)) return;
+                    rotateRect(
+                      r.id,
+                      node.x() - r.width / 2,
+                      node.y() - r.height / 2,
+                      rotation,
+                    );
+                  }}
+                >
+                  <Rect
+                    width={r.width}
+                    height={r.height}
+                    fill={cssVar("--border-control", "#bfbfbf")}
+                    stroke={canvas.black}
+                    strokeWidth={2}
+                    cornerRadius={4}
+                  />
+                  {r.assignedStudents.map((s) => (
+                    // Counter-rotated so the numbers stay upright.
+                    <Group
+                      key={s.id}
+                      x={s.xRel}
+                      y={s.yRel}
+                      rotation={-(r.rotation || 0)}
+                    >
+                      <Circle
+                        radius={CIRCLE_R}
+                        fill={canvas.light}
+                        stroke={canvas.black}
+                        strokeWidth={1.5}
+                      />
+                      <Text
+                        x={-CIRCLE_R}
+                        y={-CIRCLE_R}
+                        width={CIRCLE_R * 2}
+                        height={CIRCLE_R * 2}
+                        text={String(s.id)}
+                        fontSize={12}
+                        fill={canvas.black}
+                        align="center"
+                        verticalAlign="middle"
+                        listening={false}
+                      />
+                    </Group>
+                  ))}
+                </Group>
+              ))}
+              <Transformer
+                ref={transformerRef}
+                resizeEnabled={false}
+                rotateEnabled
+                rotationSnaps={ROTATION_SNAPS}
+                rotationSnapTolerance={8}
+                rotateAnchorOffset={30}
+                anchorSize={16}
+                borderStroke={cssVar("--orange-edit", "#f79306")}
+                anchorStroke={cssVar("--orange-edit", "#f79306")}
+                anchorFill={canvas.light}
+              />
+            </Layer>
+          </Stage>
+        </div>
 
         {/* Zoom controls */}
         <div
@@ -703,6 +795,7 @@ const StartScreen = () => {
           }}
         >
           <button
+            aria-label="Zoom out"
             onClick={() => zoomBy(1 / SCALE_STEP)}
             style={{
               width: 28,
@@ -729,6 +822,7 @@ const StartScreen = () => {
             {Math.round(view.scale * 100)}%
           </span>
           <button
+            aria-label="Zoom in"
             onClick={() => zoomBy(SCALE_STEP)}
             style={{
               width: 28,
@@ -745,6 +839,7 @@ const StartScreen = () => {
             +
           </button>
           <button
+            aria-label="Reset zoom"
             onClick={() => setView({ scale: 1, x: 0, y: 0 })}
             style={{
               height: 28,

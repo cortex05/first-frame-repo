@@ -404,3 +404,100 @@ describe('QuestionsScreen dialogs (spec 012)', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 });
+
+describe('QuestionsScreen seat buttons (spec 014)', () => {
+  const MC = {
+    id: 'q-mc',
+    text: 'Motive?',
+    type: 'MULTIPLE_CHOICE',
+    options: [
+      { label: 'Money', value: 2 },
+      { label: 'Revenge', value: 1 },
+    ],
+  };
+  const seat = (name) => screen.getByRole('button', { name });
+  const announcer = () => screen.getByTestId('seat-announcer');
+
+  it('keeps the seats out of reach until a question is selected', () => {
+    renderQuestions();
+
+    const first = seat('Student 1');
+    expect(first).toHaveAttribute('aria-disabled', 'true');
+    expect(first).toHaveAccessibleDescription('Select a question first');
+  });
+
+  it('puts the seats in row groups outside the hidden canvas', () => {
+    renderQuestions();
+
+    const row = screen.getByRole('group', { name: 'Row 1' });
+    expect(within(row).getAllByRole('button')).toHaveLength(3);
+    expect(row.closest('[aria-hidden="true"]')).toBeNull();
+    expect(document.querySelector('[aria-hidden="true"]')).not.toBeNull();
+  });
+
+  it('toggles a true/false answer from the keyboard, announces it and saves it', async () => {
+    vi.mocked(saveQuestionAnswers).mockResolvedValue(makeCase());
+    const user = userEvent.setup();
+    renderQuestions();
+    await user.click(screen.getByRole('button', { name: /^Intent\?/ }));
+
+    const student2 = seat('Student 2');
+    expect(student2).toHaveAttribute('aria-pressed', 'false');
+    student2.focus();
+    await user.keyboard(' ');
+
+    expect(student2).toHaveAttribute('aria-pressed', 'true');
+    expect(announcer()).toHaveTextContent('Student 2: True');
+
+    await user.click(screen.getByRole('button', { name: 'Save Answers' }));
+    const payload = vi.mocked(saveQuestionAnswers).mock.calls[0][2];
+    expect(payload[2]).toEqual({ label: true, value: 6 });
+  });
+
+  it('answers multiple choice with the chosen option or a letter key', async () => {
+    useCaseStore.setState({ cases: [makeCase({ questions: [...QUESTIONS, MC] })] });
+    const user = userEvent.setup();
+    renderQuestions();
+    await user.click(screen.getByRole('button', { name: /^Motive\?/ }));
+
+    expect(seat('Student 1, no answer')).toHaveAccessibleDescription('Select an option first');
+
+    await user.click(screen.getByRole('button', { name: 'Option B, Revenge, 1 points' }));
+    seat('Student 1, no answer').focus();
+    await user.keyboard('{Enter}');
+
+    expect(seat('Student 1, Option B: Revenge')).toBeInTheDocument();
+    expect(announcer()).toHaveTextContent('Student 1: Option B, Revenge');
+
+    seat('Student 3, no answer').focus();
+    await user.keyboard('a');
+    expect(seat('Student 3, Option A: Money')).toHaveFocus();
+    expect(announcer()).toHaveTextContent('Student 3: Option A, Money');
+
+    await user.keyboard('e');
+    expect(seat('Student 3, Option A: Money')).toBeInTheDocument();
+  });
+
+  it('letters the multiple-choice options and names the zoom buttons', async () => {
+    useCaseStore.setState({ cases: [makeCase({ questions: [...QUESTIONS, MC] })] });
+    const user = userEvent.setup();
+    renderQuestions();
+    await user.click(screen.getByRole('button', { name: /^Motive\?/ }));
+
+    expect(screen.getByRole('button', { name: 'Option A, Money, 2 points' })).toHaveTextContent(/^AMoney2$/);
+    for (const name of ['Zoom in', 'Zoom out', 'Reset zoom']) {
+      expect(screen.getByRole('button', { name })).toBeInTheDocument();
+    }
+  });
+
+  it('opens a student report from a seat in Scores mode', async () => {
+    const user = userEvent.setup();
+    renderQuestions();
+    await user.click(screen.getByRole('button', { name: 'Scores' }));
+
+    seat('Student 1, 6 points, High risk').focus();
+    await user.keyboard('{Enter}');
+
+    expect(screen.getByRole('dialog', { name: /Student Report - #1/ })).toBeInTheDocument();
+  });
+});

@@ -56,3 +56,77 @@
 .rightToLeft:hover {
 	background: var(--recommend-bg-hover);
 }
+
+/* Rows list and keyboard positioning (spec 014) */
+.rowsHeading {
+	margin: 4px 0 0;
+	font-size: 16px;
+	color: var(--modal-text);
+}
+
+.rowsEmpty {
+	margin: 0;
+	font-size: 14px;
+	color: var(--text-secondary);
+}
+
+.rowList {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.rowButton {
+	width: 100%;
+	padding: 6px 8px;
+	font-family: inherit;
+	font-size: 13px;
+	font-weight: 600;
+	text-align: left;
+	background: var(--surface);
+	color: var(--modal-text);
+	border: 1px solid var(--border-control);
+	border-radius: 6px;
+	cursor: pointer;
+}
+
+.rowButton[aria-pressed="true"] {
+	background: var(--surface-selected);
+	border: 2px solid var(--blue-background);
+}
+
+.moveControls {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.moveGrid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	grid-template-areas:
+		". up ."
+		"left . right"
+		". down .";
+	gap: 4px;
+}
+
+.moveButton {
+	padding: 6px 0;
+	font-family: inherit;
+	font-size: 14px;
+	font-weight: 600;
+	background: var(--surface);
+	color: var(--modal-text);
+	border: 1px solid var(--border-control);
+	border-radius: 6px;
+	cursor: pointer;
+}
+
+.moveUp { grid-area: up; }
+.moveLeft { grid-area: left; }
+.moveRight { grid-area: right; }
+.moveDown { grid-area: down; }

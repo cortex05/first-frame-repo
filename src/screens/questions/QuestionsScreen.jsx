@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useId, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Stage, Layer, Line, Rect, Circle, Text, Group } from "react-konva";
 import useCaseStore from "../../store/useCaseStore";
@@ -11,7 +11,8 @@ import {
 } from "../../api/case";
 import { QuestionType } from "../../types/ENUMS";
 import { cssVar } from "../../utils/cssVars";
-import { getRiskTiers, getStudentTotal, isPolled } from "../../utils/studentScores";
+import { RISK_LABELS, getRiskTiers, getStudentTotal, isPolled } from "../../utils/studentScores";
+import { optionLetter } from "../../utils/seating";
 import {
   applyLocalStudentDetails,
   mergeStudentDetails,
@@ -20,6 +21,7 @@ import {
 import Modal from "../../components/modal/Modal";
 import StudentReportModal from "../../components/student-report/StudentReportModal";
 import StudentSortModal from "../../components/student-report/StudentSortModal";
+import SeatLayer from "../../components/seat-layer/SeatLayer";
 
 import styles from "./QuestionsScreen.module.css";
 
@@ -71,6 +73,11 @@ const QuestionsScreen = () => {
   const [stagePos, setStagePos] = useState({ x: 0, y: 0 });
   const stageRef = useRef(null);
   const lastPinchDist = useRef(0);
+
+  // Spoken after a keyboard answer on a seat button (spec 014).
+  const [announcement, setAnnouncement] = useState("");
+  const noQuestionHintId = useId();
+  const noOptionHintId = useId();
 
   const showToast = (message, type) => {
     toastId.current += 1;
@@ -226,6 +233,77 @@ const QuestionsScreen = () => {
         [studentId]: selectedQuestion.options[activeOptionIndex],
       }));
     }
+  };
+
+  // ── keyboard / screen-reader seats (spec 014) ──────────────────
+  const optionIndexOf = (answer) =>
+    answer ? selectedQuestion.options.findIndex((o) => o.label === answer.label) : -1;
+
+  const answerMessage = (studentId, answer) => {
+    if (selectedQuestion.type === QuestionType.TRUE_FALSE) {
+      return `Student ${studentId}: ${isTrueLabel(answer?.label) ? "True" : "False"}`;
+    }
+    const index = optionIndexOf(answer);
+    return `Student ${studentId}: Option ${optionLetter(index)}, ${answer.label}`;
+  };
+
+  const getSeatState = (studentId) => {
+    if (showScores) {
+      const tier = RISK_LABELS[getScoreTier(studentId)];
+      return { name: `Student ${studentId}, ${getStudentScore(studentId)} points, ${tier} risk` };
+    }
+    if (!selectedQuestion) {
+      return { name: `Student ${studentId}`, disabled: true, hintId: noQuestionHintId };
+    }
+    const answer = currentAnswers[studentId];
+    if (selectedQuestion.type === QuestionType.TRUE_FALSE) {
+      return { name: `Student ${studentId}`, pressed: isTrueLabel(answer?.label) };
+    }
+    const index = optionIndexOf(answer);
+    return {
+      name:
+        index >= 0
+          ? `Student ${studentId}, Option ${optionLetter(index)}: ${answer.label}`
+          : `Student ${studentId}, no answer`,
+      disabled: activeOptionIndex === null,
+      hintId: activeOptionIndex === null ? noOptionHintId : undefined,
+    };
+  };
+
+  // Same as tapping the circle, plus an announcement of the new answer.
+  const handleSeatActivate = (studentId) => {
+    let next = null;
+    if (!showScores && selectedQuestion) {
+      if (selectedQuestion.type === QuestionType.TRUE_FALSE) {
+        const trueOpt = selectedQuestion.options.find((o) => isTrueLabel(o.label));
+        const falseOpt = selectedQuestion.options.find((o) => isFalseLabel(o.label));
+        if (trueOpt && falseOpt) {
+          next = isTrueLabel(currentAnswers[studentId]?.label) ? falseOpt : trueOpt;
+        }
+      } else if (activeOptionIndex !== null) {
+        next = selectedQuestion.options[activeOptionIndex];
+      }
+    }
+    handleStudentTap(studentId);
+    if (next) setAnnouncement(answerMessage(studentId, next));
+  };
+
+  // A-D / 1-4 on a seat: pick that option and give it to the student at once.
+  // Sets the answer directly -- handleStudentTap would still see the old option.
+  const handleSeatLetter = (studentId, index) => {
+    if (showScores || !selectedQuestion) return;
+    if (selectedQuestion.type !== QuestionType.MULTIPLE_CHOICE) return;
+    const option = selectedQuestion.options[index];
+    if (!option) return;
+    setActiveOptionIndex(index);
+    setCurrentAnswers((prev) => ({ ...prev, [studentId]: option }));
+    setAnnouncement(answerMessage(studentId, option));
+  };
+
+  // The circle's text: "7·B" once a multiple-choice answer is set.
+  const multipleChoiceSeatText = (studentId) => {
+    const index = selectedQuestion ? optionIndexOf(currentAnswers[studentId]) : -1;
+    return index >= 0 ? `${studentId}·${optionLetter(index)}` : String(studentId);
   };
 
   // Replaces the local copies with the server's after a conflict.
@@ -391,6 +469,17 @@ const QuestionsScreen = () => {
           {toast.message}
         </div>
       )}
+
+      {/* A live region, not role="status": the save toast is the screen's status. */}
+      <p aria-live="polite" aria-atomic="true" className={styles.srOnly} data-testid="seat-announcer">
+        {announcement}
+      </p>
+      <span id={noQuestionHintId} className={styles.srOnly}>
+        Select a question first
+      </span>
+      <span id={noOptionHintId} className={styles.srOnly}>
+        Select an option first
+      </span>
 
       {/* ── Sidebar ── */}
       <div
@@ -612,6 +701,7 @@ const QuestionsScreen = () => {
                               <button
                                 key={i}
                                 onClick={() => setActiveOptionIndex(i)}
+                                aria-label={`Option ${optionLetter(i)}, ${opt.label}, ${opt.value} points`}
                                 style={{
                                   padding: "10px 12px",
                                   fontSize: 13,
@@ -636,7 +726,10 @@ const QuestionsScreen = () => {
                                   gap: 8,
                                 }}
                               >
-                                <span>{opt.label}</span>
+                                <span>
+                                  <span className={styles.optionLetter}>{optionLetter(i)}</span>
+                                  {opt.label}
+                                </span>
                                 <span>{opt.value}</span>
                               </button>
                             ))}
@@ -653,7 +746,7 @@ const QuestionsScreen = () => {
                           {selectedQuestion.type === QuestionType.TRUE_FALSE
                             ? "Tap again to switch true circles back to false."
                             : activeOptionIndex !== null
-                              ? `Tap students to assign "${selectedQuestion.options[activeOptionIndex].label}".`
+                              ? `Tap students (or press A–D on a seat) to assign "${optionLetter(activeOptionIndex)}: ${selectedQuestion.options[activeOptionIndex].label}".`
                               : "Select an option above."}
                         </p>
 
@@ -749,120 +842,136 @@ const QuestionsScreen = () => {
           </div>
         ) : (
           <React.Fragment>
-            <Stage
-              ref={stageRef}
-              width={stageWidth}
-              height={stageHeight}
-              scaleX={scale}
-              scaleY={scale}
-              x={stagePos.x}
-              y={stagePos.y}
-              draggable
-              onDragEnd={(e) =>
-                setStagePos({ x: e.target.x(), y: e.target.y() })
-              }
-              onWheel={handleWheel}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-            >
-              <Layer>
-                {isLightTheme && (
-                  <React.Fragment>
-                    {gridXs.map((x) => (
-                      <Line
-                        key={`grid-x-${x}`}
-                        points={[x, gridStartY, x, gridStartY + gridRowCount * GRID_SPACING]}
-                        stroke={
-                          Math.round(x / GRID_SPACING) % 5 === 0
-                            ? cssVar("--light-blue-background", "#e4edf8")
-                            : cssVar("--border-subtle", "#d5dbe3")
-                        }
-                        strokeWidth={1 / scale}
-                        listening={false}
-                      />
-                    ))}
-                    {gridYs.map((y) => (
-                      <Line
-                        key={`grid-y-${y}`}
-                        points={[gridStartX, y, gridStartX + gridColumnCount * GRID_SPACING, y]}
-                        stroke={
-                          Math.round(y / GRID_SPACING) % 5 === 0
-                            ? cssVar("--light-blue-background", "#e4edf8")
-                            : cssVar("--border-subtle", "#d5dbe3")
-                        }
-                        strokeWidth={1 / scale}
-                        listening={false}
-                      />
-                    ))}
-                  </React.Fragment>
-                )}
-                {/* Row rectangles */}
-                {rects.map((r) => (
-                  // Rotates about the rect's center, matching StartScreen.
-                  // Seat circles are saved already rotated, as absolute x/y.
-                  <Group
-                    key={r.id}
-                    x={r.x + r.width / 2}
-                    y={r.y + r.height / 2}
-                    offsetX={r.width / 2}
-                    offsetY={r.height / 2}
-                    rotation={r.rotation || 0}
-                  >
-                    <Rect
-                      width={r.width}
-                      height={r.height}
-                      fill={cssVar("--border-control", "#bfbfbf")}
-                      stroke={canvas.black}
-                      strokeWidth={2}
-                      cornerRadius={4}
-                    />
-                  </Group>
-                ))}
-
-                {/* Student circles */}
-                {rects.flatMap((r) =>
-                  r.assignedStudents.map((s) => (
+            {/* Drawn for the eye; SeatLayer below is its accessible equivalent. */}
+            <div aria-hidden="true">
+              <Stage
+                ref={stageRef}
+                width={stageWidth}
+                height={stageHeight}
+                scaleX={scale}
+                scaleY={scale}
+                x={stagePos.x}
+                y={stagePos.y}
+                draggable
+                onDragEnd={(e) =>
+                  setStagePos({ x: e.target.x(), y: e.target.y() })
+                }
+                onWheel={handleWheel}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+              >
+                <Layer>
+                  {isLightTheme && (
+                    <React.Fragment>
+                      {gridXs.map((x) => (
+                        <Line
+                          key={`grid-x-${x}`}
+                          points={[x, gridStartY, x, gridStartY + gridRowCount * GRID_SPACING]}
+                          stroke={
+                            Math.round(x / GRID_SPACING) % 5 === 0
+                              ? cssVar("--light-blue-background", "#e4edf8")
+                              : cssVar("--border-subtle", "#d5dbe3")
+                          }
+                          strokeWidth={1 / scale}
+                          listening={false}
+                        />
+                      ))}
+                      {gridYs.map((y) => (
+                        <Line
+                          key={`grid-y-${y}`}
+                          points={[gridStartX, y, gridStartX + gridColumnCount * GRID_SPACING, y]}
+                          stroke={
+                            Math.round(y / GRID_SPACING) % 5 === 0
+                              ? cssVar("--light-blue-background", "#e4edf8")
+                              : cssVar("--border-subtle", "#d5dbe3")
+                          }
+                          strokeWidth={1 / scale}
+                          listening={false}
+                        />
+                      ))}
+                    </React.Fragment>
+                  )}
+                  {/* Row rectangles */}
+                  {rects.map((r) => (
+                    // Rotates about the rect's center, matching StartScreen.
+                    // Seat circles are saved already rotated, as absolute x/y.
                     <Group
-                      key={"c-" + s.id}
-                      x={s.x}
-                      y={s.y}
-                      onClick={() => handleStudentTap(s.id)}
-                      onTap={() => handleStudentTap(s.id)}
+                      key={r.id}
+                      x={r.x + r.width / 2}
+                      y={r.y + r.height / 2}
+                      offsetX={r.width / 2}
+                      offsetY={r.height / 2}
+                      rotation={r.rotation || 0}
                     >
-                      <Circle
-                        radius={CIRCLE_R}
-                        fill={getStudentFill(s.id)}
+                      <Rect
+                        width={r.width}
+                        height={r.height}
+                        fill={cssVar("--border-control", "#bfbfbf")}
                         stroke={canvas.black}
-                        strokeWidth={
-                          // getStudentStrokeWidth(s.id)
-                          1.5
-                        }
-                      />
-                      <Text
-                        x={-CIRCLE_R}
-                        y={-CIRCLE_R}
-                        width={CIRCLE_R * 2}
-                        height={CIRCLE_R * 2}
-                        text={
-                          showScores
-                            ? `#${s.id} - ${getStudentScore(s.id)}`
-                            : selectedQuestion?.type === QuestionType.TRUE_FALSE
-                              ? isTrueLabel(currentAnswers[s.id]?.label)
-                                ? "X"
-                                : String(s.id)
-                              : String(s.id)
-                        }
-                        fontSize={showScores ? 9 : 12}
-                        fill={getStudentTextColor(s.id)}
-                        align="center"
-                        verticalAlign="middle"
-                        listening={false}
+                        strokeWidth={2}
+                        cornerRadius={4}
                       />
                     </Group>
-                  )),
-                )}
-              </Layer>
-            </Stage>
+                  ))}
+
+                  {/* Student circles */}
+                  {rects.flatMap((r) =>
+                    r.assignedStudents.map((s) => (
+                      <Group
+                        key={"c-" + s.id}
+                        x={s.x}
+                        y={s.y}
+                        onClick={() => handleStudentTap(s.id)}
+                        onTap={() => handleStudentTap(s.id)}
+                      >
+                        <Circle
+                          radius={CIRCLE_R}
+                          fill={getStudentFill(s.id)}
+                          stroke={canvas.black}
+                          strokeWidth={
+                            // getStudentStrokeWidth(s.id)
+                            1.5
+                          }
+                        />
+                        <Text
+                          x={-CIRCLE_R}
+                          y={-CIRCLE_R}
+                          width={CIRCLE_R * 2}
+                          height={CIRCLE_R * 2}
+                          text={
+                            showScores
+                              ? `#${s.id} - ${getStudentScore(s.id)}`
+                              : selectedQuestion?.type === QuestionType.TRUE_FALSE
+                                ? isTrueLabel(currentAnswers[s.id]?.label)
+                                  ? "X"
+                                  : String(s.id)
+                                : multipleChoiceSeatText(s.id)
+                          }
+                          fontSize={showScores ? 9 : 12}
+                          fill={getStudentTextColor(s.id)}
+                          align="center"
+                          verticalAlign="middle"
+                          listening={false}
+                        />
+                      </Group>
+                    )),
+                  )}
+                </Layer>
+              </Stage>
+            </div>
+
+            <SeatLayer
+              rects={rects}
+              scale={scale}
+              stagePos={stagePos}
+              width={stageWidth}
+              height={stageHeight}
+              radius={CIRCLE_R}
+              getSeatState={getSeatState}
+              onActivate={handleSeatActivate}
+              onLetter={handleSeatLetter}
+              onBringIntoView={setStagePos}
+            />
 
             {/* Zoom controls */}
             <div
@@ -883,6 +992,7 @@ const QuestionsScreen = () => {
               }}
             >
               <button
+                aria-label="Zoom out"
                 onClick={() => zoomBy(1 / SCALE_STEP)}
                 style={{
                   width: 28,
@@ -898,6 +1008,7 @@ const QuestionsScreen = () => {
                 −
               </button>
               <span
+                aria-live="off"
                 style={{
                   minWidth: 52,
                   textAlign: "center",
@@ -909,6 +1020,7 @@ const QuestionsScreen = () => {
                 {Math.round(scale * 100)}%
               </span>
               <button
+                aria-label="Zoom in"
                 onClick={() => zoomBy(SCALE_STEP)}
                 style={{
                   width: 28,
@@ -924,6 +1036,7 @@ const QuestionsScreen = () => {
                 +
               </button>
               <button
+                aria-label="Reset zoom"
                 onClick={() => {
                   setScale(1);
                   setStagePos({ x: 0, y: 0 });

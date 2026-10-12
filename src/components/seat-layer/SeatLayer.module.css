@@ -1,0 +1,21 @@
+/* Sits over the Konva stage; the pointer passes through to the canvas. */
+.layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.seat {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  border-radius: 50%;
+}
+
+.seat:focus-visible {
+  outline: 3px solid var(--blue-background);
+  outline-offset: 2px;
+}
