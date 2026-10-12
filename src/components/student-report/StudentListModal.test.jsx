@@ -69,3 +69,14 @@ describe('StudentListModal', () => {
     expect(onClose).toHaveBeenCalled();
   });
 });
+
+describe('StudentListModal dialog behavior (spec 012)', () => {
+  it('is named by its heading and closes on Escape', async () => {
+    const { onClose } = renderList(seatedCase);
+
+    expect(screen.getByRole('dialog', { name: 'Students' })).toHaveFocus();
+    await userEvent.keyboard('{Escape}');
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+});

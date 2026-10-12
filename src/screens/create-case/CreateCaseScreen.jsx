@@ -195,6 +195,7 @@ const CreateCaseScreen = () => {
           onClose={closeConfirmModal}
           title="Confirm Case"
           hideDefaultClose
+          closeDisabled={isSubmitting}
         >
           <div style={{ fontSize: 20, marginBottom: 16, lineHeight: 1.8, color: "var(--modal-text)" }}>
             <div>

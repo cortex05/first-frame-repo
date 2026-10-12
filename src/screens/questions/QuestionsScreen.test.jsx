@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -344,5 +344,63 @@ describe('QuestionsScreen keyboard access (spec 011)', () => {
     expect(screen.getByRole('button', { name: /^Intent\?/ })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /^Credible\?/ })).not.toBeInTheDocument();
     expect(screen.getByText('Credible?')).toHaveFocus();
+  });
+});
+
+describe('QuestionsScreen dialogs (spec 012)', () => {
+  // Focus is restored in a microtask once a dialog unmounts.
+  const flushFocus = () => act(async () => {});
+
+  it('opens the sort list as a named dialog that Escape closes, returning focus', async () => {
+    const user = userEvent.setup();
+    renderQuestions();
+    await user.click(screen.getByRole('button', { name: 'Scores' }));
+    await user.click(screen.getByRole('button', { name: 'High to Low' }));
+
+    const sort = screen.getByRole('dialog', { name: 'High to Low' });
+    expect(within(sort).getByRole('button', { name: 'Close' })).toBeInTheDocument();
+
+    await user.keyboard('{Escape}');
+    await flushFocus();
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'High to Low' })).toHaveFocus();
+  });
+
+  it('closes only the report on Escape when it is open over the sort list', async () => {
+    const user = userEvent.setup();
+    renderQuestions();
+    await user.click(screen.getByRole('button', { name: 'Scores' }));
+    await user.click(screen.getByRole('button', { name: 'High to Low' }));
+    await user.click(screen.getByRole('button', { name: '#1 — 6' }));
+
+    await user.keyboard('{Escape}');
+    await flushFocus();
+
+    expect(screen.queryByRole('dialog', { name: /Student Report/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'High to Low' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '#1 — 6' })).toHaveFocus();
+  });
+
+  it('still closes the sort list from its backdrop', async () => {
+    const user = userEvent.setup();
+    renderQuestions();
+    await user.click(screen.getByRole('button', { name: 'Scores' }));
+    await user.click(screen.getByRole('button', { name: 'High to Low' }));
+
+    await user.click(screen.getByRole('dialog', { name: 'High to Low' }).parentElement);
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('closes the leave warning with Escape', async () => {
+    const user = userEvent.setup();
+    renderQuestions();
+    await user.click(screen.getAllByRole('button', { name: 'Back to Case' })[0]);
+    expect(screen.getByRole('dialog', { name: 'Are you sure?' })).toBeInTheDocument();
+
+    await user.keyboard('{Escape}');
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 });

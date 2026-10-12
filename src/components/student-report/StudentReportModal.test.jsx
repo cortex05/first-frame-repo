@@ -212,3 +212,26 @@ describe('StudentReportModal', () => {
     expect(screen.queryByLabelText('Age')).not.toBeInTheDocument();
   });
 });
+
+describe('StudentReportModal dialog behavior (spec 012)', () => {
+  it('closes on Escape', async () => {
+    const user = userEvent.setup();
+    const { onClose } = renderModal();
+
+    await user.keyboard('{Escape}');
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('ignores Escape while a save is in flight', async () => {
+    const user = userEvent.setup();
+    const onSaveDetails = vi.fn(() => new Promise(() => {}));
+    const { onClose } = renderModal({ onSaveDetails });
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await user.keyboard('{Escape}');
+
+    expect(onClose).not.toHaveBeenCalled();
+  });
+});

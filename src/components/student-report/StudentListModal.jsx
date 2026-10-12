@@ -1,3 +1,7 @@
+import { useId } from 'react';
+
+import DialogPortal from '../modal/DialogPortal';
+import useModalDialog from '../../hooks/useModalDialog';
 import {
   getRiskTiers,
   getSeatedStudentNumbers,
@@ -12,6 +16,8 @@ import styles from './StudentListModal.module.css';
  * over seated students only); anyone not seated yet is neutral.
  */
 const StudentListModal = ({ activeCase, onSelectStudent, onClose }) => {
+  const titleId = useId();
+  const { dialogRef, dialogProps } = useModalDialog({ onDismiss: onClose });
   const count = Math.max(0, Number(activeCase.studentNumber) || 0);
   const numbers = Array.from({ length: count }, (_, i) => i + 1);
 
@@ -20,33 +26,35 @@ const StudentListModal = ({ activeCase, onSelectStudent, onClose }) => {
   const tiers = getRiskTiers(activeCase, seated);
 
   return (
-    <div className={styles.backdrop}>
-      <div className={styles.dialog} role="dialog" aria-modal="true" aria-label="Students">
-        <div className={styles.header}>
-          <h3 className={styles.title}>Students</h3>
-          <button type="button" className={styles.close} aria-label="Close" onClick={onClose}>
-            ×
-          </button>
-        </div>
+    <DialogPortal>
+      <div className={styles.backdrop}>
+        <div ref={dialogRef} {...dialogProps} className={styles.dialog} aria-labelledby={titleId}>
+          <div className={styles.header}>
+            <h3 id={titleId} className={styles.title}>Students</h3>
+            <button type="button" className={styles.close} aria-label="Close" onClick={onClose}>
+              ×
+            </button>
+          </div>
 
-        <div className={styles.list}>
-          {numbers.map((number) => {
-            const tier = seatedSet.has(number) ? tiers.get(number) : null;
-            return (
-              <button
-                key={number}
-                type="button"
-                className={`${styles.row} ${tier ? styles[`risk_${tier}`] : styles.neutral}`}
-                data-tier={tier ?? 'none'}
-                onClick={() => onSelectStudent(number)}
-              >
-                #{number} &mdash; {getStudentTotal(activeCase, number)}
-              </button>
-            );
-          })}
+          <div className={styles.list}>
+            {numbers.map((number) => {
+              const tier = seatedSet.has(number) ? tiers.get(number) : null;
+              return (
+                <button
+                  key={number}
+                  type="button"
+                  className={`${styles.row} ${tier ? styles[`risk_${tier}`] : styles.neutral}`}
+                  data-tier={tier ?? 'none'}
+                  onClick={() => onSelectStudent(number)}
+                >
+                  #{number} &mdash; {getStudentTotal(activeCase, number)}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
-    </div>
+    </DialogPortal>
   );
 };
 

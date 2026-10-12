@@ -1,5 +1,8 @@
 import { useId, useState } from 'react';
 
+import DialogPortal from '../modal/DialogPortal';
+import useModalDialog from '../../hooks/useModalDialog';
+
 import { STUDENT_DETAIL_LIMITS, StudentGender } from '../../types/ENUMS';
 import {
   DETAIL_FIELDS,
@@ -42,6 +45,8 @@ const StudentReportModal = ({ activeCase, studentNumber, onClose, onSaveDetails 
   const [draft, setDraft] = useState(() => toDraft(details));
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
+  // Escape works like × (unsaved edits are dropped), but not mid-save.
+  const { dialogRef, dialogProps } = useModalDialog({ onDismiss: onClose, dismissible: !isSaving });
 
   const startEditing = () => {
     setDraft(toDraft(details));
@@ -115,85 +120,87 @@ const StudentReportModal = ({ activeCase, studentNumber, onClose, onSaveDetails 
   };
 
   return (
-    <div className={styles.backdrop}>
-      <div className={styles.dialog} role="dialog" aria-modal="true" aria-labelledby={`${idPrefix}-title`}>
-        <div className={styles.header}>
-          <div className={styles.titleGroup}>
-            <h3 id={`${idPrefix}-title`} className={styles.title}>
-              Student Report - #{studentNumber} = {total} Points
-            </h3>
-            {risk && (
-              <span className={`${styles.riskBadge} ${styles[`risk_${risk}`]}`}>
-                Risk: {RISK_LABELS[risk]}
-              </span>
+    <DialogPortal>
+      <div className={styles.backdrop}>
+        <div ref={dialogRef} {...dialogProps} className={styles.dialog} aria-labelledby={`${idPrefix}-title`}>
+          <div className={styles.header}>
+            <div className={styles.titleGroup}>
+              <h3 id={`${idPrefix}-title`} className={styles.title}>
+                Student Report - #{studentNumber} = {total} Points
+              </h3>
+              {risk && (
+                <span className={`${styles.riskBadge} ${styles[`risk_${risk}`]}`}>
+                  Risk: {RISK_LABELS[risk]}
+                </span>
+              )}
+            </div>
+            <button type="button" className={styles.close} aria-label="Close" onClick={onClose}>
+              ×
+            </button>
+          </div>
+
+          <div className={styles.body}>
+            <dl className={styles.details}>
+              {DETAIL_FIELDS.map(({ key, label }) => {
+                const inputId = `${idPrefix}-${key}`;
+                return (
+                  <div key={key} className={styles.detailRow}>
+                    <dt className={styles.detailLabel}>
+                      {isEditing ? <label htmlFor={inputId}>{label}</label> : label}
+                    </dt>
+                    <dd className={styles.detailValue}>
+                      {isEditing ? renderInput(key, inputId) : formatDetail(key, details[key])}
+                    </dd>
+                  </div>
+                );
+              })}
+            </dl>
+
+            <ul className={styles.answers}>
+              {(activeCase.questions || []).map((question) => {
+                const answer = getAnswer(activeCase, question.id, studentNumber);
+                const hasValue = answer?.value !== null && answer?.value !== undefined;
+                const tier = hasValue ? getAnswerTier(question, answer) : null;
+
+                return (
+                  <li key={question.id} className={styles.answerRow}>
+                    <span className={styles.answerText}>
+                      {question.text} - {formatAnswerLabel(question, answer)}
+                    </span>
+                    <span className={`${styles.points} ${tier ? styles[`risk_${tier}`] : styles.pointsEmpty}`}>
+                      {hasValue ? answer.value : 'N/A'}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+
+          {error && (
+            <p className={styles.error} role="alert">
+              {error}
+            </p>
+          )}
+
+          <div className={styles.footer}>
+            {isEditing ? (
+              <>
+                <button type="button" className={styles.save} onClick={handleSave} disabled={isSaving}>
+                  {isSaving ? 'Saving...' : 'Save'}
+                </button>
+                <button type="button" className={styles.cancel} onClick={cancelEditing} disabled={isSaving}>
+                  Cancel
+                </button>
+              </>
+            ) : (
+              <button type="button" className={styles.edit} onClick={startEditing}>
+                Edit
+              </button>
             )}
           </div>
-          <button type="button" className={styles.close} aria-label="Close" onClick={onClose}>
-            ×
-          </button>
-        </div>
-
-        <div className={styles.body}>
-          <dl className={styles.details}>
-            {DETAIL_FIELDS.map(({ key, label }) => {
-              const inputId = `${idPrefix}-${key}`;
-              return (
-                <div key={key} className={styles.detailRow}>
-                  <dt className={styles.detailLabel}>
-                    {isEditing ? <label htmlFor={inputId}>{label}</label> : label}
-                  </dt>
-                  <dd className={styles.detailValue}>
-                    {isEditing ? renderInput(key, inputId) : formatDetail(key, details[key])}
-                  </dd>
-                </div>
-              );
-            })}
-          </dl>
-
-          <ul className={styles.answers}>
-            {(activeCase.questions || []).map((question) => {
-              const answer = getAnswer(activeCase, question.id, studentNumber);
-              const hasValue = answer?.value !== null && answer?.value !== undefined;
-              const tier = hasValue ? getAnswerTier(question, answer) : null;
-
-              return (
-                <li key={question.id} className={styles.answerRow}>
-                  <span className={styles.answerText}>
-                    {question.text} - {formatAnswerLabel(question, answer)}
-                  </span>
-                  <span className={`${styles.points} ${tier ? styles[`risk_${tier}`] : styles.pointsEmpty}`}>
-                    {hasValue ? answer.value : 'N/A'}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-
-        {error && (
-          <p className={styles.error} role="alert">
-            {error}
-          </p>
-        )}
-
-        <div className={styles.footer}>
-          {isEditing ? (
-            <>
-              <button type="button" className={styles.save} onClick={handleSave} disabled={isSaving}>
-                {isSaving ? 'Saving...' : 'Save'}
-              </button>
-              <button type="button" className={styles.cancel} onClick={cancelEditing} disabled={isSaving}>
-                Cancel
-              </button>
-            </>
-          ) : (
-            <button type="button" className={styles.edit} onClick={startEditing}>
-              Edit
-            </button>
-          )}
         </div>
       </div>
-    </div>
+    </DialogPortal>
   );
 };
 

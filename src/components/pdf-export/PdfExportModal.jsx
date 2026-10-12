@@ -76,7 +76,7 @@ const PdfExportModal = ({ isOpen, onClose, activeCase }) => {
   const error = loadError || exportError;
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Export Questions to PDF" hideDefaultClose>
+    <Modal isOpen={isOpen} onClose={handleClose} title="Export Questions to PDF" hideDefaultClose closeDisabled={isExporting}>
       <p className={styles.modalText}>
         If your courtroom prohibits or doesn&apos;t allow internet access, you can export a PDF
         of all the questions with their point values and a sheet of each Student with a space to

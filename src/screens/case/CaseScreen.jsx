@@ -828,6 +828,7 @@ const CaseScreen = () => {
           onClose={() => setOwnersModalOpen(false)}
           title="Case Owners"
           hideDefaultClose
+          closeDisabled={isSavingOwners}
         >
           <p className={styles.modalText}>
             Owners can open, run and archive this case.
@@ -862,6 +863,7 @@ const CaseScreen = () => {
           onClose={() => setArchiveModalOpen(false)}
           title="Archive Case"
           hideDefaultClose
+          closeDisabled={isArchiving}
         >
           <p className={styles.modalText}>
             Archiving moves this case to the account&apos;s archive. It can
@@ -891,6 +893,7 @@ const CaseScreen = () => {
           onClose={closeQuestionModal}
           title={editingQuestionId ? "Edit Question" : "Add Question"}
           hideDefaultClose={Boolean(editingQuestionId)}
+          closeDisabled={isSavingCase}
         >
           <div
             style={{
@@ -1173,6 +1176,7 @@ const CaseScreen = () => {
           isOpen={startModal}
           onClose={() => setStartModal(false)}
           title="Start Session"
+          closeDisabled={isStarting}
         >
           {!editStudentNumber ? (
             <div className={styles.startModal}>

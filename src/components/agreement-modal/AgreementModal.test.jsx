@@ -66,3 +66,30 @@ describe('AgreementModal', () => {
     expect(screen.getByRole('button', { name: 'Submit' })).toBeDisabled();
   });
 });
+
+describe('AgreementModal dialog behavior (spec 012)', () => {
+  it('starts with focus in the dialog and cancels on Escape', async () => {
+    const { onCancel } = renderModal();
+
+    expect(screen.getByRole('dialog', { name: 'Agreement: 11-20-2026' })).toHaveFocus();
+    await userEvent.keyboard('{Escape}');
+
+    expect(onCancel).toHaveBeenCalledTimes(1);
+  });
+
+  it('ignores Escape while submitting', async () => {
+    const { onCancel } = renderModal({ isSubmitting: true });
+
+    await userEvent.keyboard('{Escape}');
+
+    expect(onCancel).not.toHaveBeenCalled();
+  });
+
+  it('ignores Escape when not dismissible', async () => {
+    const { onCancel } = renderModal({ dismissible: false });
+
+    await userEvent.keyboard('{Escape}');
+
+    expect(onCancel).not.toHaveBeenCalled();
+  });
+});

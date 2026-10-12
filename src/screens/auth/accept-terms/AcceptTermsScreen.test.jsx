@@ -95,3 +95,16 @@ describe('AcceptTermsScreen', () => {
     await waitFor(() => expect(useAuthStore.getState().userInfo).toBeNull());
   });
 });
+
+describe('AcceptTermsScreen dialog behavior (spec 012)', () => {
+  it('does not log the admin out on Escape', async () => {
+    useAuthStore.getState().setUserInfo(session());
+    renderScreen();
+    await screen.findByRole('dialog', { name: 'Agreement: 12-01-2026' });
+
+    await userEvent.keyboard('{Escape}');
+
+    expect(useAuthStore.getState().userInfo).not.toBeNull();
+    expect(screen.getByRole('dialog', { name: 'Agreement: 12-01-2026' })).toBeInTheDocument();
+  });
+});

@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -566,5 +566,66 @@ describe('CaseScreen playlist modal keyboard access (spec 011)', () => {
 
     expect(getPlaylistById).toHaveBeenCalledTimes(1);
     expect(playlist).toHaveAttribute('aria-disabled', 'true');
+  });
+});
+
+describe('CaseScreen dialog focus and Escape (spec 012)', () => {
+  // Focus is restored in a microtask once a dialog unmounts.
+  const flushFocus = () => act(async () => {});
+
+  beforeEach(() => {
+    useAuthStore.setState({ userInfo: session() });
+  });
+
+  it('closes a report then the student list with Escape, returning focus each time', async () => {
+    useCaseStore.setState({ cases: [makeCase({ seated: false })] });
+    const user = userEvent.setup();
+    renderCase();
+
+    await user.click(screen.getByRole('button', { name: 'View Students' }));
+    await user.click(screen.getByRole('button', { name: /^#2 — / }));
+    expect(screen.getByRole('dialog', { name: /Student Report - #2/ })).toHaveFocus();
+
+    await user.keyboard('{Escape}');
+    await flushFocus();
+
+    expect(screen.queryByRole('dialog', { name: /Student Report/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'Students' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^#2 — / })).toHaveFocus();
+
+    await user.keyboard('{Escape}');
+    await flushFocus();
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'View Students' })).toHaveFocus();
+  });
+
+  it('closes Archive Case on Escape and returns focus to its button', async () => {
+    useCaseStore.setState({ cases: [makeCase({ answers: complete })] });
+    const user = userEvent.setup();
+    renderCase();
+
+    await user.click(screen.getByRole('button', { name: 'Archive Case' }));
+    expect(screen.getByRole('dialog', { name: 'Archive Case' })).toHaveFocus();
+
+    await user.keyboard('{Escape}');
+    await flushFocus();
+
+    expect(screen.queryByRole('dialog', { name: 'Archive Case' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Archive Case' })).toHaveFocus();
+    expect(archiveCase).not.toHaveBeenCalled();
+  });
+
+  it('keeps Archive Case open on Escape while archiving', async () => {
+    vi.mocked(archiveCase).mockReturnValue(new Promise(() => {}));
+    useCaseStore.setState({ cases: [makeCase({ answers: complete })] });
+    const user = userEvent.setup();
+    renderCase();
+
+    await user.click(screen.getByRole('button', { name: 'Archive Case' }));
+    await user.click(screen.getByRole('button', { name: 'Archive' }));
+    await user.keyboard('{Escape}');
+
+    expect(screen.getByRole('dialog', { name: 'Archive Case' })).toBeInTheDocument();
   });
 });

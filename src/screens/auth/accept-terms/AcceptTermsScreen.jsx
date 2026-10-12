@@ -114,6 +114,7 @@ const AcceptTermsScreen = () => {
           onSubmit={handleAccept}
           onCancel={logOut}
           cancelLabel="Log out"
+          dismissible={false}
         />
       )}
     </div>

@@ -389,6 +389,7 @@ const EditRecommendedScreen = () => {
           onClose={closeQuestionModal}
           title={editingQuestionId ? "Edit Question" : "Add Question"}
           hideDefaultClose
+          closeDisabled={isSaving}
         >
           <div className={styles.fieldStyle}>
             <label className={styles.labelStyle}>Question Text</label>
@@ -485,6 +486,7 @@ const EditRecommendedScreen = () => {
           onClose={() => setRemoveQuestionId(null)}
           title="Remove Question"
           hideDefaultClose
+          closeDisabled={isSaving}
         >
           <div className={styles.modalBody}>
             <p className={styles.modalText}>
@@ -519,6 +521,7 @@ const EditRecommendedScreen = () => {
           onClose={() => setDeleteRecommendedModal(false)}
           title="Delete Recommended Playlist"
           hideDefaultClose
+          closeDisabled={isSaving}
         >
           <div className={styles.modalBody}>
             <p className={styles.modalText}>

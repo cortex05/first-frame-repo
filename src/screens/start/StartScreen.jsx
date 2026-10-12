@@ -231,6 +231,13 @@ const StartScreen = () => {
     navigate(`/questions/${activeCase._id}`);
   };
 
+  const closeSaveWarning = () => setSaveWarning(false);
+
+  const closeSaveCheck = () => {
+    setSaveChartError("");
+    setSaveCheck(false);
+  };
+
   const clampScale = (s) => Math.min(SCALE_MAX, Math.max(SCALE_MIN, s));
 
   const zoomBy = (factor) => {
@@ -748,7 +755,12 @@ const StartScreen = () => {
       </div>
 
       {/* Leave-page warning modal */}
-      <Modal isOpen={saveWarning} hideDefaultClose title="Are you sure?">
+      <Modal
+        isOpen={saveWarning}
+        onClose={closeSaveWarning}
+        hideDefaultClose
+        title="Are you sure?"
+      >
         <h3
           style={{
             color: `var(--modal-text)`,
@@ -768,7 +780,7 @@ const StartScreen = () => {
           </button>
           <button
             className={styles.decline}
-            onClick={() => setSaveWarning(false)}
+            onClick={closeSaveWarning}
           >
             Cancel
           </button>
@@ -776,7 +788,13 @@ const StartScreen = () => {
       </Modal>
 
       {/* Save confirmation modal */}
-      <Modal isOpen={saveCheck} hideDefaultClose title="Are you sure?">
+      <Modal
+        isOpen={saveCheck}
+        onClose={closeSaveCheck}
+        closeDisabled={isSavingChart}
+        hideDefaultClose
+        title="Are you sure?"
+      >
         <h3
           style={{
             color: `var(--modal-text)`,
@@ -801,10 +819,7 @@ const StartScreen = () => {
           </button>
           <button
             className={styles.decline}
-            onClick={() => {
-              setSaveChartError("");
-              setSaveCheck(false);
-            }}
+            onClick={closeSaveCheck}
             disabled={isSavingChart}
           >
             Cancel

@@ -414,6 +414,7 @@ const CreateRecommendedScreen = () => {
           isOpen={confirmModal}
           onClose={() => setConfirmModal(false)}
           title="Recommended Playlist Summary"
+          closeDisabled={isSubmitting}
         >
           <div className={styles.summaryBody}>
             <div>
