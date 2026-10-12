@@ -59,6 +59,13 @@ const QuestionsScreen = () => {
     return () => window.clearTimeout(timeoutId);
   }, [toast]);
 
+  // Selecting a question unmounts its select button, so focus moves to the
+  // expanded question's text instead of falling back to <body>.
+  const selectedTextRef = useRef(null);
+  useEffect(() => {
+    if (selectedQuestionId !== null) selectedTextRef.current?.focus();
+  }, [selectedQuestionId]);
+
   const [scale, setScale] = useState(1);
   const [stagePos, setStagePos] = useState({ x: 0, y: 0 });
   const stageRef = useRef(null);
@@ -520,10 +527,13 @@ const QuestionsScreen = () => {
                     ? styles.inactiveAfterFirstPoll
                     : ""
                 }`}
-                onClick={() => handleSelectQuestion(q.id)}
               >
                 {selectedQuestionId !== q.id && (
-                  <React.Fragment>
+                  <button
+                    type="button"
+                    className={styles.questionSelectButton}
+                    onClick={() => handleSelectQuestion(q.id)}
+                  >
                     <span style={{ flex: 1, fontSize: 20 }}>{q.text}</span>
                     <span
                       style={{
@@ -543,7 +553,7 @@ const QuestionsScreen = () => {
                     >
                       {q.type === QuestionType.TRUE_FALSE ? "T/F" : "MC"}
                     </span>
-                  </React.Fragment>
+                  </button>
                 )}
 
                 {selectedQuestionId === q.id && (
@@ -552,6 +562,8 @@ const QuestionsScreen = () => {
                     {selectedQuestion && (
                       <div style={{ borderTop: "1px solid var(--light-blue-background)" }}>
                         <p
+                          ref={selectedTextRef}
+                          tabIndex={-1}
                           style={{
                             fontSize: 30,
                             fontWeight: 600,

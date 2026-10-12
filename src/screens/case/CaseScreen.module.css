@@ -238,6 +238,11 @@
 	cursor: pointer;
 	color: var(--modal-text);
 	transition: background 0.3s ease;
+	/* Rendered as a <button> (spec 011): drop the button defaults. */
+	width: 100%;
+	box-sizing: border-box;
+	font-family: inherit;
+	line-height: inherit;
 }
 
 .recommendedListItem:hover {
@@ -272,6 +277,11 @@
 	font-size: 14px;
 	cursor: pointer;
 	color: var(--modal-text);
+	/* Rendered as a <button> (spec 011): drop the button defaults. */
+	width: 100%;
+	box-sizing: border-box;
+	font-family: inherit;
+	line-height: inherit;
 }
 
 .playlistLoadingState {
@@ -302,6 +312,9 @@
 
 .playlistQuestionsList {
 	margin-bottom: 16px;
+	list-style: none;
+	margin-top: 0;
+	padding: 0;
 }
 
 .playlistQuestionItem {
@@ -315,6 +328,12 @@
 	border-radius: 6px;
 	color: var(--modal-text);
 	font-size: 14px;
+	/* Rendered as a <button> (spec 011): drop the button defaults. */
+	width: 100%;
+	box-sizing: border-box;
+	font-family: inherit;
+	line-height: inherit;
+	text-align: inherit;
 }
 
 .playlistQuestionSelectable {
@@ -453,4 +472,10 @@
 	margin: 0 0 12px;
 	color: var(--decline);
 	font-size: 14px;
+}
+
+.plainList {
+	list-style: none;
+	margin: 0;
+	padding: 0;
 }

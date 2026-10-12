@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import CaseScreen from './CaseScreen';
 import { archiveCase, getUserCases, saveCase, saveStudentDetails, startCase } from '../../api/case';
+import { getPlaylistById } from '../../api/playlist';
 import useAuthStore from '../../store/useAuthStore';
 import useCaseStore from '../../store/useCaseStore';
 
@@ -25,10 +26,13 @@ vi.mock('../../api/playlist', () => ({
   getPlaylistById: vi.fn(),
   getUserPlaylists: vi.fn(async () => []),
 }));
+// What useRecommendedPlaylist returns; tests that need a set replace it.
+const NO_RECOMMENDED = { recommended: null, isLoading: false, error: '', load: () => {} };
+let recommendedState = NO_RECOMMENDED;
 vi.mock('../../hooks/useRecommendedPlaylist', () => ({
-  default: () => ({ recommended: null, isLoading: false, error: '', load: () => {} }),
+  default: () => recommendedState,
 }));
-// The Export PDF button preloads jsPDF on mount; never let it load the real one.
+// The Export Questions button preloads jsPDF on mount; never let it load the real one.
 vi.mock('../../utils/pdfExport/loadJsPdf', () => ({
   loadJsPdf: vi.fn(() => new Promise(() => {})),
 }));
@@ -94,6 +98,8 @@ beforeEach(() => {
   vi.mocked(saveCase).mockReset();
   vi.mocked(startCase).mockReset();
   vi.mocked(saveStudentDetails).mockReset();
+  vi.mocked(getPlaylistById).mockReset();
+  recommendedState = NO_RECOMMENDED;
   window.scrollTo = vi.fn();
 });
 
@@ -430,7 +436,7 @@ describe('CaseScreen offline PDF export', () => {
 });
 
 describe('CaseScreen export slides PDF', () => {
-  const exportButton = () => screen.getByRole('button', { name: /Export PDF|Preparing/ });
+  const exportButton = () => screen.getByRole('button', { name: /Export Questions|Preparing/ });
 
   it('comes before Start Session in the same row when the case is not seated', () => {
     useAuthStore.setState({ userInfo: session() });
@@ -465,7 +471,7 @@ describe('CaseScreen export slides PDF', () => {
     renderCase();
 
     expect(exportButton()).toBeDisabled();
-    // One hint under For offline use, one under Export PDF.
+    // One hint under For offline use, one under Export Questions.
     expect(screen.getAllByText('Add a question to export.')).toHaveLength(2);
   });
 
@@ -479,5 +485,86 @@ describe('CaseScreen export slides PDF', () => {
     expect(screen.getByRole('button', { name: 'Yes' })).toBeInTheDocument();
     expect(saveCase).not.toHaveBeenCalled();
     expect(startCase).not.toHaveBeenCalled();
+  });
+});
+
+describe('CaseScreen playlist modal keyboard access (spec 011)', () => {
+  const tfOptions = (value) => [{ label: true, value }, { label: false, value: 0 }];
+  const RECOMMENDED = {
+    _id: 'rec-1',
+    charge: 'Theft',
+    questions: [
+      { id: 'r-1', text: 'Rec one?', type: 'TRUE_FALSE', options: tfOptions(1) },
+      { id: 'r-2', text: 'Rec two?', type: 'TRUE_FALSE', options: tfOptions(2) },
+      { id: 'r-3', text: 'Rec three?', type: 'TRUE_FALSE', options: tfOptions(3) },
+    ],
+  };
+
+  const openPlaylists = (user) =>
+    user.click(screen.getByRole('button', { name: 'Access Playlists' }));
+
+  const pressSpaceOn = async (user, element) => {
+    element.focus();
+    await user.keyboard(' ');
+  };
+
+  beforeEach(() => {
+    useAuthStore.setState({ userInfo: session(), playlists: [] });
+    useCaseStore.setState({ cases: [makeCase()] });
+  });
+
+  it('opens the recommended set from the keyboard', async () => {
+    recommendedState = { ...NO_RECOMMENDED, recommended: RECOMMENDED };
+    const user = userEvent.setup();
+    renderCase();
+    await openPlaylists(user);
+
+    screen.getByRole('button', { name: 'Hector Recommends — Theft' }).focus();
+    await user.keyboard('{Enter}');
+
+    expect(screen.getByText('Select one or more questions to load.')).toBeInTheDocument();
+  });
+
+  it('toggles playlist questions as pressed buttons and loads the pressed ones', async () => {
+    recommendedState = { ...NO_RECOMMENDED, recommended: RECOMMENDED };
+    vi.mocked(saveCase).mockImplementation(async (_id, updated) => updated);
+    const user = userEvent.setup();
+    renderCase();
+    await openPlaylists(user);
+    await user.click(screen.getByRole('button', { name: 'Hector Recommends — Theft' }));
+
+    const toggle = (text) => screen.getByRole('button', { name: new RegExp(text) });
+    expect(screen.getAllByRole('button', { pressed: false })).toHaveLength(3);
+
+    await pressSpaceOn(user, toggle('Rec one'));
+    await pressSpaceOn(user, toggle('Rec three'));
+    expect(toggle('Rec one')).toHaveAttribute('aria-pressed', 'true');
+    expect(toggle('Rec three')).toHaveAttribute('aria-pressed', 'true');
+
+    await pressSpaceOn(user, toggle('Rec one'));
+    expect(toggle('Rec one')).toHaveAttribute('aria-pressed', 'false');
+
+    await user.click(screen.getByRole('button', { name: 'Load Questions' }));
+
+    await waitFor(() => expect(saveCase).toHaveBeenCalledTimes(1));
+    const saved = vi.mocked(saveCase).mock.calls[0][1];
+    expect(saved.questions.map((q) => q.text)).toEqual(['Intent?', 'Credible?', 'Rec three?']);
+  });
+
+  it('fetches a playlist once and marks the list busy while it loads', async () => {
+    useAuthStore.setState({ playlists: [{ _id: 'p-1', title: 'Mine' }] });
+    vi.mocked(getPlaylistById).mockReturnValue(new Promise(() => {}));
+    const user = userEvent.setup();
+    renderCase();
+    await openPlaylists(user);
+
+    const playlist = screen.getByRole('button', { name: 'Mine' });
+    expect(playlist.closest('li')).not.toBeNull();
+    playlist.focus();
+    await user.keyboard('{Enter}');
+    await user.keyboard('{Enter}');
+
+    expect(getPlaylistById).toHaveBeenCalledTimes(1);
+    expect(playlist).toHaveAttribute('aria-disabled', 'true');
   });
 });

@@ -47,6 +47,8 @@ const Dashboard = () => {
   };
 
   const handleSelectPlaylist = async (playlist) => {
+    // One request at a time; the buttons stay focusable while it runs.
+    if (isLoadingPlaylistDetails) return;
     if (!userInfo?.token) {
       return;
     }
@@ -91,9 +93,13 @@ const Dashboard = () => {
             </Link>
           )}
 
-          <div onClick={() => setModalOpen(true)} className={styles.linkButton}>
-            <span>Access Existing Case</span>
-          </div>
+          <button
+            type="button"
+            onClick={() => setModalOpen(true)}
+            className={styles.linkButton}
+          >
+            Access Existing Case
+          </button>
 
           <Link to="/make-playlist" className={styles.linkButton}>
             Make Playlist
@@ -131,17 +137,19 @@ const Dashboard = () => {
                   : "No cases have been assigned to you yet."}
               </p>
             ) : (
-              <div>
+              <ul className={styles.itemList}>
                 {cases.map((c) => (
-                  <div
-                    key={c._id}
-                    onClick={() => handleSelectCase(c._id)}
-                    className={styles.caseItem}
-                  >
-                    <span>{c.clientName}</span> by <span>{c.attorney}</span>
-                  </div>
+                  <li key={c._id}>
+                    <button
+                      type="button"
+                      onClick={() => handleSelectCase(c._id)}
+                      className={styles.caseItem}
+                    >
+                      <span>{c.clientName}</span> by <span>{c.attorney}</span>
+                    </button>
+                  </li>
                 ))}
-              </div>
+              </ul>
             )}
           </div>
         </Modal>
@@ -159,16 +167,20 @@ const Dashboard = () => {
               {playlists.length === 0 ? (
                 <p style={{ color: "var(--modal-text)" }}>No playlists found.</p>
               ) : (
-                playlists.map((playlist) => (
-                  <div
-                    key={playlist._id}
-                    onClick={() => handleSelectPlaylist(playlist)}
-                    className={styles.caseItem}
-                    style={{ opacity: isLoadingPlaylistDetails ? 0.7 : 1 }}
-                  >
-                    <span>{playlist.title}</span>
-                  </div>
-                ))
+                <ul className={styles.itemList}>
+                  {playlists.map((playlist) => (
+                    <li key={playlist._id}>
+                      <button
+                        type="button"
+                        onClick={() => handleSelectPlaylist(playlist)}
+                        className={styles.caseItem}
+                        aria-disabled={isLoadingPlaylistDetails || undefined}
+                      >
+                        <span>{playlist.title}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               )}
 
               {isLoadingPlaylistDetails && (

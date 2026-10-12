@@ -306,3 +306,43 @@ describe('QuestionsScreen student report', () => {
     expect(await report.findByRole('alert')).toHaveTextContent('Case not found');
   });
 });
+
+describe('QuestionsScreen keyboard access (spec 011)', () => {
+  const SECOND = { id: 'q-2', text: 'Credible?', type: 'TRUE_FALSE', options: QUESTIONS[0].options };
+
+  it('selects a question from the keyboard and moves focus to it', async () => {
+    const user = userEvent.setup();
+    renderQuestions();
+
+    screen.getByRole('button', { name: /^Intent\?/ }).focus();
+    await user.keyboard('{Enter}');
+
+    expect(screen.getByRole('button', { name: 'Save Answers' })).toBeInTheDocument();
+    expect(screen.getByText('Intent?')).toHaveFocus();
+  });
+
+  it('drops the select button once a question is open, so nothing is nested', async () => {
+    const user = userEvent.setup();
+    renderQuestions();
+
+    await user.click(screen.getByRole('button', { name: /^Intent\?/ }));
+
+    expect(screen.queryByRole('button', { name: /^Intent\?/ })).not.toBeInTheDocument();
+    const save = screen.getByRole('button', { name: 'Save Answers' });
+    expect(save.parentElement.closest('button')).toBeNull();
+  });
+
+  it('collapses the open question when another one is selected', async () => {
+    useCaseStore.setState({ cases: [makeCase({ questions: [...QUESTIONS, SECOND] })] });
+    const user = userEvent.setup();
+    renderQuestions();
+
+    await user.click(screen.getByRole('button', { name: /^Intent\?/ }));
+    screen.getByRole('button', { name: /^Credible\?/ }).focus();
+    await user.keyboard(' ');
+
+    expect(screen.getByRole('button', { name: /^Intent\?/ })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Credible\?/ })).not.toBeInTheDocument();
+    expect(screen.getByText('Credible?')).toHaveFocus();
+  });
+});

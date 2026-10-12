@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 
 import Modal from "../../components/modal/Modal";
@@ -296,9 +296,9 @@ const EditRecommendedScreen = () => {
           <p className={styles.errorText}>
             {loadError || "Recommended playlist not found."}
           </p>
-          <span className={styles.backLink} onClick={() => navigate("/recommended")}>
+          <Link to="/recommended" className={styles.backLink}>
             Back to Recommended Playlists
-          </span>
+          </Link>
         </div>
       </React.Fragment>
     );

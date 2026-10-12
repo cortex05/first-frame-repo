@@ -537,6 +537,8 @@ const CaseScreen = () => {
   };
 
   const handleSelectPlaylist = async (playlist) => {
+    // One request at a time; the buttons stay focusable while it runs.
+    if (isLoadingPlaylistDetails) return;
     if (!userInfo?.token) {
       setSaveError("You must be logged in to access playlists.");
       return;
@@ -1251,12 +1253,13 @@ const CaseScreen = () => {
                   Loading the recommended playlist for {selectedCharge}...
                 </div>
               ) : recommended ? (
-                <div
+                <button
+                  type="button"
                   onClick={handleSelectRecommended}
                   className={styles.recommendedListItem}
                 >
                   <span>Hector Recommends — {recommended.charge}</span>
-                </div>
+                </button>
               ) : (
                 selectedCharge && (
                   <div className={styles.recommendedNotice}>
@@ -1272,19 +1275,24 @@ const CaseScreen = () => {
               {playlists.length === 0 ? (
                 <p className={styles.playlistStatusText}>No playlists found.</p>
               ) : (
-                playlists.map((playlist) => (
-                  <div
-                    key={playlist._id}
-                    onClick={() => handleSelectPlaylist(playlist)}
-                    className={`${styles.playlistListItem} ${
-                      isLoadingPlaylistDetails
-                        ? styles.playlistLoadingState
-                        : ""
-                    }`}
-                  >
-                    <span>{playlist.title}</span>
-                  </div>
-                ))
+                <ul className={styles.plainList}>
+                  {playlists.map((playlist) => (
+                    <li key={playlist._id}>
+                      <button
+                        type="button"
+                        onClick={() => handleSelectPlaylist(playlist)}
+                        aria-disabled={isLoadingPlaylistDetails || undefined}
+                        className={`${styles.playlistListItem} ${
+                          isLoadingPlaylistDetails
+                            ? styles.playlistLoadingState
+                            : ""
+                        }`}
+                      >
+                        <span>{playlist.title}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               )}
 
               {isLoadingPlaylistDetails && (
@@ -1298,30 +1306,34 @@ const CaseScreen = () => {
                 Select one or more questions to load.
               </p>
 
-              <div className={styles.playlistQuestionsList}>
-                {(selectedPlaylist.questions || []).map((question, index) => (
-                  <div
-                    key={`${selectedPlaylist._id}-${question.id || index}`}
-                    className={`${styles.playlistQuestionItem} ${styles.playlistQuestionSelectable} ${
-                      selectedPlaylistQuestionIds.includes(
-                        getPlaylistQuestionKey(question, index),
-                      )
-                        ? styles.playlistQuestionSelected
-                        : ""
-                    }`}
-                    onClick={() =>
-                      handleTogglePlaylistQuestionSelection(question, index)
-                    }
-                  >
-                    <span className={styles.playlistQuestionNumber}>
-                      {index + 1}.
-                    </span>
-                    <span className={styles.playlistQuestionText}>
-                      {question.text}
-                    </span>
-                  </div>
-                ))}
-              </div>
+              <ul className={styles.playlistQuestionsList}>
+                {(selectedPlaylist.questions || []).map((question, index) => {
+                  const isSelected = selectedPlaylistQuestionIds.includes(
+                    getPlaylistQuestionKey(question, index),
+                  );
+                  return (
+                    <li key={`${selectedPlaylist._id}-${question.id || index}`}>
+                      <button
+                        type="button"
+                        aria-pressed={isSelected}
+                        className={`${styles.playlistQuestionItem} ${styles.playlistQuestionSelectable} ${
+                          isSelected ? styles.playlistQuestionSelected : ""
+                        }`}
+                        onClick={() =>
+                          handleTogglePlaylistQuestionSelection(question, index)
+                        }
+                      >
+                        <span className={styles.playlistQuestionNumber}>
+                          {index + 1}.
+                        </span>
+                        <span className={styles.playlistQuestionText}>
+                          {question.text}
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
 
               <div className={styles.playlistActionRow}>
                 <button

@@ -47,7 +47,7 @@ beforeEach(() => {
 });
 
 describe('ExportSlidesButton', () => {
-  it('shows Preparing... until jsPDF has loaded, then Export PDF', async () => {
+  it('shows Preparing... until jsPDF has loaded, then Export Questions', async () => {
     const load = deferred();
     loadJsPdf.mockReturnValue(load.promise);
     renderButton();
@@ -56,7 +56,7 @@ describe('ExportSlidesButton', () => {
     expect(button()).toBeDisabled();
 
     load.resolve(FakeJsPdf);
-    await waitFor(() => expect(button()).toHaveTextContent('Export PDF'));
+    await waitFor(() => expect(button()).toHaveTextContent('Export Questions'));
     expect(button()).toBeEnabled();
     expect(button()).toHaveClass('export');
   });
@@ -107,7 +107,7 @@ describe('ExportSlidesButton', () => {
       expect(button()).toBeDisabled();
 
       save.resolve(result);
-      await waitFor(() => expect(button()).toHaveTextContent('Export PDF'));
+      await waitFor(() => expect(button()).toHaveTextContent('Export Questions'));
       expect(button()).toBeEnabled();
       expect(screen.queryByText(SLIDES_EXPORT_ERROR)).not.toBeInTheDocument();
     },
@@ -119,7 +119,7 @@ describe('ExportSlidesButton', () => {
 
     expect(await screen.findByText(LOAD_ERROR)).toBeInTheDocument();
     expect(button()).toBeDisabled();
-    expect(button()).toHaveTextContent('Export PDF');
+    expect(button()).toHaveTextContent('Export Questions');
   });
 
   it('shows an error when building fails, and clears it on the next click', async () => {
