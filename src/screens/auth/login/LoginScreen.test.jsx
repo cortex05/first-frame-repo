@@ -84,3 +84,16 @@ describe('LoginScreen labels (spec 013)', () => {
     expect(email).toHaveFocus();
   });
 });
+
+describe('LoginScreen errors (spec 016)', () => {
+  it('announces a failed login without marking a field', async () => {
+    vi.mocked(login).mockRejectedValue({ response: { data: { message: 'Invalid credentials' } } });
+    renderScreen();
+
+    await logIn();
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Invalid credentials');
+    expect(screen.getByLabelText('Email')).not.toHaveAttribute('aria-invalid');
+    expect(screen.getByLabelText('Password')).not.toHaveAttribute('aria-invalid');
+  });
+});

@@ -132,3 +132,13 @@
 	min-width: 1.4em;
 	font-weight: 700;
 }
+
+/* Marks a question whose answers are saved, beyond the card's darker color (spec 016). */
+.answeredTag {
+	font-size: 10px;
+	font-weight: 700;
+	padding: 2px 6px;
+	border-radius: 10px;
+	background: var(--surface-selected);
+	color: var(--modal-text);
+}

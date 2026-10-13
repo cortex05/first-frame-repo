@@ -34,20 +34,20 @@ describe('StudentSortModal (spec 012)', () => {
     renderSort('high');
 
     expect(screen.getByRole('dialog', { name: 'High to Low' })).toHaveFocus();
-    expect(rows()).toEqual(['#1 — 6', '#2 — 3', '#3 — 0']);
+    expect(rows()).toEqual(['#1 — 6 · High', '#2 — 3 · Medium', '#3 — 0 · Low']);
   });
 
   it('sorts low to high', () => {
     renderSort('low');
 
     expect(screen.getByRole('dialog', { name: 'Low to High' })).toBeInTheDocument();
-    expect(rows()).toEqual(['#3 — 0', '#2 — 3', '#1 — 6']);
+    expect(rows()).toEqual(['#3 — 0 · Low', '#2 — 3 · Medium', '#1 — 6 · High']);
   });
 
   it('opens a student', async () => {
     const { onSelectStudent } = renderSort();
 
-    await userEvent.click(screen.getByRole('button', { name: '#2 — 3' }));
+    await userEvent.click(screen.getByRole('button', { name: '#2 — 3 · Medium' }));
 
     expect(onSelectStudent).toHaveBeenCalledWith(2);
   });

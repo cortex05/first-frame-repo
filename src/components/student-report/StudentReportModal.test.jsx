@@ -235,3 +235,19 @@ describe('StudentReportModal dialog behavior (spec 012)', () => {
     expect(onClose).not.toHaveBeenCalled();
   });
 });
+
+describe('StudentReportModal errors (spec 016)', () => {
+  it('marks and focuses Age when it is out of range', async () => {
+    const user = userEvent.setup();
+    renderModal();
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    await user.type(screen.getByLabelText('Age'), '17');
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    const age = screen.getByLabelText('Age');
+    expect(age).toHaveAttribute('aria-invalid', 'true');
+    expect(age).toHaveAccessibleDescription('Age must be a whole number from 18 to 120.');
+    expect(age).toHaveFocus();
+  });
+});

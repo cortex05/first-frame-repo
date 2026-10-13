@@ -7,6 +7,7 @@ import useAuthStore, { selectIsAccountAdmin } from '../../../store/useAuthStore'
 import useCaseStore from '../../../store/useCaseStore';
 
 import styles from '../login/LoginScreen.module.css';
+import usePageTitle from '../../../hooks/usePageTitle';
 
 const TERMS_UNAVAILABLE =
   'Terms of Service are unavailable right now. Please try again later.';
@@ -20,6 +21,7 @@ export const MEMBER_NOTICE =
  * else for the whole account. Members can only wait (or log out).
  */
 const AcceptTermsScreen = () => {
+  usePageTitle('Updated Terms of Service');
   const navigate = useNavigate();
   const userInfo = useAuthStore((state) => state.userInfo);
   const isAccountAdmin = useAuthStore(selectIsAccountAdmin);
@@ -92,7 +94,7 @@ const AcceptTermsScreen = () => {
       <h1>Updated Terms of Service</h1>
 
       {isAccountAdmin ? (
-        <p className={styles.subtitle}>
+        <p className={styles.subtitle} role={loadError ? 'alert' : undefined}>
           {loadError || 'Please review and accept the updated terms to continue.'}
         </p>
       ) : (

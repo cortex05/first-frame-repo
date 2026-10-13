@@ -17,6 +17,8 @@ import { QuestionType } from "../../types/ENUMS";
 import { EMPTY_QUESTION_FORM } from "../../utils/formUtils";
 
 import styles from "./EditRecommendedScreen.module.css";
+import usePageTitle from "../../hooks/usePageTitle";
+import FormError from "../../components/form-error/FormError";
 
 /**
  * Edits the single recommended playlist covering one charge. The charge is the
@@ -32,6 +34,7 @@ const EditRecommendedScreen = () => {
 
   const [recommended, setRecommended] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  usePageTitle(`Recommended: ${charge}`, { ready: !isLoading });
   const [loadError, setLoadError] = useState("");
 
   const [questionModal, setQuestionModal] = useState(false);
@@ -294,7 +297,7 @@ const EditRecommendedScreen = () => {
       <React.Fragment>
         <TopNavbar />
         <div className={styles.container}>
-          <p className={styles.errorText}>
+          <p className={styles.errorText} role="alert">
             {loadError || "Recommended playlist not found."}
           </p>
           <Link to="/recommended" className={styles.backLink}>
@@ -368,8 +371,8 @@ const EditRecommendedScreen = () => {
             + Add Question
           </button>
 
-          {saveError && !questionModal && !removeQuestionId && !deleteRecommendedModal && (
-            <p className={styles.errorText}>{saveError}</p>
+          {!questionModal && !removeQuestionId && !deleteRecommendedModal && (
+            <FormError message={saveError} className={styles.errorText} />
           )}
         </section>
 
@@ -466,7 +469,7 @@ const EditRecommendedScreen = () => {
             </div>
           )}
 
-          {saveError && <p className={styles.modalErrorText}>{saveError}</p>}
+          <FormError message={saveError} className={styles.modalErrorText} />
 
           <div className={styles.modalButtons}>
             <button
@@ -500,7 +503,7 @@ const EditRecommendedScreen = () => {
               playlist?
             </p>
 
-            {saveError && <p className={styles.modalErrorText}>{saveError}</p>}
+            <FormError message={saveError} className={styles.modalErrorText} />
 
             <div className={styles.modalButtons}>
               <button
@@ -535,7 +538,7 @@ const EditRecommendedScreen = () => {
               are removed and the charge becomes available for a new playlist.
             </p>
 
-            {saveError && <p className={styles.modalErrorText}>{saveError}</p>}
+            <FormError message={saveError} className={styles.modalErrorText} />
 
             <div className={styles.modalButtons}>
               <button

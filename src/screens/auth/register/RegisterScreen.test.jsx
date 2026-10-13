@@ -160,3 +160,27 @@ describe('RegisterScreen', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 });
+
+describe('RegisterScreen errors (spec 016)', () => {
+  it('marks and focuses the password when it is too short', async () => {
+    renderScreen();
+    await fillForm({ password: 'short' });
+    await userEvent.click(screen.getByRole('button', { name: 'Create Account' }));
+
+    const password = screen.getByLabelText('Password');
+    expect(screen.getByRole('alert')).toHaveTextContent('Password must be at least 8 characters.');
+    expect(password).toHaveAttribute('aria-invalid', 'true');
+    expect(password).toHaveAccessibleDescription('Password must be at least 8 characters.');
+    expect(password).toHaveFocus();
+  });
+
+  it('marks the confirmation when the passwords differ', async () => {
+    renderScreen();
+    await fillForm({ password: 'founder-pass', confirm: 'founder-pazz' });
+    await userEvent.click(screen.getByRole('button', { name: 'Create Account' }));
+
+    expect(screen.getByLabelText('Confirm Password')).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByLabelText('Confirm Password')).toHaveFocus();
+    expect(screen.getByLabelText('Password')).not.toHaveAttribute('aria-invalid');
+  });
+});

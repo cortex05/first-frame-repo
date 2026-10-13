@@ -10,6 +10,7 @@ import {
   savePdfFiles,
   toPdfFile,
 } from '../../utils/pdfExport';
+import FormError from '../../components/form-error/FormError';
 
 export const LOAD_ERROR = "Couldn't prepare the export. Check your connection and try again.";
 export const EXPORT_ERROR = "Couldn't export the PDFs. Please try again.";
@@ -82,7 +83,7 @@ const PdfExportModal = ({ isOpen, onClose, activeCase }) => {
         of all the questions with their point values and a sheet of each Student with a space to
         tally their answers and points. Would you like to export the PDFs?
       </p>
-      {error && <p className={styles.modalError}>{error}</p>}
+      <FormError message={error} className={styles.modalError} />
       <div className={styles.modalButtons}>
         <button
           type="button"

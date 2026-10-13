@@ -8,6 +8,9 @@ import useAuthStore from '../../../store/useAuthStore';
 import useCaseStore from '../../../store/useCaseStore';
 
 import styles from './RegisterScreen.module.css';
+import usePageTitle from '../../../hooks/usePageTitle';
+import useFormError from '../../../hooks/useFormError';
+import FormError from '../../../components/form-error/FormError';
 
 const MIN_PASSWORD_LENGTH = 8;
 
@@ -26,6 +29,7 @@ const TERMS_UPDATED = 'The terms were just updated. Please review them again.';
  * account is created when the person accepts them in the modal.
  */
 const RegisterScreen = () => {
+  usePageTitle('Create an Account');
   const navigate = useNavigate();
   const setUserInfo = useAuthStore((state) => state.setUserInfo);
   const fetchUserPlaylists = useAuthStore((state) => state.fetchUserPlaylists);
@@ -36,7 +40,7 @@ const RegisterScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
+  const formError = useFormError();
   const [isLoadingTerms, setIsLoadingTerms] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   // The terms shown in the modal; null while it is closed.
@@ -52,22 +56,22 @@ const RegisterScreen = () => {
     event.preventDefault();
 
     if (password.length < MIN_PASSWORD_LENGTH) {
-      setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
+      formError.setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`, ['register-password']);
       return;
     }
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match.');
+      formError.setError('Passwords do not match.', ['register-confirm-password']);
       return;
     }
 
-    setError('');
+    formError.clear();
     setIsLoadingTerms(true);
 
     try {
       setAgreement(await getCurrentAgreement());
     } catch {
-      setError(TERMS_UNAVAILABLE);
+      formError.setError(TERMS_UNAVAILABLE);
     } finally {
       setIsLoadingTerms(false);
     }
@@ -100,13 +104,13 @@ const RegisterScreen = () => {
           return;
         } catch {
           closeAgreement();
-          setError(TERMS_UNAVAILABLE);
+          formError.setError(TERMS_UNAVAILABLE);
           return;
         }
       }
 
       closeAgreement();
-      setError(
+      formError.setError(
         requestError?.response?.data?.message || 'Unable to create the account. Please try again.'
       );
     } finally {
@@ -173,6 +177,7 @@ const RegisterScreen = () => {
           <label className={styles.labelStyle} htmlFor="register-password">Password</label>
           <input
             id="register-password"
+            {...formError.fieldProps('register-password')}
             className={styles.inputStyle}
             type="password"
             value={password}
@@ -189,6 +194,7 @@ const RegisterScreen = () => {
           </label>
           <input
             id="register-confirm-password"
+            {...formError.fieldProps('register-confirm-password')}
             className={styles.inputStyle}
             type="password"
             value={confirmPassword}
@@ -199,7 +205,7 @@ const RegisterScreen = () => {
           />
         </div>
 
-        {error && <p className={styles.error}>{error}</p>}
+        <FormError id={formError.messageId} message={formError.message} version={formError.version} className={styles.error} />
 
         <button className={styles.submitButton} type="submit" disabled={isLoadingTerms}>
           {isLoadingTerms ? 'Loading terms...' : 'Create Account'}

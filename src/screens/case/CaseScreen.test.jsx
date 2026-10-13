@@ -654,3 +654,36 @@ describe('CaseScreen form labels (spec 013)', () => {
     expect(screen.getByLabelText('Number of Students:')).toHaveAttribute('type', 'number');
   });
 });
+
+describe('CaseScreen hints and dialog errors (spec 016)', () => {
+  it('explains why Archive Case is disabled', () => {
+    useAuthStore.setState({ userInfo: session() });
+    useCaseStore.setState({ cases: [makeCase({ answers: {} })] });
+    renderCase();
+
+    expect(screen.getByRole('button', { name: 'Archive Case' })).toHaveAccessibleDescription(
+      'Answer every question to archive.',
+    );
+  });
+
+  it('announces a failed archive inside its dialog', async () => {
+    vi.mocked(archiveCase).mockRejectedValue({ response: { data: { message: 'Archive failed' } } });
+    useAuthStore.setState({ userInfo: session() });
+    useCaseStore.setState({ cases: [makeCase({ answers: complete })] });
+    renderCase();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Archive Case' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Archive' }));
+
+    const dialog = within(screen.getByRole('dialog', { name: 'Archive Case' }));
+    expect(await dialog.findByRole('alert')).toHaveTextContent('Archive failed');
+  });
+
+  it('names the tab after the client', () => {
+    useAuthStore.setState({ userInfo: session() });
+    useCaseStore.setState({ cases: [makeCase()] });
+    renderCase();
+
+    expect(document.title).toBe('Case: Jane Client – First Frame');
+  });
+});

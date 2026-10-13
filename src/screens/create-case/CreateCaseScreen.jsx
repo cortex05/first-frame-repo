@@ -17,6 +17,9 @@ import {
 import { getBrowserTimeZone } from "../../utils/timezone";
 
 import styles from "./CreateCaseScreen.module.css";
+import usePageTitle from "../../hooks/usePageTitle";
+import useFormError from "../../hooks/useFormError";
+import FormError from "../../components/form-error/FormError";
 
 /**
  * Creating a case is a purchase: the confirmation modal warns that payment will
@@ -24,6 +27,7 @@ import styles from "./CreateCaseScreen.module.css";
  * added on the case page once payment is processed.
  */
 const CreateCaseScreen = () => {
+	usePageTitle("Create New Case");
 	const navigate = useNavigate();
   const [clientName, setClientName] = useState("");
 	const [attorney, setAttorney] = useState("");
@@ -37,6 +41,8 @@ const CreateCaseScreen = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const idPrefix = useId();
+  // Missing details, found before the payment confirmation opens (spec 016).
+  const detailsError = useFormError();
 
   const addCase = useCaseStore((state) => state.addCase);
   const setActiveCase = useCaseStore((state) => state.setActiveCase);
@@ -53,6 +59,21 @@ const CreateCaseScreen = () => {
   }, [userInfo?.token]);
 
   const openConfirmModal = () => {
+    const missing = [
+      [`${idPrefix}-client`, "Client Name", clientName.trim()],
+      [`${idPrefix}-category`, "Case Category", category],
+      [`${idPrefix}-students`, "Number of Students", numberOfStudents],
+    ].filter(([, , value]) => !value);
+
+    if (missing.length > 0) {
+      detailsError.setError(
+        `Fill in: ${missing.map(([, label]) => label).join(", ")}`,
+        missing.map(([id]) => id),
+      );
+      return;
+    }
+
+    detailsError.clear();
     setSubmitError("");
     setConfirmModal(true);
   };
@@ -115,6 +136,7 @@ const CreateCaseScreen = () => {
           <label className={styles.labelStyle} htmlFor={`${idPrefix}-client`}>Client Name</label>
           <input
             id={`${idPrefix}-client`}
+            {...detailsError.fieldProps(`${idPrefix}-client`)}
             className={styles.inputStyle}
             type="text"
             value={clientName}
@@ -139,6 +161,7 @@ const CreateCaseScreen = () => {
           <label className={styles.labelStyle} htmlFor={`${idPrefix}-category`}>Case Category</label>
           <select
             id={`${idPrefix}-category`}
+            {...detailsError.fieldProps(`${idPrefix}-category`)}
             className={styles.inputStyle}
             value={category}
             onChange={(e) => setCategory(e.target.value)}
@@ -160,6 +183,7 @@ const CreateCaseScreen = () => {
           <label className={styles.labelStyle} htmlFor={`${idPrefix}-students`}>Number of Students</label>
           <input
             id={`${idPrefix}-students`}
+            {...detailsError.fieldProps(`${idPrefix}-students`)}
             className={styles.inputStyle}
             type="number"
             min={1}
@@ -199,6 +223,12 @@ const CreateCaseScreen = () => {
       >
         Create Case
       </button>
+      <FormError
+        id={detailsError.messageId}
+        message={detailsError.message}
+        version={detailsError.version}
+        className={styles.formError}
+      />
 
       {/* Purchase Confirmation Modal */}
         <Modal
@@ -227,9 +257,7 @@ const CreateCaseScreen = () => {
             Creating this case will initiate payment.
           </p>
 
-          {submitError && (
-            <p className={styles.submitError}>{submitError}</p>
-          )}
+          <FormError message={submitError} className={styles.submitError} />
 
           <div className={styles.confirmRow}>
             <button

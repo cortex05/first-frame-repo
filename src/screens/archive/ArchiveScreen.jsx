@@ -9,12 +9,15 @@ import { caseCategoryLabel } from '../../types/caseCategories';
 import { formatDate } from '../../utils/formatDate';
 
 import styles from './ArchiveScreen.module.css';
+import usePageTitle from '../../hooks/usePageTitle';
+import FormError from '../../components/form-error/FormError';
 
 /**
  * The account's past cases. Admins see every archived case; everyone else
  * sees the ones they owned -- the server decides which.
  */
 const ArchiveScreen = () => {
+  usePageTitle('Archived Cases');
   const userInfo = useAuthStore((state) => state.userInfo);
   const users = useAccountStore((state) => state.users);
   const fetchAccountUsers = useAccountStore((state) => state.fetchAccountUsers);
@@ -45,7 +48,7 @@ const ArchiveScreen = () => {
         <h1>Archived Cases</h1>
         <p className={styles.subtitle}>Completed cases, kept read-only for your records.</p>
 
-        {error && <p className={styles.error}>{error}</p>}
+        <FormError message={error} className={styles.error} />
 
         {isLoading ? (
           <p className={styles.hint}>Loading archived cases...</p>

@@ -5,6 +5,9 @@ import { changePassword } from '../../../api/auth';
 import useAuthStore from '../../../store/useAuthStore';
 
 import styles from '../login/LoginScreen.module.css';
+import usePageTitle from '../../../hooks/usePageTitle';
+import useFormError from '../../../hooks/useFormError';
+import FormError from '../../../components/form-error/FormError';
 
 const MIN_PASSWORD_LENGTH = 8;
 
@@ -13,6 +16,7 @@ const MIN_PASSWORD_LENGTH = 8;
  * API refuses everything else, and PasswordChangeGate keeps them on this page.
  */
 const ChangePasswordScreen = () => {
+  usePageTitle('Change Password');
   const navigate = useNavigate();
   const userInfo = useAuthStore((state) => state.userInfo);
   const setUserInfo = useAuthStore((state) => state.setUserInfo);
@@ -21,7 +25,7 @@ const ChangePasswordScreen = () => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
+  const formError = useFormError();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const idPrefix = useId();
 
@@ -31,19 +35,19 @@ const ChangePasswordScreen = () => {
     event.preventDefault();
 
     if (newPassword.length < MIN_PASSWORD_LENGTH) {
-      setError(`New password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
+      formError.setError(`New password must be at least ${MIN_PASSWORD_LENGTH} characters.`, [`${idPrefix}-new`]);
       return;
     }
     if (newPassword !== confirmPassword) {
-      setError('Passwords do not match.');
+      formError.setError('Passwords do not match.', [`${idPrefix}-confirm`]);
       return;
     }
     if (newPassword === currentPassword) {
-      setError('New password must be different from the current password.');
+      formError.setError('New password must be different from the current password.', [`${idPrefix}-new`]);
       return;
     }
 
-    setError('');
+    formError.clear();
     setIsSubmitting(true);
 
     try {
@@ -51,7 +55,7 @@ const ChangePasswordScreen = () => {
       setUserInfo(session);
       navigate('/dashboard', { replace: true });
     } catch (requestError) {
-      setError(requestError?.response?.data?.message || 'Unable to change password.');
+      formError.setError(requestError?.response?.data?.message || 'Unable to change password.');
     } finally {
       setIsSubmitting(false);
     }
@@ -86,6 +90,7 @@ const ChangePasswordScreen = () => {
           <label className={styles.labelStyle} htmlFor={`${idPrefix}-new`}>New Password</label>
           <input
             id={`${idPrefix}-new`}
+            {...formError.fieldProps(`${idPrefix}-new`)}
             className={styles.inputStyle}
             type="password"
             value={newPassword}
@@ -100,6 +105,7 @@ const ChangePasswordScreen = () => {
           <label className={styles.labelStyle} htmlFor={`${idPrefix}-confirm`}>Confirm New Password</label>
           <input
             id={`${idPrefix}-confirm`}
+            {...formError.fieldProps(`${idPrefix}-confirm`)}
             className={styles.inputStyle}
             type="password"
             value={confirmPassword}
@@ -109,7 +115,7 @@ const ChangePasswordScreen = () => {
           />
         </div>
 
-        {error && <p className={styles.error}>{error}</p>}
+        <FormError id={formError.messageId} message={formError.message} version={formError.version} className={styles.error} />
 
         <button className={styles.submitButton} type="submit" disabled={isSubmitting}>
           {isSubmitting ? 'Saving...' : 'Change Password'}

@@ -244,7 +244,7 @@ describe('QuestionsScreen student report', () => {
 
     await user.click(screen.getByRole('button', { name: 'Scores' }));
     await user.click(screen.getByRole('button', { name: 'High to Low' }));
-    await user.click(screen.getByRole('button', { name: '#1 — 6' }));
+    await user.click(screen.getByRole('button', { name: '#1 — 6 · High' }));
 
     const report = within(screen.getByRole('dialog', { name: 'Student Report - #1 = 6 Points' }));
     for (const label of ['Age', 'Occupation', 'Gender', 'Race']) {
@@ -265,14 +265,14 @@ describe('QuestionsScreen student report', () => {
     await user.click(screen.getByRole('button', { name: 'Scores' }));
     await user.click(screen.getByRole('button', { name: 'High to Low' }));
     const before = sortRows();
-    expect(before.map(([text]) => text)).toEqual(['#1 — 6', '#2 — 3', '#3 — 0']);
+    expect(before.map(([text]) => text)).toEqual(['#1 — 6 · High', '#2 — 3 · Medium', '#3 — 0 · Low']);
     expect(before.map(([, background]) => background)).toEqual([
       'var(--risk-high-bg)',
       'var(--risk-medium-bg)',
       'var(--risk-low-bg)',
     ]);
 
-    await user.click(screen.getByRole('button', { name: '#3 — 0' }));
+    await user.click(screen.getByRole('button', { name: '#3 — 0 · Low' }));
     const report = within(screen.getByRole('dialog', { name: /Student Report - #3/ }));
     await user.click(report.getByRole('button', { name: 'Edit' }));
     await user.type(report.getByLabelText('Occupation'), 'Teacher');
@@ -298,7 +298,7 @@ describe('QuestionsScreen student report', () => {
 
     await user.click(screen.getByRole('button', { name: 'Scores' }));
     await user.click(screen.getByRole('button', { name: 'High to Low' }));
-    await user.click(screen.getByRole('button', { name: '#2 — 3' }));
+    await user.click(screen.getByRole('button', { name: '#2 — 3 · Medium' }));
     const report = within(screen.getByRole('dialog', { name: /Student Report - #2/ }));
     await user.click(report.getByRole('button', { name: 'Edit' }));
     await user.click(report.getByRole('button', { name: 'Save' }));
@@ -372,14 +372,14 @@ describe('QuestionsScreen dialogs (spec 012)', () => {
     renderQuestions();
     await user.click(screen.getByRole('button', { name: 'Scores' }));
     await user.click(screen.getByRole('button', { name: 'High to Low' }));
-    await user.click(screen.getByRole('button', { name: '#1 — 6' }));
+    await user.click(screen.getByRole('button', { name: '#1 — 6 · High' }));
 
     await user.keyboard('{Escape}');
     await flushFocus();
 
     expect(screen.queryByRole('dialog', { name: /Student Report/ })).not.toBeInTheDocument();
     expect(screen.getByRole('dialog', { name: 'High to Low' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '#1 — 6' })).toHaveFocus();
+    expect(screen.getByRole('button', { name: '#1 — 6 · High' })).toHaveFocus();
   });
 
   it('still closes the sort list from its backdrop', async () => {
@@ -509,5 +509,24 @@ describe('QuestionsScreen contrast (spec 015)', () => {
 
     const message = screen.getByText(/No seating chart saved yet/);
     expect(message.style.color).toBe('var(--page-text)');
+  });
+});
+
+describe('QuestionsScreen meaning and title (spec 016)', () => {
+  const SECOND = { id: 'q-2', text: 'Credible?', type: 'TRUE_FALSE', options: QUESTIONS[0].options };
+
+  it('tags answered questions with text, not just a darker card', () => {
+    useCaseStore.setState({ cases: [makeCase({ questions: [...QUESTIONS, SECOND] })] });
+    renderQuestions();
+
+    expect(screen.getByRole('button', { name: /^Intent\?/ })).toHaveAccessibleName(/Answered/);
+    expect(screen.getByRole('button', { name: /^Credible\?/ })).not.toHaveAccessibleName(/Answered/);
+  });
+
+  it('names the tab after the client and has a top-level heading', () => {
+    renderQuestions();
+
+    expect(document.title).toBe('Questions: Jane Client – First Frame');
+    expect(screen.getByRole('heading', { level: 1, name: 'Questions' })).toBeInTheDocument();
   });
 });

@@ -5,12 +5,14 @@ import TopNavbar from '../../components/top-navbar/TopNavbar';
 import useAuthStore from '../../store/useAuthStore';
 
 import styles from './RecommendedScreen.module.css';
+import usePageTitle from '../../hooks/usePageTitle';
 
 /**
  * Admin view of every recommended set. A recommended set has no title -- the
  * backend keeps one set per charge, so the charge is the identifier.
  */
 const RecommendedScreen = () => {
+  usePageTitle("Recommended Playlists");
   const userInfo = useAuthStore((state) => state.userInfo);
   const recommendedNames = useAuthStore((state) => state.recommendedNames);
   const fetchRecommendedNames = useAuthStore((state) => state.fetchRecommendedNames);

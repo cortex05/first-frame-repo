@@ -6,8 +6,12 @@ import useAuthStore from '../../../store/useAuthStore';
 import useCaseStore from '../../../store/useCaseStore';
 
 import styles from './LoginScreen.module.css';
+import usePageTitle from '../../../hooks/usePageTitle';
+import useFormError from '../../../hooks/useFormError';
+import FormError from '../../../components/form-error/FormError';
 
 const LoginScreen = () => {
+  usePageTitle('Log in');
   const navigate = useNavigate();
   const setUserInfo = useAuthStore((state) => state.setUserInfo);
   const fetchUserPlaylists = useAuthStore((state) => state.fetchUserPlaylists);
@@ -16,13 +20,13 @@ const LoginScreen = () => {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const formError = useFormError();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const idPrefix = useId();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setError('');
+    formError.clear();
     setIsSubmitting(true);
 
     try {
@@ -50,7 +54,7 @@ const LoginScreen = () => {
       ]);
       navigate('/dashboard', { replace: true });
     } catch (requestError) {
-      setError(
+      formError.setError(
         requestError?.response?.data?.message || 'Unable to log in. Please check your credentials.'
       );
     } finally {
@@ -92,7 +96,7 @@ const LoginScreen = () => {
           />
         </div>
 
-        {error && <p className={styles.error}>{error}</p>}
+        <FormError id={formError.messageId} message={formError.message} version={formError.version} className={styles.error} />
 
         <button className={styles.submitButton} type="submit" disabled={isSubmitting}>
           {isSubmitting ? 'Logging in...' : 'Login'}

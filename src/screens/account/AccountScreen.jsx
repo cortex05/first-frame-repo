@@ -6,6 +6,9 @@ import useAccountStore from '../../store/useAccountStore';
 import useAuthStore from '../../store/useAuthStore';
 
 import styles from './AccountScreen.module.css';
+import usePageTitle from '../../hooks/usePageTitle';
+import useFormError from '../../hooks/useFormError';
+import FormError from '../../components/form-error/FormError';
 
 const MIN_PASSWORD_LENGTH = 8;
 const EMPTY_NEW_USER = { username: '', email: '', password: '', role: 'member' };
@@ -18,6 +21,7 @@ const errorMessage = (requestError, fallback) =>
  * password, and change users' roles or disable them. Account admins only.
  */
 const AccountScreen = () => {
+  usePageTitle('Account');
   const navigate = useNavigate();
   const userInfo = useAuthStore((state) => state.userInfo);
   const updateSession = useAuthStore((state) => state.updateSession);
@@ -36,7 +40,7 @@ const AccountScreen = () => {
   const [loadError, setLoadError] = useState('');
 
   const [newUser, setNewUser] = useState(EMPTY_NEW_USER);
-  const [createError, setCreateError] = useState('');
+  const formError = useFormError();
   const [createMessage, setCreateMessage] = useState('');
   const [isCreating, setIsCreating] = useState(false);
 
@@ -69,11 +73,11 @@ const AccountScreen = () => {
 
   const handleCreateUser = async (event) => {
     event.preventDefault();
-    setCreateError('');
+    formError.clear();
     setCreateMessage('');
 
     if (newUser.password.length < MIN_PASSWORD_LENGTH) {
-      setCreateError(`The temporary password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
+      formError.setError(`The temporary password must be at least ${MIN_PASSWORD_LENGTH} characters.`, ['new-user-password']);
       return;
     }
 
@@ -93,7 +97,7 @@ const AccountScreen = () => {
         `${created.username} was added. Share the temporary password with them; they will choose their own at first login.`,
       );
     } catch (requestError) {
-      setCreateError(errorMessage(requestError, 'Unable to add the user.'));
+      formError.setError(errorMessage(requestError, 'Unable to add the user.'));
     } finally {
       setIsCreating(false);
     }
@@ -129,7 +133,7 @@ const AccountScreen = () => {
         <h1>Account</h1>
         <p className={styles.subtitle}>Manage your account and the people who use it.</p>
 
-        {loadError && <p className={styles.error}>{loadError}</p>}
+        <FormError message={loadError} className={styles.error} />
 
         <section className={styles.section}>
           <h2 className={styles.sectionHeading}>Account Name</h2>
@@ -205,7 +209,7 @@ const AccountScreen = () => {
                       </button>
                     </div>
 
-                    {rowErrors[user._id] && <p className={styles.rowError}>{rowErrors[user._id]}</p>}
+                    <FormError message={rowErrors[user._id]} className={styles.rowError} />
                   </li>
                 );
               })}
@@ -253,6 +257,7 @@ const AccountScreen = () => {
               <label className={styles.labelStyle} htmlFor="new-user-password">Temporary Password</label>
               <input
                 id="new-user-password"
+                {...formError.fieldProps('new-user-password')}
                 className={styles.inputStyle}
                 type="text"
                 value={newUser.password}
@@ -276,8 +281,12 @@ const AccountScreen = () => {
               </select>
             </div>
 
-            {createError && <p className={styles.error}>{createError}</p>}
-            {createMessage && <p className={styles.success}>{createMessage}</p>}
+            <FormError id={formError.messageId} message={formError.message} version={formError.version} className={styles.error} />
+            {createMessage && (
+              <p className={styles.success} role="status">
+                {createMessage}
+              </p>
+            )}
 
             <button type="submit" className={styles.primaryButton} disabled={isCreating}>
               {isCreating ? 'Adding...' : 'Add User'}

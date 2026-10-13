@@ -15,6 +15,8 @@ import {
 } from '../../utils/studentScores';
 
 import styles from './ArchiveScreen.module.css';
+import usePageTitle from '../../hooks/usePageTitle';
+import FormError from '../../components/form-error/FormError';
 
 /**
  * Read-only view of one archived case: its details and owners, then a report
@@ -32,6 +34,7 @@ const ArchivedCaseScreen = () => {
   const [result, setResult] = useState(null);
   const isLoading = result?.id !== id;
   const archived = isLoading ? null : result.archived;
+  usePageTitle(archived ? `Archived: ${archived.clientName}` : 'Archived case', { ready: !isLoading });
   const notFound = !isLoading && Boolean(result.notFound);
   const error = isLoading ? '' : result.error ?? '';
 
@@ -62,7 +65,7 @@ const ArchivedCaseScreen = () => {
         </div>
       );
     }
-    if (error || !archived) return <p className={styles.error}>{error}</p>;
+    if (error || !archived) return <FormError message={error} className={styles.error} />;
 
     const owners = archived.owners || [];
     const studentNumbers = getReportStudentNumbers(archived);

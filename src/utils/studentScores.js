@@ -14,6 +14,9 @@ import { QuestionType } from '../types/ENUMS';
 export const RISK_TIERS = ['low', 'medium', 'high'];
 
 export const RISK_LABELS = { high: 'High', medium: 'Medium', low: 'Low' };
+// One-letter tier for tight spots (the Scores circles), so the tier never relies
+// on color alone (spec 016).
+export const RISK_LETTERS = { high: 'H', medium: 'M', low: 'L' };
 
 /**
  * Splits the RANGE between `min` and `max` into three equal bands -- not the

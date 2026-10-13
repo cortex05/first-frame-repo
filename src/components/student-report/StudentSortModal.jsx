@@ -2,6 +2,7 @@ import { useId } from 'react';
 
 import DialogPortal from '../modal/DialogPortal';
 import useModalDialog from '../../hooks/useModalDialog';
+import { RISK_LABELS } from '../../utils/studentScores';
 
 /**
  * The Scores view's ranked student list ("High to Low" / "Low to High") on
@@ -97,7 +98,7 @@ const StudentSortModal = ({ order, students, getScore, getTier, onSelectStudent,
                     cursor: 'pointer',
                   }}
                 >
-                  #{s.id} &mdash; {getScore(s.id)}
+                  #{s.id} &mdash; {getScore(s.id)} &middot; {RISK_LABELS[tier]}
                 </button>
               );
             })}

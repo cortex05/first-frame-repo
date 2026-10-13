@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import DashboardScreen from './DashboardScreen';
 import { getPlaylistById } from '../../api/playlist';
+import { __resetPageTitleForTests } from '../../hooks/usePageTitle';
 import useAuthStore from '../../store/useAuthStore';
 import useCaseStore from '../../store/useCaseStore';
 
@@ -130,5 +131,39 @@ describe('DashboardScreen keyboard access (spec 011)', () => {
     expect(getPlaylistById).toHaveBeenCalledTimes(1);
     expect(playlist).toHaveAttribute('aria-disabled', 'true');
     expect(playlist).toHaveFocus();
+  });
+});
+
+describe('DashboardScreen title, focus and notice (spec 016)', () => {
+  // Arriving as the second history entry is what in-app navigation looks like.
+  const renderArrived = (state) =>
+    render(
+      <MemoryRouter
+        initialEntries={['/case/case-1', { pathname: '/dashboard', state }]}
+        initialIndex={1}
+      >
+        <Routes>
+          <Route path="/dashboard" element={<DashboardScreen />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+  beforeEach(() => {
+    __resetPageTitleForTests();
+  });
+
+  it('names the tab and focuses its heading after navigating here', () => {
+    seedSession('member');
+    renderArrived();
+
+    expect(document.title).toBe('Dashboard – First Frame');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveFocus();
+  });
+
+  it('announces a redirect notice as a status message', () => {
+    seedSession('member');
+    renderArrived({ message: 'You no longer have access to that case.' });
+
+    expect(screen.getByRole('status')).toHaveTextContent('You no longer have access to that case.');
   });
 });

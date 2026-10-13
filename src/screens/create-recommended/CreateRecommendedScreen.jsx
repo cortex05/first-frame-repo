@@ -15,8 +15,12 @@ import { normalizeQuestion } from "../../utils/questionNormalization";
 import { EMPTY_QUESTION_FORM } from "../../utils/formUtils";
 
 import styles from "./CreateRecommendedScreen.module.css";
+import usePageTitle from "../../hooks/usePageTitle";
+import useFormError from "../../hooks/useFormError";
+import FormError from "../../components/form-error/FormError";
 
 const CreateRecommendedScreen = () => {
+  usePageTitle("Create Recommended Playlist");
   const navigate = useNavigate();
 
   const userInfo = useAuthStore((state) => state.userInfo);
@@ -34,7 +38,7 @@ const CreateRecommendedScreen = () => {
 
   const [confirmModal, setConfirmModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState("");
+  const formError = useFormError();
 
   // One recommended playlist per charge, so a charge that already has one is not
   // offerable. recommendedNames holds the charges already covered.
@@ -173,16 +177,18 @@ const CreateRecommendedScreen = () => {
 
   const handleCreate = async () => {
     if (!userInfo?.token) {
-      setSubmitError("You must be logged in to create a recommended playlist.");
+      formError.setError("You must be logged in to create a recommended playlist.");
       return;
     }
 
     if (!canCreate) {
-      setSubmitError("Select a charge and add at least one question.");
+      // Only reachable from the summary dialog (Create is disabled until both are set),
+      // so no field is marked: focus must stay inside the dialog.
+      formError.setError("Select a charge and add at least one question.");
       return;
     }
 
-    setSubmitError("");
+    formError.clear();
     setIsSubmitting(true);
 
     const recommendedPayload = {
@@ -196,7 +202,7 @@ const CreateRecommendedScreen = () => {
       setConfirmModal(false);
       navigate("/recommended");
     } catch (requestError) {
-      setSubmitError(
+      formError.setError(
         requestError?.response?.data?.message ||
           "Unable to create recommended playlist. Please try again.",
       );
@@ -291,7 +297,7 @@ const CreateRecommendedScreen = () => {
           Create
         </button>
 
-        {submitError && !confirmModal && <p className={styles.errorText}>{submitError}</p>}
+        {!confirmModal && <FormError id={formError.messageId} message={formError.message} version={formError.version} className={styles.errorText} />}
 
         {/* Add / Edit Question Modal */}
         <Modal
@@ -450,7 +456,7 @@ const CreateRecommendedScreen = () => {
               ))}
             </div>
 
-            {submitError && <p className={styles.modalErrorText}>{submitError}</p>}
+            <FormError id={formError.messageId} message={formError.message} version={formError.version} className={styles.modalErrorText} />
 
             <div className={styles.modalButtons}>
               <button

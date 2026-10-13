@@ -72,3 +72,29 @@ describe('ChangePasswordScreen labels (spec 013)', () => {
     expect(await screen.findByText('Dashboard screen')).toBeInTheDocument();
   });
 });
+
+describe('ChangePasswordScreen errors (spec 016)', () => {
+  const submitWith = async (user, current, next, confirm) => {
+    await user.type(screen.getByLabelText('Current Password'), current);
+    await user.type(screen.getByLabelText('New Password'), next);
+    await user.type(screen.getByLabelText('Confirm New Password'), confirm);
+    await user.click(screen.getByRole('button', { name: 'Change Password' }));
+  };
+
+  it.each([
+    ['too short', 'old-secret', 'short', 'short', 'New Password'],
+    ['not confirmed', 'old-secret', 'new-secret', 'new-secrex', 'Confirm New Password'],
+    ['unchanged', 'same-secret', 'same-secret', 'same-secret', 'New Password'],
+  ])('marks and focuses the right field when the new password is %s', async (_, current, next, confirm, field) => {
+    useAuthStore.getState().setUserInfo(session());
+    const user = userEvent.setup();
+    renderScreen();
+
+    await submitWith(user, current, next, confirm);
+
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(screen.getByLabelText(field)).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByLabelText(field)).toHaveFocus();
+    expect(changePassword).not.toHaveBeenCalled();
+  });
+});

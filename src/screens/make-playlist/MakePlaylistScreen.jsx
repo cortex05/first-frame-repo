@@ -15,8 +15,12 @@ import { normalizeQuestion } from '../../utils/questionNormalization';
 import { createPlaylist } from '../../api/playlist';
 
 import styles from './MakePlaylistScreen.module.css';
+import usePageTitle from '../../hooks/usePageTitle';
+import useFormError from '../../hooks/useFormError';
+import FormError from '../../components/form-error/FormError';
 
 const MakePlaylistScreen = () => {
+  usePageTitle('Make Question Playlist');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const fromCaseId = searchParams.get('caseId');
@@ -34,7 +38,7 @@ const MakePlaylistScreen = () => {
   const [deleteQuestionId, setDeleteQuestionId] = useState(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState('');
+  const formError = useFormError();
 
   const editingQuestion = useMemo(
     () => questions.find((q) => q.id === editingQuestionId) || null,
@@ -169,16 +173,16 @@ const MakePlaylistScreen = () => {
 
   const handleCreatePlaylist = async () => {
     if (!userInfo?.token) {
-      setSubmitError('You must be logged in to create a playlist.');
+      formError.setError('You must be logged in to create a playlist.');
       return;
     }
 
     if (!title.trim()) {
-      setSubmitError('Please provide a playlist title.');
+      formError.setError('Please provide a playlist title.', [`${idPrefix}-title`]);
       return;
     }
 
-    setSubmitError('');
+    formError.clear();
     setIsSubmitting(true);
 
     const playlistPayload = {
@@ -196,7 +200,7 @@ const MakePlaylistScreen = () => {
         navigate('/dashboard');
       }
     } catch (requestError) {
-      setSubmitError(
+      formError.setError(
         requestError?.response?.data?.message ||
           'Unable to create playlist. Please try again.'
       );
@@ -216,6 +220,7 @@ const MakePlaylistScreen = () => {
           <label className={styles.labelStyle} htmlFor={`${idPrefix}-title`}>Title</label>
           <input
             id={`${idPrefix}-title`}
+            {...formError.fieldProps(`${idPrefix}-title`)}
             className={styles.inputStyle}
             type="text"
             value={title}
@@ -315,11 +320,12 @@ const MakePlaylistScreen = () => {
           </button>
         </section>
 
-        {submitError && (
-          <p style={{ color: 'var(--error-text-light)', fontSize: 14, marginBottom: 12 }}>
-            {submitError}
-          </p>
-        )}
+        <FormError
+          id={formError.messageId}
+          message={formError.message}
+          version={formError.version}
+          style={{ color: 'var(--error-text-light)', fontSize: 14, marginBottom: 12 }}
+        />
 
         
         <div>

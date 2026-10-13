@@ -78,6 +78,7 @@ const PAIRS = [
   ['--modal-text', '--surface', TEXT],
   ['--page-text', '--page-bg', TEXT],
   ['--tf-text', '--surface-subtle', TEXT],
+  ['--modal-text', '--surface-selected', TEXT],
   ['--border-input', '--surface', NON_TEXT],
   ['--blue-background', '--page-bg', NON_TEXT],
   ['--blue-background', '--surface', NON_TEXT],

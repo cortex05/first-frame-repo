@@ -11,7 +11,13 @@ import {
 } from "../../api/case";
 import { QuestionType } from "../../types/ENUMS";
 import { cssVar } from "../../utils/cssVars";
-import { RISK_LABELS, getRiskTiers, getStudentTotal, isPolled } from "../../utils/studentScores";
+import {
+  RISK_LABELS,
+  RISK_LETTERS,
+  getRiskTiers,
+  getStudentTotal,
+  isPolled,
+} from "../../utils/studentScores";
 import { optionLetter } from "../../utils/seating";
 import {
   applyLocalStudentDetails,
@@ -24,6 +30,7 @@ import StudentSortModal from "../../components/student-report/StudentSortModal";
 import SeatLayer from "../../components/seat-layer/SeatLayer";
 
 import styles from "./QuestionsScreen.module.css";
+import usePageTitle from "../../hooks/usePageTitle";
 
 const CIRCLE_R = 24;
 const SCALE_MIN = 0.1;
@@ -40,6 +47,7 @@ const QuestionsScreen = () => {
   const activeCase = useCaseStore((state) =>
     state.cases.find((c) => c._id === caseId),
   );
+  usePageTitle(activeCase ? `Questions: ${activeCase.clientName}` : "Questions", { ready: Boolean(activeCase) });
   const updateCase = useCaseStore((state) => state.updateCase);
   const fetchUserCases = useCaseStore((state) => state.fetchUserCases);
   const userInfo = useAuthStore((state) => state.userInfo);
@@ -502,9 +510,9 @@ const QuestionsScreen = () => {
             marginBottom: 16,
           }}
         >
-          <h2 style={{ margin: 0, fontSize: 16, color: "var(--modal-text)" }}>
+          <h1 style={{ margin: 0, fontSize: 16, color: "var(--modal-text)" }}>
             Questions
-          </h2>
+          </h1>
           <button
             onClick={() => {
               setShowScores((v) => {
@@ -643,6 +651,9 @@ const QuestionsScreen = () => {
                     >
                       {q.type === QuestionType.TRUE_FALSE ? "T/F" : "MC"}
                     </span>
+                    {isPolled(activeCase, q.id) && (
+                      <span className={styles.answeredTag}>Answered</span>
+                    )}
                   </button>
                 )}
 
@@ -940,7 +951,7 @@ const QuestionsScreen = () => {
                           height={CIRCLE_R * 2}
                           text={
                             showScores
-                              ? `#${s.id} - ${getStudentScore(s.id)}`
+                              ? `#${s.id}\n${getStudentScore(s.id)} ${RISK_LETTERS[getScoreTier(s.id)]}`
                               : selectedQuestion?.type === QuestionType.TRUE_FALSE
                                 ? isTrueLabel(currentAnswers[s.id]?.label)
                                   ? "X"

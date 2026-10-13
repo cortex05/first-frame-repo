@@ -23,6 +23,8 @@ import {
 } from '../../utils/studentScores';
 
 import styles from './StudentReportModal.module.css';
+import useFormError from '../../hooks/useFormError';
+import FormError from '../../components/form-error/FormError';
 
 /**
  * One student's live report: their optional details (editable) and every
@@ -44,35 +46,35 @@ const StudentReportModal = ({ activeCase, studentNumber, onClose, onSaveDetails 
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState(() => toDraft(details));
   const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState('');
+  const formError = useFormError();
   // Escape works like × (unsaved edits are dropped), but not mid-save.
   const { dialogRef, dialogProps } = useModalDialog({ onDismiss: onClose, dismissible: !isSaving });
 
   const startEditing = () => {
     setDraft(toDraft(details));
-    setError('');
+    formError.clear();
     setIsEditing(true);
   };
 
   const cancelEditing = () => {
-    setError('');
+    formError.clear();
     setIsEditing(false);
   };
 
   const handleSave = async () => {
     const validationError = validateStudentDetails(draft);
     if (validationError) {
-      setError(validationError);
+      formError.setError(validationError, [`${idPrefix}-age`]);
       return;
     }
 
-    setError('');
+    formError.clear();
     setIsSaving(true);
     try {
       await onSaveDetails(toDetailsPayload(draft));
       setIsEditing(false);
     } catch (requestError) {
-      setError(requestError?.response?.data?.message || 'Unable to save student details.');
+      formError.setError(requestError?.response?.data?.message || 'Unable to save student details.');
     } finally {
       setIsSaving(false);
     }
@@ -83,7 +85,7 @@ const StudentReportModal = ({ activeCase, studentNumber, onClose, onSaveDetails 
   const renderInput = (key, inputId) => {
     if (key === 'gender') {
       return (
-        <select id={inputId} className={styles.input} value={draft.gender} onChange={setField('gender')}>
+        <select id={inputId} {...formError.fieldProps(inputId)} className={styles.input} value={draft.gender} onChange={setField('gender')}>
           <option value="">?</option>
           <option value={StudentGender.MALE}>Male</option>
           <option value={StudentGender.FEMALE}>Female</option>
@@ -95,6 +97,7 @@ const StudentReportModal = ({ activeCase, studentNumber, onClose, onSaveDetails 
       return (
         <input
           id={inputId}
+          {...formError.fieldProps(inputId)}
           className={styles.input}
           type="number"
           inputMode="numeric"
@@ -110,6 +113,7 @@ const StudentReportModal = ({ activeCase, studentNumber, onClose, onSaveDetails 
     return (
       <input
         id={inputId}
+        {...formError.fieldProps(inputId)}
         className={styles.input}
         type="text"
         maxLength={key === 'occupation' ? STUDENT_DETAIL_LIMITS.OCCUPATION_MAX : STUDENT_DETAIL_LIMITS.RACE_MAX}
@@ -176,11 +180,7 @@ const StudentReportModal = ({ activeCase, studentNumber, onClose, onSaveDetails 
             </ul>
           </div>
 
-          {error && (
-            <p className={styles.error} role="alert">
-              {error}
-            </p>
-          )}
+          <FormError id={formError.messageId} message={formError.message} version={formError.version} className={styles.error} />
 
           <div className={styles.footer}>
             {isEditing ? (

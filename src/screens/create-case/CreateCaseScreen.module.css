@@ -112,3 +112,10 @@
   opacity: 0.75;
   cursor: not-allowed;
 }
+
+/* Missing case details, shown on the page under Create Case (spec 016). */
+.formError {
+  margin: 12px 0 0;
+  font-size: 16px;
+  color: var(--error-text-light);
+}

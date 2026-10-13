@@ -35,7 +35,7 @@ describe('StudentListModal', () => {
   it('lists every student in numeric order with their points', () => {
     renderList(seatedCase);
 
-    expect(rows().map((r) => r.textContent)).toEqual(['#1 — 6', '#2 — 3', '#3 — 0', '#4 — 0', '#5 — 0']);
+    expect(rows().map((r) => r.textContent)).toEqual(['#1 — 6 · High', '#2 — 3 · Medium', '#3 — 0 · Low', '#4 — 0', '#5 — 0']);
   });
 
   it('colors seated students by tier, the same way as the Questions screen', () => {

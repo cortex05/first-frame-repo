@@ -33,6 +33,8 @@ import { normalizeQuestion } from "../../utils/questionNormalization";
 import useRecommendedPlaylist from "../../hooks/useRecommendedPlaylist";
 
 import styles from "./CaseScreen.module.css";
+import usePageTitle from "../../hooks/usePageTitle";
+import FormError from "../../components/form-error/FormError";
 
 const CaseScreen = () => {
   const { id } = useParams();
@@ -45,6 +47,7 @@ const CaseScreen = () => {
   const activeCase = useCaseStore((state) =>
     state.cases.find((c) => c._id === id),
   );
+  usePageTitle(activeCase ? `Case: ${activeCase.clientName}` : "Case not found");
   const setActiveCase = useCaseStore((state) => state.setActiveCase);
   const updateCase = useCaseStore((state) => state.updateCase);
   const userInfo = useAuthStore((state) => state.userInfo);
@@ -65,6 +68,8 @@ const CaseScreen = () => {
   );
   const [isSavingCase, setIsSavingCase] = useState(false);
   const idPrefix = useId();
+  const archiveHintId = `${idPrefix}-archive-hint`;
+  const offlineHintId = `${idPrefix}-offline-hint`;
   const [saveError, setSaveError] = useState("");
   const [playlistModalOpen, setPlaylistModalOpen] = useState(false);
   const [selectedPlaylist, setSelectedPlaylist] = useState(null);
@@ -651,12 +656,13 @@ const CaseScreen = () => {
                       setArchiveModalOpen(true);
                     }}
                     disabled={!isComplete}
+                    aria-describedby={!isComplete ? archiveHintId : undefined}
                     className={styles.archiveButton}
                   >
                     Archive Case
                   </button>
                   {!isComplete && (
-                    <p className={styles.archiveHint}>
+                    <p id={archiveHintId} className={styles.archiveHint}>
                       Answer every question to archive.
                     </p>
                   )}
@@ -786,12 +792,13 @@ const CaseScreen = () => {
                 type="button"
                 onClick={() => setPdfExportOpen(true)}
                 disabled={activeCase.questions.length === 0}
+                aria-describedby={activeCase.questions.length === 0 ? offlineHintId : undefined}
                 className={`${styles.questionActionButton} ${styles.offlineExportButton}`}
               >
                 For offline use
               </button>
               {activeCase.questions.length === 0 && (
-                <p className={styles.offlineExportHint}>
+                <p id={offlineHintId} className={styles.offlineExportHint}>
                   Add a question to export.
                 </p>
               )}
@@ -840,7 +847,7 @@ const CaseScreen = () => {
             onChange={setDraftOwners}
             disabled={isSavingOwners}
           />
-          {ownersError && <p className={styles.modalError}>{ownersError}</p>}
+          <FormError message={ownersError} className={styles.modalError} />
           <div className={styles.startModalButtons}>
             <button
               onClick={handleSaveOwners}
@@ -870,7 +877,7 @@ const CaseScreen = () => {
             Archiving moves this case to the account&apos;s archive. It can
             still be viewed there, but it can no longer be changed.
           </p>
-          {archiveError && <p className={styles.modalError}>{archiveError}</p>}
+          <FormError message={archiveError} className={styles.modalError} />
           <div className={styles.startModalButtons}>
             <button
               onClick={handleArchive}
@@ -1117,17 +1124,14 @@ const CaseScreen = () => {
             </div>
           )}
 
-          {saveError && (
-            <p
-              style={{
-                color: "var(--error-text-surface)",
-                fontSize: 14,
-                margin: "4px 0 0",
-              }}
-            >
-              {saveError}
-            </p>
-          )}
+          <FormError
+            message={saveError}
+            style={{
+              color: "var(--error-text-surface)",
+              fontSize: 14,
+              margin: "4px 0 0",
+            }}
+          />
         </Modal>
 
         {/* Delete Question Confirmation Modal */}
@@ -1197,7 +1201,7 @@ const CaseScreen = () => {
                 Currently this case is set for {activeCase.studentNumber}
               </p>
               <p style={{ marginBottom: 16 }}>Is this correct?</p>
-              {startError && <p className={styles.modalError}>{startError}</p>}
+              <FormError message={startError} className={styles.modalError} />
               <div className={styles.startModalButtons}>
                 <button
                   onClick={handleStart}
@@ -1285,9 +1289,7 @@ const CaseScreen = () => {
                 )
               )}
 
-              {recommendedError && (
-                <p className={styles.playlistErrorText}>{recommendedError}</p>
-              )}
+              <FormError message={recommendedError} className={styles.playlistErrorText} />
 
               {playlists.length === 0 ? (
                 <p className={styles.playlistStatusText}>No playlists found.</p>
@@ -1373,9 +1375,7 @@ const CaseScreen = () => {
                 </button>
               </div>
 
-              {saveError && (
-                <p className={styles.playlistErrorText}>{saveError}</p>
-              )}
+              <FormError message={saveError} className={styles.playlistErrorText} />
             </div>
           )}
         </Modal>

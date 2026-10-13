@@ -38,3 +38,16 @@ describe('MakePlaylistScreen labels (spec 013)', () => {
     await expectLabelledQuestionEditor(userEvent.setup());
   });
 });
+
+describe('MakePlaylistScreen errors (spec 016)', () => {
+  it('marks and focuses the title when it is missing', async () => {
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.click(screen.getByRole('button', { name: /Create Playlist|Save Playlist/ }));
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Please provide a playlist title.');
+    expect(screen.getByLabelText('Title')).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByLabelText('Title')).toHaveFocus();
+  });
+});

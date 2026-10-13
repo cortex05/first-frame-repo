@@ -20,6 +20,7 @@ import Modal from "../../components/modal/Modal";
 import { cssVar } from "../../utils/cssVars";
 import { rowSummary } from "../../utils/seating";
 import styles from "./SaveScreen.module.css";
+import usePageTitle from "../../hooks/usePageTitle";
 
 const SIDEBAR_W = 260;
 const CIRCLE_R = 24;
@@ -74,6 +75,7 @@ const StartScreen = () => {
   const activeCase = useCaseStore((state) =>
     state.cases.find((c) => c._id === caseId),
   );
+  usePageTitle(activeCase ? `Seating: ${activeCase.clientName}` : "Seating", { ready: Boolean(activeCase) });
   const updateCase = useCaseStore((state) => state.updateCase);
   const userInfo = useAuthStore((state) => state.userInfo);
 
@@ -384,9 +386,9 @@ const StartScreen = () => {
           overflowY: "auto",
         }}
       >
-        <h2 style={{ margin: 0, fontSize: 24, color: "var(--modal-text)" }}>
+        <h1 style={{ margin: 0, fontSize: 24, color: "var(--modal-text)" }}>
           Assign Students
-        </h2>
+        </h1>
 
         <p style={{ margin: 0, fontSize: 16, color: "var(--text-secondary)" }}>
           Remaining: <strong>{remaining.length}</strong> /{" "}

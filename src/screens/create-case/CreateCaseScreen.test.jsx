@@ -148,3 +148,34 @@ describe('CreateCaseScreen labels (spec 013)', () => {
     expect(within(owners).getByRole('checkbox', { name: /bob/ })).toBeInTheDocument();
   });
 });
+
+describe('CreateCaseScreen missing details (spec 016)', () => {
+  it('names and focuses the missing fields instead of opening the confirmation', async () => {
+    useAuthStore.setState({ userInfo: session });
+    renderCreate();
+
+    await userEvent.type(screen.getByLabelText('Attorney'), 'Alex Attorney');
+    await userEvent.click(screen.getByRole('button', { name: 'Create Case' }));
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Fill in: Client Name, Case Category, Number of Students',
+    );
+    for (const label of ['Client Name', 'Case Category', 'Number of Students']) {
+      expect(screen.getByLabelText(label)).toHaveAttribute('aria-invalid', 'true');
+    }
+    expect(screen.getByLabelText('Attorney')).not.toHaveAttribute('aria-invalid');
+    expect(screen.getByLabelText('Client Name')).toHaveFocus();
+  });
+
+  it('opens the confirmation once everything is filled in', async () => {
+    useAuthStore.setState({ userInfo: session });
+    renderCreate();
+
+    await fillForm();
+    await openConfirmation();
+
+    expect(screen.getByRole('dialog', { name: 'Confirm Case' })).toBeInTheDocument();
+    expect(screen.queryByText(/^Fill in:/)).not.toBeInTheDocument();
+  });
+});

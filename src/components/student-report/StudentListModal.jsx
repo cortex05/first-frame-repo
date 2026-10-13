@@ -3,6 +3,7 @@ import { useId } from 'react';
 import DialogPortal from '../modal/DialogPortal';
 import useModalDialog from '../../hooks/useModalDialog';
 import {
+  RISK_LABELS,
   getRiskTiers,
   getSeatedStudentNumbers,
   getStudentTotal,
@@ -48,6 +49,7 @@ const StudentListModal = ({ activeCase, onSelectStudent, onClose }) => {
                   onClick={() => onSelectStudent(number)}
                 >
                   #{number} &mdash; {getStudentTotal(activeCase, number)}
+                  {tier && <> &middot; {RISK_LABELS[tier]}</>}
                 </button>
               );
             })}

@@ -8,8 +8,10 @@ import { getPlaylistById } from "../../api/playlist";
 
 import useCaseStore from "../../store/useCaseStore";
 import useAuthStore, { selectIsAccountAdmin } from "../../store/useAuthStore";
+import usePageTitle from "../../hooks/usePageTitle";
 
 const Dashboard = () => {
+  usePageTitle("Dashboard");
   const location = useLocation();
   // Set by a redirect, e.g. after losing access to a case. Shown once.
   const [notice] = useState(() => location.state?.message ?? "");
@@ -84,7 +86,11 @@ const Dashboard = () => {
           {/* <h3>What would you like to do?</h3> */}
         </div>
 
-        {notice && <p className={styles.notice}>{notice}</p>}
+        {notice && (
+          <p className={styles.notice} role="status">
+            {notice}
+          </p>
+        )}
 
         <div className={styles.actionContainer}>
           {isAccountAdmin && (
