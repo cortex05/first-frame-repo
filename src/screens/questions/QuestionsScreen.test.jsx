@@ -501,3 +501,13 @@ describe('QuestionsScreen seat buttons (spec 014)', () => {
     expect(screen.getByRole('dialog', { name: /Student Report - #1/ })).toBeInTheDocument();
   });
 });
+
+describe('QuestionsScreen contrast (spec 015)', () => {
+  it('draws the no-seating message in the page text color', () => {
+    useCaseStore.setState({ cases: [makeCase({ chartData: undefined })] });
+    renderQuestions();
+
+    const message = screen.getByText(/No seating chart saved yet/);
+    expect(message.style.color).toBe('var(--page-text)');
+  });
+});

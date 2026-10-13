@@ -55,7 +55,7 @@
 .ownersHint {
   margin: 0 0 8px;
   font-size: 14px;
-  color: var(--light-text);
+  color: var(--page-text);
 }
 
 .paymentNotice {
@@ -77,7 +77,7 @@
 .submitError {
   margin: 0 0 12px;
   font-size: 16px;
-  color: var(--decline);
+  color: var(--error-text-surface);
 }
 
 .confirmRow {

@@ -175,7 +175,7 @@
 .error {
   margin: 12px 0 0;
   font-size: 14px;
-  color: var(--decline);
+  color: var(--error-text-surface);
 }
 
 .footer {
@@ -199,6 +199,7 @@
 
 .edit {
   background: var(--orange-edit);
+  color: var(--text-on-bright-fill);
 }
 
 .save {

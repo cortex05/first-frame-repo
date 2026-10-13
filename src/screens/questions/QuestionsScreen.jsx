@@ -140,7 +140,7 @@ const QuestionsScreen = () => {
     low: cssVar("--risk-low-bg", "#5BF527"),
   };
   const riskText = {
-    high: cssVar("--risk-high-text", canvas.light),
+    high: cssVar("--risk-high-text", "#121212"),
     medium: cssVar("--risk-medium-text", "#2E2E2D"),
     low: cssVar("--risk-low-text", "#2E2E2D"),
   };
@@ -836,7 +836,7 @@ const QuestionsScreen = () => {
       <div style={{ flex: 1, position: "relative" }}>
         {rects.length === 0 ? (
           <div style={{ padding: 32 }}>
-            <p style={{ color: "var(--light-text)" }}>
+            <p style={{ color: "var(--page-text)" }}>
               No seating chart saved yet. Complete the seating chart first.
             </p>
           </div>

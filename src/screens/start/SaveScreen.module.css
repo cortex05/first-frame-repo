@@ -45,7 +45,7 @@
 
 .leftToRight {
 	background: var(--orange-edit);
-	color: var(--light-text);
+	color: var(--text-on-bright-fill);
 }
 
 .rightToLeft {

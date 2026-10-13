@@ -76,6 +76,6 @@
 
 .badgeEmpty {
   background: var(--surface);
-  color: var(--grey-disabled);
+  color: var(--text-muted-surface);
   border: 1px solid var(--grey-disabled);
 }

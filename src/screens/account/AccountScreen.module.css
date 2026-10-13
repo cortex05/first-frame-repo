@@ -135,7 +135,7 @@
 }
 
 .email {
-  color: var(--light-text);
+  color: var(--modal-text);
   font-size: 14px;
 }
 
@@ -156,7 +156,7 @@
 .rowError {
   flex-basis: 100%;
   margin: 0;
-  color: var(--decline);
+  color: var(--error-text-surface);
   font-size: 14px;
 }
 

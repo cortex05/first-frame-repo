@@ -13,7 +13,7 @@
 .inputStyle {
   padding: 10px 12px;
   font-size: 15px;
-  border: 1px solid var(--grey-disabled);
+  border: 1px solid var(--border-input);
   border-radius: 6px;
   width: 100%;
   box-sizing: border-box;
@@ -24,10 +24,19 @@
   margin-bottom: 16px;
 }
 
+/* Labels on the page; inside the question dialog use .fieldLabel. */
 .labelStyle {
   font-size: 13px;
   font-weight: 600;
   color: var(--text-muted);
+  margin-bottom: 2px;
+  display: block;
+}
+
+.fieldLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted-surface);
   margin-bottom: 2px;
   display: block;
 }

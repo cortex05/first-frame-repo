@@ -9,23 +9,26 @@
   --page-text: #fff;
 
   /* NEW GOING FORWARD */
-  --blue-background: #4a90d9;
+  /* Deep enough for white text (4.5:1); matches the light theme (spec 015). */
+  --blue-background: #2f74c0;
   --blue-primary-dark: #1f4f85;
   --light-blue-background: #f0f5fb;
 
-  --confirm: #009b00;
-  --confirm-hover: #28bb28;
-  --decline: #d9534f;
-  --orange-edit: #f79306;
+  --confirm: #008a00;
+  --confirm-hover: #28bb28; /* hover borders only, never behind text */
+  --decline: #c9302c; /* a fill; error text uses --error-text-* */
+  --orange-edit: #f79306; /* takes --text-on-bright-fill, not white */
 
   --warning-bg: #fff3cd; /* multiple choice bg */
   --warning-text: #856404; /* multiple choice text */
   --tf-bg: #e6f4ea; /* true/false */
   --tf-text: #2e7d32;
 
-  --light-text: #fff; /* text/icons on colored fills */
+  --light-text: #fff; /* text/icons on deep fills (blue, green, red) */
+  --text-on-bright-fill: #121212; /* text on bright fills: orange, risk red */
   --label-light: #d8d8d8; /* labels drawn on the page */
   --error-text-light: #ffd2d2; /* errors drawn on the page */
+  --error-text-surface: #b3261e; /* errors on white surfaces: dialogs, cards */
   --modal-text: #333;
   --color-text-primary: #08060d; /* FOR THE CIRCLE STROKE */
   --grey-disabled: #aaa;
@@ -45,12 +48,14 @@
   /* --- Text on surfaces --- */
   --text-strong: #303030;
   --text-secondary: #555;
-  --text-muted: #888;
+  --text-muted: #888; /* hints on the page */
+  --text-muted-surface: #6b6b6b; /* hints on white surfaces */
   --text-link-muted: #456b96;
 
   /* --- Borders --- */
   --border-subtle: #e0e0e0;
   --border-control: #bfbfbf;
+  --border-input: #8a8a8a; /* input/select/textarea outlines, 3:1 on --surface */
 
   /* --- Navbar --- */
   --navbar-bg: #273952;
@@ -72,7 +77,7 @@
   /* --- Risk tiers: Scores view + archive report (utils/studentScores.js) --- */
   /* Konva reads these through cssVar(); keep the fallbacks there in sync. */
   --risk-high-bg: #F54927;
-  --risk-high-text: var(--light-text);
+  --risk-high-text: var(--text-on-bright-fill);
   --risk-medium-bg: #F7F46D;
   --risk-medium-text: #2E2E2D;
   --risk-low-bg: #5BF527;
@@ -83,7 +88,7 @@
   --recommend-bg-hover: #f3b449;
 
   /* light background ONLY */
-  --input-border-case: var(--grey-disabled); 
+  --input-border-case: var(--border-input);
 
   /* --- Shadows / overlays --- */
   --shadow-strong: rgba(0, 0, 0, 0.6);
@@ -126,8 +131,10 @@
   --tf-text: #2e7d32;
 
   --light-text: #fff;
+  --text-on-bright-fill: #121212;
   --label-light: #4a5566;
   --error-text-light: #b3261e;
+  --error-text-surface: #b3261e;
   --modal-text: #333;
   --color-text-primary: #08060d;
   --grey-disabled: #b5bcc5;
@@ -147,12 +154,14 @@
   /* --- Text on surfaces --- */
   --text-strong: #303030;
   --text-secondary: #555;
-  --text-muted: #6b7280;
+  --text-muted: #636b78;
+  --text-muted-surface: #636b78;
   --text-link-muted: #456b96;
 
   /* --- Borders --- */
   --border-subtle: #d5dbe3;
   --border-control: #aeb6c1;
+  --border-input: #7f8794;
 
   /* --- Navbar --- */
   --navbar-bg: var(--blue-background);
@@ -172,7 +181,7 @@
 
   /* --- Risk tiers: unchanged so Scores colors mean the same in both themes --- */
   --risk-high-bg: #F54927;
-  --risk-high-text: var(--light-text);
+  --risk-high-text: var(--text-on-bright-fill);
   --risk-medium-bg: #F7F46D;
   --risk-medium-text: #2E2E2D;
   --risk-low-bg: #5BF527;

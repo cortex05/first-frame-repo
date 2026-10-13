@@ -909,7 +909,7 @@ const StartScreen = () => {
          Seating cannot be changed after saving. Do you want to proceed?
         </h3>
         {saveChartError && (
-          <p role="alert" style={{ color: "var(--error-text-light)" }}>
+          <p role="alert" style={{ color: "var(--error-text-surface)" }}>
             {saveChartError}
           </p>
         )}

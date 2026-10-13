@@ -77,8 +77,10 @@
   border-radius: 12px;
 }
 
+/* Shown on the page (Create Case). The Case Owners dialog never shows it: only
+   account admins open that dialog, and they are active users of the account. */
 .empty {
   margin: 0 0 16px;
-  color: var(--grey-disabled);
+  color: var(--text-muted);
   font-size: 14px;
 }

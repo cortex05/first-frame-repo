@@ -218,7 +218,7 @@ const Dashboard = () => {
                     padding: "10px 0",
                     fontWeight: 600,
                     background: "var(--orange-edit)",
-                    color: "var(--light-text)",
+                    color: "var(--text-on-bright-fill)",
                     border: "none",
                     borderRadius: 6,
                     cursor: "pointer",

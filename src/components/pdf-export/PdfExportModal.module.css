@@ -8,7 +8,7 @@
 .modalError {
 	margin: 0 0 12px;
 	max-width: 420px;
-	color: var(--decline);
+	color: var(--error-text-surface);
 	font-size: 14px;
 }
 

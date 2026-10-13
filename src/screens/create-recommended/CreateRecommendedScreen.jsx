@@ -450,7 +450,7 @@ const CreateRecommendedScreen = () => {
               ))}
             </div>
 
-            {submitError && <p className={styles.errorText}>{submitError}</p>}
+            {submitError && <p className={styles.modalErrorText}>{submitError}</p>}
 
             <div className={styles.modalButtons}>
               <button

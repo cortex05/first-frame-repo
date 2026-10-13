@@ -718,7 +718,7 @@ const CaseScreen = () => {
                   fontWeight: 700,
                   padding: "4px 8px",
                   background: "var(--orange-edit)",
-                  color: "var(--light-text)",
+                  color: "var(--text-on-bright-fill)",
                   border: "none",
                   borderRadius: 4,
                   cursor: "pointer",
@@ -1120,7 +1120,7 @@ const CaseScreen = () => {
           {saveError && (
             <p
               style={{
-                color: "var(--decline)",
+                color: "var(--error-text-surface)",
                 fontSize: 14,
                 margin: "4px 0 0",
               }}

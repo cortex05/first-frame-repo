@@ -3,7 +3,7 @@
   max-width: 50%;
   margin: 0 auto;
   padding: 32px;
-  color: var(--light-text);
+  color: var(--page-text);
 }
 
 .container h1 {
@@ -34,7 +34,7 @@
 .inputStyle {
   padding: 2px 12px;
   font-size: 18px;
-  border: 1px solid var(--grey-disabled);
+  border: 1px solid var(--border-input);
   border-radius: 6px;
   width: 100%;
   box-sizing: border-box;
@@ -50,7 +50,7 @@
 
 .textAreaStyle {
   font-size: 18px;
-  border: 1px solid var(--grey-disabled);
+  border: 1px solid var(--border-input);
   border-radius: 6px;
   width: 100%;
   box-sizing: border-box;
@@ -126,7 +126,7 @@
   font-weight: 700;
   padding: 4px 8px;
   background: var(--orange-edit);
-  color: var(--light-text);
+  color: var(--text-on-bright-fill);
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -203,8 +203,14 @@
   cursor: not-allowed;
 }
 
+/* Errors on the page; inside the summary dialog use .modalErrorText. */
 .errorText {
-  color: var(--decline);
+  color: var(--error-text-light);
+  margin-top: 12px;
+}
+
+.modalErrorText {
+  color: var(--error-text-surface);
   margin-top: 12px;
 }
 

@@ -14,7 +14,7 @@
 .inputStyle {
 	padding: 10px 12px;
     font-size: 15px;
-    border: 1px solid var(--grey-disabled);
+    border: 1px solid var(--border-input);
     border-radius: 6px;
     width: 100%;
     box-sizing: border-box;
@@ -190,7 +190,7 @@
 
 .exportSlidesButton {
 	background: var(--orange-edit);
-	color: var(--light-text);
+	color: var(--text-on-bright-fill);
 }
 
 .exportSlidesButton:disabled {
@@ -294,7 +294,7 @@
 }
 
 .playlistErrorText {
-	color: var(--decline);
+	color: var(--error-text-surface);
 	margin-top: 12px;
 }
 
@@ -459,7 +459,7 @@
 .archiveHint {
 	margin: 6px 0 0;
 	font-size: 13px;
-	color: var(--light-text);
+	color: var(--page-text);
 }
 
 .modalText {
@@ -470,7 +470,7 @@
 
 .modalError {
 	margin: 0 0 12px;
-	color: var(--decline);
+	color: var(--error-text-surface);
 	font-size: 14px;
 }
 

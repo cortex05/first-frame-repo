@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import StartScreen from './StartScreen';
 import useAuthStore from '../../store/useAuthStore';
 import useCaseStore from '../../store/useCaseStore';
+import { saveSeating } from '../../api/case';
 
 // jsdom has no canvas: render the Konva tree as plain elements.
 // Groups expose their position so tests can watch rows move and rotate.
@@ -171,5 +172,21 @@ describe('StartScreen rows list and keyboard positioning (spec 014)', () => {
     for (const name of ['Zoom in', 'Zoom out', 'Reset zoom']) {
       expect(screen.getByRole('button', { name })).toBeInTheDocument();
     }
+  });
+});
+
+describe('StartScreen error contrast (spec 015)', () => {
+  it('shows a failed save in the error color made for white dialogs', async () => {
+    vi.mocked(saveSeating).mockRejectedValue({ response: { data: { message: 'Nope' } } });
+    const user = userEvent.setup();
+    renderStart();
+
+    await user.click(screen.getByRole('button', { name: '+ Add Row' }));
+    await user.click(screen.getByRole('button', { name: 'Save Chart' }));
+    await user.click(screen.getByRole('button', { name: 'Proceed' }));
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('Nope');
+    expect(alert.style.color).toBe('var(--error-text-surface)');
   });
 });

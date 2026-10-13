@@ -261,7 +261,7 @@ const MakePlaylistScreen = () => {
                   fontWeight: 700,
                   padding: '4px 8px',
                   background: 'var(--orange-edit)',
-                  color: 'var(--light-text)',
+                  color: 'var(--text-on-bright-fill)',
                   border: 'none',
                   borderRadius: 4,
                   cursor: 'pointer',
@@ -316,7 +316,7 @@ const MakePlaylistScreen = () => {
         </section>
 
         {submitError && (
-          <p style={{ color: 'var(--decline)', fontSize: 14, marginBottom: 12 }}>
+          <p style={{ color: 'var(--error-text-light)', fontSize: 14, marginBottom: 12 }}>
             {submitError}
           </p>
         )}
@@ -371,7 +371,7 @@ const MakePlaylistScreen = () => {
         hideDefaultClose={Boolean(editingQuestion)}
       >
         <div className={styles.fieldStyle}>
-          <label htmlFor={`${idPrefix}-q-text`} className={styles.labelStyle}>Question Text</label>
+          <label htmlFor={`${idPrefix}-q-text`} className={styles.fieldLabel}>Question Text</label>
           <textarea
             id={`${idPrefix}-q-text`}
             className={styles.inputStyle}
@@ -386,7 +386,7 @@ const MakePlaylistScreen = () => {
         </div>
 
         <div className={styles.fieldStyle}>
-          <label htmlFor={`${idPrefix}-q-type`} className={styles.labelStyle}>Type</label>
+          <label htmlFor={`${idPrefix}-q-type`} className={styles.fieldLabel}>Type</label>
           <select
             id={`${idPrefix}-q-type`}
             className={styles.inputStyle}
