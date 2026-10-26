@@ -457,12 +457,14 @@ describe('CaseScreen export slides PDF', () => {
 
     renderCase();
 
-    const access = screen.getByRole('button', { name: 'Access Questions' });
+    // One link, no button inside it (spec 017).
+    const access = screen.getByRole('link', { name: 'Access Questions' });
     expect(exportButton().compareDocumentPosition(access)).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING,
     );
-    expect(access.closest('a')).toHaveAttribute('href', '/questions/case-1');
-    expect(exportButton().parentElement.parentElement).toBe(access.closest('a').parentElement);
+    expect(access).toHaveAttribute('href', '/questions/case-1');
+    expect(screen.queryByRole('button', { name: 'Access Questions' })).not.toBeInTheDocument();
+    expect(exportButton().parentElement.parentElement).toBe(access.parentElement);
   });
 
   it('is disabled with a hint when the case has no questions', () => {
@@ -685,5 +687,15 @@ describe('CaseScreen hints and dialog errors (spec 016)', () => {
     renderCase();
 
     expect(document.title).toBe('Case: Jane Client – First Frame');
+  });
+});
+
+describe('CaseScreen structure (spec 017)', () => {
+  it('renders its content, heading included, in a main landmark', () => {
+    useAuthStore.setState({ userInfo: session() });
+    useCaseStore.setState({ cases: [makeCase()] });
+    renderCase();
+
+    expect(screen.getByRole('main')).toContainElement(screen.getByRole('heading', { level: 1 }));
   });
 });

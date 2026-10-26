@@ -80,7 +80,23 @@
   }
 }
 
+/* <nav> wraps Home and the right-hand group without adding a box (spec 017). */
+.navLinks {
+  display: contents;
+}
+
+.homeLink {
+  order: 0;
+}
+
+.greeting {
+  order: 1;
+  margin-right: auto;
+  padding-left: 0.25em;
+}
+
 .navActions {
+  order: 2;
   display: flex;
   align-items: center;
 }

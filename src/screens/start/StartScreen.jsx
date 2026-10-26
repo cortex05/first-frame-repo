@@ -155,9 +155,11 @@ const StartScreen = () => {
 
   if (!activeCase) {
     return (
-      <p style={{ padding: 32 }}>
-        {caseInStorage ? "Loading case…" : "Case not found."}
-      </p>
+      <main>
+        <p style={{ padding: 32 }}>
+          {caseInStorage ? "Loading case…" : "Case not found."}
+        </p>
+      </main>
     );
   }
 
@@ -371,7 +373,7 @@ const StartScreen = () => {
   });
 
   return (
-    <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
+    <main style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
       {/* ── Sidebar ── */}
       <div
         style={{
@@ -932,7 +934,7 @@ const StartScreen = () => {
           </button>
         </div>
       </Modal>
-    </div>
+    </main>
   );
 };
 

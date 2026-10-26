@@ -109,7 +109,7 @@ const CaseScreen = () => {
     }
   }, [isAccountAdmin, userInfo?.token]);
 
-  if (!activeCase) return <p>Case not found.</p>;
+  if (!activeCase) return <main><p>Case not found.</p></main>;
 
   const selectedCharge = getCaseCategory(activeCase.category)?.matter || "";
   const isOwner = (activeCase.owners || [])
@@ -610,7 +610,7 @@ const CaseScreen = () => {
     <React.Fragment>
       <TopNavbar />
 
-      <div style={{ maxWidth: 640, margin: "0 auto", padding: 32 }}>
+      <main style={{ maxWidth: 640, margin: "0 auto", padding: 32 }}>
         <h1 style={{ marginBottom: 32 }}>Client: {activeCase.clientName}</h1>
 
         {/* Basic Info */}
@@ -720,7 +720,7 @@ const CaseScreen = () => {
               <button
                 onClick={() => openEditQuestionModal(q)}
                 style={{
-                  fontSize: 11,
+                  fontSize: 12,
                   fontWeight: 700,
                   padding: "4px 8px",
                   background: "var(--orange-edit)",
@@ -735,8 +735,8 @@ const CaseScreen = () => {
               <button
                 onClick={() => setDeleteQuestionId(q.id)}
                 style={{
-                  width: 22,
-                  height: 22,
+                  width: 24,
+                  height: 24,
                   fontSize: 13,
                   fontWeight: 700,
                   padding: 0,
@@ -753,13 +753,13 @@ const CaseScreen = () => {
               </button>
               <span
                 style={{
-                  fontSize: 11,
+                  fontSize: 12,
                   fontWeight: 600,
                   padding: "2px 8px",
                   background:
                     q.type === QuestionType.TRUE_FALSE
                       ? "var(--tf-bg)"
-                      : "var(--light-text)3cd",
+                      : "var(--warning-bg)",
                   color:
                     q.type === QuestionType.TRUE_FALSE
                       ? "var(--tf-text)"
@@ -824,8 +824,11 @@ const CaseScreen = () => {
           )}
 
           {activeCase.seated && (
-            <Link to={`/questions/${activeCase._id}`} className={styles.sessionLink}>
-              <button className={styles.sessionButton}>Access Questions</button>
+            <Link
+              to={`/questions/${activeCase._id}`}
+              className={`${styles.sessionButton} ${styles.sessionLink}`}
+            >
+              Access Questions
             </Link>
           )}
         </div>
@@ -1174,7 +1177,7 @@ const CaseScreen = () => {
                 padding: "10px 0",
                 fontWeight: 600,
                 background: "var(--decline)",
-                color: "var(text-light)",
+                color: "var(--light-text)",
                 border: "1px solid var(--grey-disabled)",
                 borderRadius: 6,
                 cursor: "pointer",
@@ -1405,7 +1408,7 @@ const CaseScreen = () => {
             }
           />
         )}
-      </div>
+      </main>
     </React.Fragment>
   );
 };

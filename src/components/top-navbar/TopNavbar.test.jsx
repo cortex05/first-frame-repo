@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -39,5 +39,22 @@ describe('TopNavbar log out warning (spec 012)', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(useAuthStore.getState().userInfo).not.toBeNull();
     expect(screen.getByRole('button', { name: 'Log out' })).toHaveFocus();
+  });
+});
+
+describe('TopNavbar landmarks (spec 017)', () => {
+  it('puts the links in a Main navigation, and the greeting outside it', () => {
+    render(
+      <MemoryRouter>
+        <TopNavbar />
+      </MemoryRouter>,
+    );
+
+    const nav = within(screen.getByRole('navigation', { name: 'Main' }));
+    expect(nav.getByRole('link', { name: 'Home' })).toBeInTheDocument();
+    expect(nav.getByRole('link', { name: 'Archive' })).toBeInTheDocument();
+    expect(nav.getByRole('button', { name: 'Log out' })).toBeInTheDocument();
+    expect(screen.getByRole('navigation')).not.toContainElement(screen.getByText(/Hello someone/));
+    expect(screen.getByRole('banner')).toContainElement(screen.getByText(/Hello someone/));
   });
 });

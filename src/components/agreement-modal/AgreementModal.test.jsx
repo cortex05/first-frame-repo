@@ -93,3 +93,11 @@ describe('AgreementModal dialog behavior (spec 012)', () => {
     expect(onCancel).not.toHaveBeenCalled();
   });
 });
+
+describe('AgreementModal terms region (spec 017)', () => {
+  it('announces the scrollable terms as a named region', () => {
+    renderModal();
+
+    expect(screen.getByRole('region', { name: 'Terms of Service' })).toHaveTextContent('Line one.');
+  });
+});

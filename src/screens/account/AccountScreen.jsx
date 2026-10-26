@@ -129,7 +129,7 @@ const AccountScreen = () => {
     <React.Fragment>
       <TopNavbar />
 
-      <div className={styles.container}>
+      <main className={styles.container}>
         <h1>Account</h1>
         <p className={styles.subtitle}>Manage your account and the people who use it.</p>
 
@@ -293,7 +293,7 @@ const AccountScreen = () => {
             </button>
           </form>
         </section>
-      </div>
+      </main>
     </React.Fragment>
   );
 };

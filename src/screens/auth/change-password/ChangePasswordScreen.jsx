@@ -62,7 +62,7 @@ const ChangePasswordScreen = () => {
   };
 
   return (
-    <div className={styles.container}>
+    <main className={styles.container}>
       <h1>Change Password</h1>
       <p className={styles.subtitle}>
         {isForced
@@ -130,7 +130,7 @@ const ChangePasswordScreen = () => {
           </a>
         </p>
       )}
-    </div>
+    </main>
   );
 };
 

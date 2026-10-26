@@ -125,7 +125,7 @@ const CreateCaseScreen = () => {
     <React.Fragment>
       <TopNavbar warnOnHomeNavigation />
 
-      <div className={styles.container}>
+      <main className={styles.container}>
         <h1>Create New Case</h1>
 
       {/* Basic Info */} 
@@ -276,7 +276,7 @@ const CreateCaseScreen = () => {
             </button>
           </div>
         </Modal>
-        </div>
+        </main>
     </React.Fragment>
   );
 };

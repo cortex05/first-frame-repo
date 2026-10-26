@@ -285,9 +285,9 @@ const EditRecommendedScreen = () => {
     return (
       <React.Fragment>
         <TopNavbar />
-        <div className={styles.container}>
+        <main className={styles.container}>
           <p className={styles.statusText}>Loading recommended playlist...</p>
-        </div>
+        </main>
       </React.Fragment>
     );
   }
@@ -296,14 +296,14 @@ const EditRecommendedScreen = () => {
     return (
       <React.Fragment>
         <TopNavbar />
-        <div className={styles.container}>
+        <main className={styles.container}>
           <p className={styles.errorText} role="alert">
             {loadError || "Recommended playlist not found."}
           </p>
           <Link to="/recommended" className={styles.backLink}>
             Back to Recommended Playlists
           </Link>
-        </div>
+        </main>
       </React.Fragment>
     );
   }
@@ -312,7 +312,7 @@ const EditRecommendedScreen = () => {
     <React.Fragment>
       <TopNavbar />
 
-      <div className={styles.container}>
+      <main className={styles.container}>
         <h1>Charge: {recommended.charge}</h1>
 
         <section className={styles.infoSection}>
@@ -558,7 +558,7 @@ const EditRecommendedScreen = () => {
             </div>
           </div>
         </Modal>
-      </div>
+      </main>
     </React.Fragment>
   );
 };

@@ -77,6 +77,37 @@ describe('token usage in src', () => {
     expect(undefinedRefs).toEqual([]);
   });
 
+  // Spec 017. CSS `font-size: Npx` and style-object `fontSize: N`; Konva's
+  // `fontSize={N}` props are canvas drawing, not page text, so they don't match.
+  it('has no text smaller than 12px', () => {
+    const hits = files.flatMap((path) =>
+      readFileSync(path, 'utf8')
+        .split('\n')
+        .map((line, i) => ({ line, at: `${rel(path)}:${i + 1}` }))
+        .filter(({ line }) =>
+          [...line.matchAll(/font-size:\s*(\d+)px|fontSize:\s*(\d+)\b/g)].some(
+            (m) => Number(m[1] ?? m[2]) < 12,
+          ),
+        )
+        .map(({ at }) => at),
+    );
+    expect(hits).toEqual([]);
+  });
+
+  // Spec 017: `var(text-light)` or `var(--light-text)3cd` silently drop the
+  // whole declaration. `${...}` is allowed for names built at runtime.
+  it('has no malformed var() references', () => {
+    const MALFORMED = /var\((?!--[\w${}-]+\s*[,)])|var\(--[\w${}-]+\)[0-9A-Za-z]/;
+    const hits = files.flatMap((path) =>
+      readFileSync(path, 'utf8')
+        .split('\n')
+        .map((line, i) => ({ line, at: `${rel(path)}:${i + 1}` }))
+        .filter(({ line }) => MALFORMED.test(line))
+        .map(({ at }) => at),
+    );
+    expect(hits).toEqual([]);
+  });
+
   it('has no color literals outside index.css except cssVar fallbacks', () => {
     const hits = files
       .filter((path) => rel(path) !== 'index.css')

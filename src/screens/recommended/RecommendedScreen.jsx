@@ -27,7 +27,7 @@ const RecommendedScreen = () => {
     <React.Fragment>
       <TopNavbar />
 
-      <div className={styles.container}>
+      <main className={styles.container}>
         <h1>Recommended Playlists</h1>
         <p className={styles.subtitle}>
           One recommended playlist per charge, available to every user.
@@ -64,7 +64,7 @@ const RecommendedScreen = () => {
             </Link>
           )}
         </section>
-      </div>
+      </main>
     </React.Fragment>
   );
 };

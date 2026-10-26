@@ -97,3 +97,11 @@ describe('LoginScreen errors (spec 016)', () => {
     expect(screen.getByLabelText('Password')).not.toHaveAttribute('aria-invalid');
   });
 });
+
+describe('LoginScreen structure (spec 017)', () => {
+  it('renders the form in a main landmark', () => {
+    renderScreen();
+
+    expect(screen.getByRole('main')).toContainElement(screen.getByRole('heading', { level: 1 }));
+  });
+});

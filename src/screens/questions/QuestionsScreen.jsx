@@ -1,5 +1,5 @@
 import React, { useEffect, useId, useState, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Stage, Layer, Line, Rect, Circle, Text, Group } from "react-konva";
 import useCaseStore from "../../store/useCaseStore";
 import useAuthStore from "../../store/useAuthStore";
@@ -44,6 +44,7 @@ const isFalseLabel = (label) => label === false || label === "false";
 
 const QuestionsScreen = () => {
   const { caseId } = useParams();
+  const navigate = useNavigate();
   const activeCase = useCaseStore((state) =>
     state.cases.find((c) => c._id === caseId),
   );
@@ -92,7 +93,7 @@ const QuestionsScreen = () => {
     setToast({ id: toastId.current, message, type });
   };
 
-  if (!activeCase) return <p style={{ padding: 32 }}>Case not found.</p>;
+  if (!activeCase) return <main><p style={{ padding: 32 }}>Case not found.</p></main>;
 
   const rects = (activeCase.chartData || {}).rects || [];
   const selectedQuestion =
@@ -467,7 +468,7 @@ const QuestionsScreen = () => {
   };
 
   return (
-    <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
+    <main style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
       {toast && (
         <div
           key={toast.id}
@@ -635,7 +636,7 @@ const QuestionsScreen = () => {
                     <span style={{ flex: 1, fontSize: 20 }}>{q.text}</span>
                     <span
                       style={{
-                        fontSize: 10,
+                        fontSize: 12,
                         fontWeight: 700,
                         padding: "2px 6px",
                         borderRadius: 10,
@@ -831,8 +832,12 @@ const QuestionsScreen = () => {
           leave this page.
         </h3>
         <div className={styles.saveModalButtons}>
-          <button className={styles.confirm}>
-            <Link to={`/case/${activeCase._id}`} style={{textDecoration: 'none', color: 'inherit'}}>Back to Case</Link>
+          <button
+            type="button"
+            className={styles.confirm}
+            onClick={() => navigate(`/case/${activeCase._id}`)}
+          >
+            Back to Case
           </button>
           <button
             className={styles.decline}
@@ -1069,7 +1074,7 @@ const QuestionsScreen = () => {
           </React.Fragment>
         )}
       </div>
-    </div>
+    </main>
   );
 };
 

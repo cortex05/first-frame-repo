@@ -75,7 +75,7 @@ const Dashboard = () => {
     <React.Fragment>
       <TopNavbar />
 
-      <div className={styles.dashboardContainer}>
+      <main className={styles.dashboardContainer}>
         <div className={styles.dashboardHeading}>
           <h1>Welcome to our Application</h1>
           <p>
@@ -253,7 +253,7 @@ const Dashboard = () => {
             </div>
           )}
         </Modal>
-      </div>
+      </main>
     </React.Fragment>
   );
 };

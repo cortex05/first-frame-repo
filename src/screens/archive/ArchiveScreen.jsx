@@ -44,7 +44,7 @@ const ArchiveScreen = () => {
     <React.Fragment>
       <TopNavbar />
 
-      <div className={styles.container}> 
+      <main className={styles.container}> 
         <h1>Archived Cases</h1>
         <p className={styles.subtitle}>Completed cases, kept read-only for your records.</p>
 
@@ -71,7 +71,7 @@ const ArchiveScreen = () => {
             ))}
           </ul>
         )}
-      </div>
+      </main>
     </React.Fragment>
   );
 };

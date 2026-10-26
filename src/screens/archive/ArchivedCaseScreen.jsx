@@ -116,12 +116,12 @@ const ArchivedCaseScreen = () => {
   return (
     <React.Fragment>
       <TopNavbar />
-      <div className={styles.container}>
+      <main className={styles.container}>
         <Link to="/archive" className={styles.backLink}>
           ← Archived cases
         </Link>
         {renderBody()}
-      </div>
+      </main>
     </React.Fragment>
   );
 };

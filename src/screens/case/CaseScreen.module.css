@@ -179,8 +179,13 @@
 	cursor: pointer;
 }
 
+/* "Access Questions" is a link drawn as .sessionButton (spec 017). */
 .sessionLink {
 	display: block;
+	box-sizing: border-box;
+	text-align: center;
+	text-decoration: none;
+	line-height: normal;
 }
 
 .exportSlidesWrapper {

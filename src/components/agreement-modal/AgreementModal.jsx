@@ -54,7 +54,7 @@ const AgreementModal = ({
             </p>
           )}
 
-          <div className={styles.text} tabIndex={0} aria-label="Terms of Service">
+          <div className={styles.text} role="region" tabIndex={0} aria-label="Terms of Service">
             {agreement.agreementText}
           </div>
 

@@ -72,3 +72,13 @@ describe('EditRecommendedScreen form labels (spec 013)', () => {
     await expectLabelledQuestionEditor(userEvent.setup());
   });
 });
+
+describe('EditRecommendedScreen structure (spec 017)', () => {
+  it('keeps the not-found message in a main landmark', async () => {
+    vi.mocked(getRecommendedForCharge).mockResolvedValue(null);
+    renderEdit();
+
+    await screen.findByText('No recommended playlist exists for Theft.');
+    expect(screen.getByRole('main')).toContainElement(screen.getByText('No recommended playlist exists for Theft.'));
+  });
+});

@@ -119,7 +119,7 @@ const RegisterScreen = () => {
   };
 
   return (
-    <div className={styles.container}>
+    <main className={styles.container}>
       <h1>Create an Account</h1>
       <p className={styles.subtitle}>Set up your organization to start building cases.</p>
 
@@ -225,7 +225,7 @@ const RegisterScreen = () => {
       <p className={styles.footerText}>
         Already have an account? <Link to="/login">Sign in</Link>
       </p>
-    </div>
+    </main>
   );
 };
 

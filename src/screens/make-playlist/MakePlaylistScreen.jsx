@@ -213,7 +213,7 @@ const MakePlaylistScreen = () => {
     <React.Fragment>
       <TopNavbar />
 
-      <div className={styles.container}>
+      <main className={styles.container}>
         <h1 style={{ marginBottom: 32 }}>Make Question Playlist</h1>
 
         <section style={{ marginBottom: 32 }}>
@@ -262,7 +262,7 @@ const MakePlaylistScreen = () => {
               <button
                 onClick={() => openEditQuestionModal(q)}
                 style={{
-                  fontSize: 11,
+                  fontSize: 12,
                   fontWeight: 700,
                   padding: '4px 8px',
                   background: 'var(--orange-edit)',
@@ -278,8 +278,8 @@ const MakePlaylistScreen = () => {
               <button
                 onClick={() => setDeleteQuestionId(q.id)}
                 style={{
-                  width: 22,
-                  height: 22,
+                  width: 24,
+                  height: 24,
                   fontSize: 13,
                   fontWeight: 700,
                   padding: 0,
@@ -297,7 +297,7 @@ const MakePlaylistScreen = () => {
 
               <span
                 style={{
-                  fontSize: 11,
+                  fontSize: 12,
                   fontWeight: 600,
                   padding: '2px 8px',
                   background:
@@ -368,7 +368,7 @@ const MakePlaylistScreen = () => {
             Cancel
           </button>
         </div>
-      </div>
+      </main>
 
       <Modal
         isOpen={questionModal}

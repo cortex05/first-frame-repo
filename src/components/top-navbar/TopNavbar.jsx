@@ -38,52 +38,56 @@ const TopNavbar = ({ warnOnHomeNavigation = false }) => {
   return (
     <React.Fragment>
       <header className={styles.navbar}>
-        <div> 
+        {/* The nav holds only the links (spec 017). It adds no box of its own,
+            and CSS order keeps the greeting between Home and the right group. */}
+        <nav aria-label="Main" className={styles.navLinks}>
           <Link
             to="/dashboard"
-            className={styles.navButton}
+            className={`${styles.navButton} ${styles.homeLink}`}
             onClick={(event) => handleNavigate(event, '/dashboard')}
           >
             Home
           </Link>
-          {userInfo?.username && <span>    Hello {userInfo?.username} - TEAM: </span>}
-          
+
+          <div className={styles.navActions}>
+            {isAuthenticated ? (
+              <React.Fragment>
+                <Link
+                  to="/archive"
+                  className={styles.navButton}
+                  onClick={(event) => handleNavigate(event, '/archive')}
+                >
+                  Archive
+                </Link>
+                {isAccountAdmin && (
+                  <Link
+                    to="/account"
+                    className={styles.navButton}
+                    onClick={(event) => handleNavigate(event, '/account')}
+                  >
+                    Account
+                  </Link>
+                )}
+                <button
+                  type="button"
+                  className={styles.navButton}
+                  onClick={() => setLogoutWarningOpen(true)}
+                >
+                  Log out
+                </button>
+              </React.Fragment>
+            ) : (
+              <Link to="/login" className={styles.navButton}>
+                Login
+              </Link>
+            )}
+          </div>
+        </nav>
+
+        <div className={styles.greeting}>
+          {userInfo?.username && <span>Hello {userInfo?.username} - TEAM: </span>}
           {userInfo?.accountName && (
             <span className={styles.accountName}>{userInfo.accountName}</span>
-          )}
-        </div>
-
-        <div className={styles.navActions}>
-          {isAuthenticated ? (
-            <React.Fragment>
-              <Link
-                to="/archive"
-                className={styles.navButton}
-                onClick={(event) => handleNavigate(event, '/archive')}
-              >
-                Archive
-              </Link>
-              {isAccountAdmin && (
-                <Link
-                  to="/account"
-                  className={styles.navButton}
-                  onClick={(event) => handleNavigate(event, '/account')}
-                >
-                  Account
-                </Link>
-              )}
-              <button
-                type="button"
-                className={styles.navButton}
-                onClick={() => setLogoutWarningOpen(true)}
-              >
-                Log out
-              </button>
-            </React.Fragment>
-          ) : (
-            <Link to="/login" className={styles.navButton}>
-              Login
-            </Link>
           )}
         </div>
       </header>

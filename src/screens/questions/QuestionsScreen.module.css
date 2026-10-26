@@ -135,7 +135,7 @@
 
 /* Marks a question whose answers are saved, beyond the card's darker color (spec 016). */
 .answeredTag {
-	font-size: 10px;
+	font-size: 12px;
 	font-weight: 700;
 	padding: 2px 6px;
 	border-radius: 10px;

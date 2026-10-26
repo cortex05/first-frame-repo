@@ -190,3 +190,11 @@ describe('StartScreen error contrast (spec 015)', () => {
     expect(alert.style.color).toBe('var(--error-text-surface)');
   });
 });
+
+describe('StartScreen structure (spec 017)', () => {
+  it('renders the seating screen in a main landmark', () => {
+    renderStart();
+
+    expect(screen.getByRole('main')).toContainElement(screen.getByRole('heading', { level: 1 }));
+  });
+});

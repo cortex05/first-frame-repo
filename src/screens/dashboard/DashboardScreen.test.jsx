@@ -167,3 +167,14 @@ describe('DashboardScreen title, focus and notice (spec 016)', () => {
     expect(screen.getByRole('status')).toHaveTextContent('You no longer have access to that case.');
   });
 });
+
+describe('DashboardScreen structure (spec 017)', () => {
+  it('renders its content in a main landmark, apart from the navbar', () => {
+    seedSession('member');
+    renderDashboard();
+
+    const main = screen.getByRole('main');
+    expect(main).toContainElement(screen.getByRole('heading', { level: 1 }));
+    expect(main).not.toContainElement(screen.getByRole('banner'));
+  });
+});

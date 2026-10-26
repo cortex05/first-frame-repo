@@ -215,7 +215,7 @@ const CreateRecommendedScreen = () => {
     <React.Fragment>
       <TopNavbar warnOnHomeNavigation />
 
-      <div className={styles.container}>
+      <main className={styles.container}>
         <h1>Create Recommended Playlist</h1>
         <p className={styles.subtitle}>
           Available to every user whose case carries the matching charge.
@@ -478,7 +478,7 @@ const CreateRecommendedScreen = () => {
             </div>
           </div>
         </Modal>
-      </div>
+      </main>
     </React.Fragment>
   );
 };

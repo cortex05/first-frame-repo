@@ -90,7 +90,7 @@ const AcceptTermsScreen = () => {
   };
 
   return (
-    <div className={styles.container}>
+    <main className={styles.container}>
       <h1>Updated Terms of Service</h1>
 
       {isAccountAdmin ? (
@@ -119,7 +119,7 @@ const AcceptTermsScreen = () => {
           dismissible={false}
         />
       )}
-    </div>
+    </main>
   );
 };
 

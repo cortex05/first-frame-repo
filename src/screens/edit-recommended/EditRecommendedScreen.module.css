@@ -75,7 +75,7 @@
 }
 
 .editButton {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   padding: 4px 8px;
   background: var(--orange-edit);
@@ -92,8 +92,8 @@
 }
 
 .removeButton {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   font-size: 13px;
   font-weight: 700;
   padding: 0;
@@ -106,7 +106,7 @@
 }
 
 .typeBadge {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   padding: 2px 8px;
   border-radius: 12px;

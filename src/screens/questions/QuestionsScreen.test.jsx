@@ -58,6 +58,7 @@ const renderQuestions = () =>
     <MemoryRouter initialEntries={['/questions/case-1']}>
       <Routes>
         <Route path="/questions/:caseId" element={<QuestionsScreen />} />
+        <Route path="/case/:id" element={<p>Case page</p>} />
       </Routes>
     </MemoryRouter>,
   );
@@ -528,5 +529,26 @@ describe('QuestionsScreen meaning and title (spec 016)', () => {
 
     expect(document.title).toBe('Questions: Jane Client – First Frame');
     expect(screen.getByRole('heading', { level: 1, name: 'Questions' })).toBeInTheDocument();
+  });
+});
+
+describe('QuestionsScreen structure (spec 017)', () => {
+  it('renders its content in a main landmark', () => {
+    renderQuestions();
+
+    expect(screen.getByRole('main')).toContainElement(screen.getByRole('heading', { level: 1 }));
+  });
+
+  it('confirms Back to Case with one plain button that navigates', async () => {
+    const user = userEvent.setup();
+    renderQuestions();
+    await user.click(screen.getAllByRole('button', { name: 'Back to Case' })[0]);
+
+    const dialog = within(screen.getByRole('dialog', { name: 'Are you sure?' }));
+    const confirm = dialog.getByRole('button', { name: 'Back to Case' });
+    expect(within(confirm).queryByRole('link')).not.toBeInTheDocument();
+
+    await user.click(confirm);
+    expect(await screen.findByText('Case page')).toBeInTheDocument();
   });
 });

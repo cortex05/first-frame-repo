@@ -63,7 +63,7 @@ const LoginScreen = () => {
   };
 
   return (
-    <div className={styles.container}>
+    <main className={styles.container}>
       <h1>Login</h1>
       <p className={styles.subtitle}>Sign in to access your cases.</p>
 
@@ -106,7 +106,7 @@ const LoginScreen = () => {
       <p className={styles.footerText}>
         Need an account? <Link to="/register">Create one</Link>
       </p>
-    </div>
+    </main>
   );
 };
 
