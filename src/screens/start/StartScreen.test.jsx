@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import StartScreen from './StartScreen';
 import useAuthStore from '../../store/useAuthStore';
 import useCaseStore from '../../store/useCaseStore';
+import { resizeTo } from '../../test/resizeObserver';
 import { saveSeating } from '../../api/case';
 
 // jsdom has no canvas: render the Konva tree as plain elements.
@@ -24,7 +25,11 @@ vi.mock('react-konva', () => {
     </div>
   );
   return {
-    Stage: Passthrough,
+    Stage: ({ children, width, height }) => (
+      <div data-testid="stage" data-width={width} data-height={height}>
+        {children}
+      </div>
+    ),
     Layer: Passthrough,
     Group,
     Line: () => null,
@@ -196,5 +201,19 @@ describe('StartScreen structure (spec 017)', () => {
     renderStart();
 
     expect(screen.getByRole('main')).toContainElement(screen.getByRole('heading', { level: 1 }));
+  });
+});
+
+describe('StartScreen sizing (spec 018)', () => {
+  it('sizes the stage from its container and follows resizes', () => {
+    renderStart();
+
+    const stage = screen.getByTestId('stage');
+    expect(stage).toHaveAttribute('data-width', '800');
+    expect(stage).toHaveAttribute('data-height', '600');
+
+    act(() => resizeTo(500, 400));
+    expect(screen.getByTestId('stage')).toHaveAttribute('data-width', '500');
+    expect(screen.getByTestId('stage')).toHaveAttribute('data-height', '400');
   });
 });

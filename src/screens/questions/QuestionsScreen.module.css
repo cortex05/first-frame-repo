@@ -142,3 +142,59 @@
 	background: var(--surface-selected);
 	color: var(--modal-text);
 }
+
+/* ── Layout (spec 018) ──────────────────────────────────────────
+   Wide: sidebar beside the canvas, both 100vh. Below 900px: the sidebar
+   stacks above the canvas and the page scrolls. */
+.layout {
+	display: flex;
+	height: 100vh;
+	overflow: hidden;
+}
+
+.sidebar {
+	width: 300px;
+	flex-shrink: 0;
+	display: flex;
+	flex-direction: column;
+	overflow-y: auto;
+	padding: 16px;
+	background: var(--surface-subtle);
+	border-right: 2px solid var(--color-text-primary);
+}
+
+.canvasArea {
+	flex: 1;
+	position: relative;
+	min-width: 0;
+}
+
+@media (max-width: 899.98px) {
+	.layout {
+		flex-direction: column;
+		height: auto;
+		overflow: visible;
+	}
+
+	.sidebar {
+		width: auto;
+		overflow-y: visible;
+		border-right: 0;
+		border-bottom: 2px solid var(--color-text-primary);
+	}
+
+	.canvasArea {
+		flex: none;
+		height: max(60vh, 360px);
+	}
+}
+
+/* The selected question and its "1/5" counter scale with the space, so they
+   stay readable at 200% zoom in the sidebar (spec 018). */
+.selectedQuestionText {
+	font-size: clamp(20px, 2.2vw + 10px, 30px);
+}
+
+.questionCounter {
+	font-size: clamp(24px, 3vw + 12px, 40px);
+}

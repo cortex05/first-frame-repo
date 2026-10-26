@@ -5,6 +5,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  /* Narrow screens: Home, the greeting and the actions wrap (spec 018). */
+  flex-wrap: wrap;
+  row-gap: 8px;
   padding: 12px 18px;
   color: var(--light-text);
   background: var(--navbar-bg);
@@ -109,4 +112,11 @@
   background: var(--navbar-border);
   color: var(--navbar-text);
   border-radius: 12px;
+}
+
+/* At phone widths the buttons size to their text so a row can fit (spec 018). */
+@media (max-width: 479.98px) {
+  .navButton {
+    min-width: auto;
+  }
 }

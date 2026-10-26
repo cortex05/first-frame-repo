@@ -7,6 +7,7 @@ import QuestionsScreen from './QuestionsScreen';
 import { getUserCases, saveQuestionAnswers, saveSeating, saveStudentDetails } from '../../api/case';
 import useAuthStore from '../../store/useAuthStore';
 import useCaseStore from '../../store/useCaseStore';
+import { resizeTo, uninstallResizeObserver } from '../../test/resizeObserver';
 
 // jsdom has no canvas: render the Konva tree as plain elements.
 vi.mock('react-konva', () => {
@@ -550,5 +551,62 @@ describe('QuestionsScreen structure (spec 017)', () => {
 
     await user.click(confirm);
     expect(await screen.findByText('Case page')).toBeInTheDocument();
+  });
+});
+
+describe('QuestionsScreen sizing (spec 018)', () => {
+  // Students 2 and 3 sit far right, outside an 800-wide view.
+  const farCase = () =>
+    makeCase({
+      chartData: {
+        rects: [
+          {
+            id: 'r1',
+            x: 0,
+            y: 0,
+            width: 200,
+            height: 80,
+            assignedStudents: [
+              { id: 1, x: 10, y: 10 },
+              { id: 2, x: 2000, y: 100 },
+              { id: 3, x: 1000, y: 100 },
+            ],
+          },
+        ],
+      },
+    });
+
+  it('draws no stage or seat buttons until the canvas area has a size', () => {
+    uninstallResizeObserver(); // the fallback reads jsdom's 0x0
+    renderQuestions();
+
+    expect(screen.queryByRole('group', { name: 'Row 1' })).not.toBeInTheDocument();
+  });
+
+  it('centers an off-screen seat using the measured canvas size', () => {
+    useCaseStore.setState({ cases: [farCase()] });
+    renderQuestions();
+
+    // 800x600: centered means left = 800 / 2 - 24 (the circle radius).
+    const student3 = screen.getByRole('button', { name: 'Student 3' });
+    act(() => student3.focus());
+    expect(student3.style.left).toBe('376px');
+
+    // 400x300 after a resize: the next centering uses the new size.
+    act(() => resizeTo(400, 300));
+    const student2 = screen.getByRole('button', { name: 'Student 2' });
+    act(() => student2.focus());
+    expect(student2.style.left).toBe('176px');
+  });
+
+  it('scales the selected question text with clamp()', async () => {
+    const user = userEvent.setup();
+    renderQuestions();
+    await user.click(screen.getByRole('button', { name: /^Intent\?/ }));
+
+    // jsdom can't parse clamp(), so check for the classes that carry it.
+    const question = screen.getByText('Intent?');
+    expect(question.className).toMatch(/selectedQuestionText/);
+    expect(question.querySelector('span').className).toMatch(/questionCounter/);
   });
 });

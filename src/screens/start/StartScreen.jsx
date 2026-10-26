@@ -17,12 +17,12 @@ import { initialStudentGeneration } from "../../utilities/studentUtilities";
 import useSeatingDraft from "../../hooks/useSeatingDraft";
 
 import Modal from "../../components/modal/Modal";
+import useElementSize from "../../hooks/useElementSize";
 import { cssVar } from "../../utils/cssVars";
 import { rowSummary } from "../../utils/seating";
 import styles from "./SaveScreen.module.css";
 import usePageTitle from "../../hooks/usePageTitle";
 
-const SIDEBAR_W = 260;
 const CIRCLE_R = 24;
 const CELL_PAD = 8;
 const CELL_SIZE = CIRCLE_R * 2 + CELL_PAD; //
@@ -90,6 +90,8 @@ const StartScreen = () => {
 
   const stageRef = useRef(null);
   const lastPinchDist = useRef(0);
+  // The canvas follows its container, not the window (spec 018).
+  const [canvasRef, canvasSize] = useElementSize();
   const transformerRef = useRef(null);
   const rectNodes = useRef(new Map());
   const [selectedRectId, setSelectedRectId] = useState(null);
@@ -166,8 +168,10 @@ const StartScreen = () => {
   const rows = Math.max(1, parseInt(rowInput, 10) || 1);
   const cols = Math.max(1, parseInt(colInput, 10) || 1);
   const totalCells = rows * cols;
-  const stageWidth = window.innerWidth - SIDEBAR_W;
-  const stageHeight = window.innerHeight;
+  const stageWidth = canvasSize.width;
+  const stageHeight = canvasSize.height;
+  // Konva never gets a zero-size canvas; it waits for the first measurement.
+  const hasStageSize = stageWidth > 0 && stageHeight > 0;
   const isLightTheme = document.documentElement.dataset.theme === "light";
   const gridStartX = Math.floor((-view.x / view.scale) / GRID_SPACING) * GRID_SPACING - GRID_SPACING;
   const gridStartY = Math.floor((-view.y / view.scale) / GRID_SPACING) * GRID_SPACING - GRID_SPACING;
@@ -287,10 +291,7 @@ const StartScreen = () => {
     const stage = stageRef.current;
     const oldScale = stage.scaleX();
     const newScale = clampScale(oldScale * factor);
-    const center = {
-      x: (window.innerWidth - SIDEBAR_W) / 2,
-      y: window.innerHeight / 2,
-    };
+    const center = { x: stageWidth / 2, y: stageHeight / 2 };
     const pointTo = {
       x: (center.x - stage.x()) / oldScale,
       y: (center.y - stage.y()) / oldScale,
@@ -373,21 +374,9 @@ const StartScreen = () => {
   });
 
   return (
-    <main style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
+    <main className={styles.layout}>
       {/* ── Sidebar ── */}
-      <div
-        style={{
-          width: SIDEBAR_W,
-          flexShrink: 0,
-          background: "var(--surface-subtle)",
-          borderRight: "1px solid var(--page-text)",
-          display: "flex",
-          flexDirection: "column",
-          padding: 16,
-          gap: 12,
-          overflowY: "auto",
-        }}
-      >
+      <div className={styles.sidebar}>
         <h1 style={{ margin: 0, fontSize: 24, color: "var(--modal-text)" }}>
           Assign Students
         </h1>
@@ -631,154 +620,156 @@ const StartScreen = () => {
       </div>
 
       {/* ── Canvas ── */}
-      <div style={{ flex: 1, position: "relative" }}>
+      <div ref={canvasRef} className={styles.canvasArea}>
         {/* Drawn for the eye; the Rows list in the sidebar is its text alternative. */}
-        <div aria-hidden="true">
-          <Stage
-            ref={stageRef}
-            width={stageWidth}
-            height={stageHeight}
-            scaleX={view.scale}
-            scaleY={view.scale}
-            x={view.x}
-            y={view.y}
-            draggable
-            onWheel={handleWheel}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            onClick={(e) => {
-              if (e.target === stageRef.current) setSelectedRectId(null);
-            }}
-            onTap={(e) => {
-              if (e.target === stageRef.current) setSelectedRectId(null);
-            }}
-            onDragEnd={(e) => {
-              // Only the stage itself — a rect drag bubbles up through here too.
-              if (e.target !== stageRef.current) return;
-              setView({ scale: view.scale, x: e.target.x(), y: e.target.y() });
-            }}
-          >
-            <Layer>
-              {isLightTheme && (
-                <>
-                  {gridXs.map((x) => (
-                    <Line
-                      key={`grid-x-${x}`}
-                      points={[x, gridStartY, x, gridStartY + gridRowCount * GRID_SPACING]}
-                      stroke={
-                        Math.round(x / GRID_SPACING) % 5 === 0
-                          ? cssVar("--light-blue-background", "#e4edf8")
-                          : cssVar("--border-subtle", "#d5dbe3")
-                      }
-                      strokeWidth={1 / view.scale}
-                      listening={false}
-                    />
-                  ))}
-                  {gridYs.map((y) => (
-                    <Line
-                      key={`grid-y-${y}`}
-                      points={[gridStartX, y, gridStartX + gridColumnCount * GRID_SPACING, y]}
-                      stroke={
-                        Math.round(y / GRID_SPACING) % 5 === 0
-                          ? cssVar("--light-blue-background", "#e4edf8")
-                          : cssVar("--border-subtle", "#d5dbe3")
-                      }
-                      strokeWidth={1 / view.scale}
-                      listening={false}
-                    />
-                  ))}
-                </>
-              )}
-              {rects.map((r) => (
-                // The group's origin is the rect's center so it rotates in place;
-                // `r.x`/`r.y` remain the unrotated top-left corner.
-                <Group
-                  key={r.id}
-                  ref={(node) => {
-                    if (node) rectNodes.current.set(r.id, node);
-                    else rectNodes.current.delete(r.id);
-                  }}
-                  x={r.x + r.width / 2}
-                  y={r.y + r.height / 2}
-                  offsetX={r.width / 2}
-                  offsetY={r.height / 2}
-                  rotation={r.rotation || 0}
-                  draggable
-                  onClick={() => setSelectedRectId(r.id)}
-                  onTap={() => setSelectedRectId(r.id)}
-                  onDragEnd={(e) =>
-                    moveRect(
-                      r.id,
-                      e.target.x() - r.width / 2,
-                      e.target.y() - r.height / 2,
-                    )
-                  }
-                  onTransformEnd={(e) => {
-                    const node = e.target;
-                    const rotation = ((Math.round(node.rotation()) % 360) + 360) % 360;
-                    node.rotation(rotation);
-                    if (rotation === (r.rotation || 0)) return;
-                    rotateRect(
-                      r.id,
-                      node.x() - r.width / 2,
-                      node.y() - r.height / 2,
-                      rotation,
-                    );
-                  }}
-                >
-                  <Rect
-                    width={r.width}
-                    height={r.height}
-                    fill={cssVar("--border-control", "#bfbfbf")}
-                    stroke={canvas.black}
-                    strokeWidth={2}
-                    cornerRadius={4}
-                  />
-                  {r.assignedStudents.map((s) => (
-                    // Counter-rotated so the numbers stay upright.
-                    <Group
-                      key={s.id}
-                      x={s.xRel}
-                      y={s.yRel}
-                      rotation={-(r.rotation || 0)}
-                    >
-                      <Circle
-                        radius={CIRCLE_R}
-                        fill={canvas.light}
-                        stroke={canvas.black}
-                        strokeWidth={1.5}
-                      />
-                      <Text
-                        x={-CIRCLE_R}
-                        y={-CIRCLE_R}
-                        width={CIRCLE_R * 2}
-                        height={CIRCLE_R * 2}
-                        text={String(s.id)}
-                        fontSize={12}
-                        fill={canvas.black}
-                        align="center"
-                        verticalAlign="middle"
+        {hasStageSize && (
+          <div aria-hidden="true">
+            <Stage
+              ref={stageRef}
+              width={stageWidth}
+              height={stageHeight}
+              scaleX={view.scale}
+              scaleY={view.scale}
+              x={view.x}
+              y={view.y}
+              draggable
+              onWheel={handleWheel}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              onClick={(e) => {
+                if (e.target === stageRef.current) setSelectedRectId(null);
+              }}
+              onTap={(e) => {
+                if (e.target === stageRef.current) setSelectedRectId(null);
+              }}
+              onDragEnd={(e) => {
+                // Only the stage itself — a rect drag bubbles up through here too.
+                if (e.target !== stageRef.current) return;
+                setView({ scale: view.scale, x: e.target.x(), y: e.target.y() });
+              }}
+            >
+              <Layer>
+                {isLightTheme && (
+                  <>
+                    {gridXs.map((x) => (
+                      <Line
+                        key={`grid-x-${x}`}
+                        points={[x, gridStartY, x, gridStartY + gridRowCount * GRID_SPACING]}
+                        stroke={
+                          Math.round(x / GRID_SPACING) % 5 === 0
+                            ? cssVar("--light-blue-background", "#e4edf8")
+                            : cssVar("--border-subtle", "#d5dbe3")
+                        }
+                        strokeWidth={1 / view.scale}
                         listening={false}
                       />
-                    </Group>
-                  ))}
-                </Group>
-              ))}
-              <Transformer
-                ref={transformerRef}
-                resizeEnabled={false}
-                rotateEnabled
-                rotationSnaps={ROTATION_SNAPS}
-                rotationSnapTolerance={8}
-                rotateAnchorOffset={30}
-                anchorSize={16}
-                borderStroke={cssVar("--orange-edit", "#f79306")}
-                anchorStroke={cssVar("--orange-edit", "#f79306")}
-                anchorFill={canvas.light}
-              />
-            </Layer>
-          </Stage>
-        </div>
+                    ))}
+                    {gridYs.map((y) => (
+                      <Line
+                        key={`grid-y-${y}`}
+                        points={[gridStartX, y, gridStartX + gridColumnCount * GRID_SPACING, y]}
+                        stroke={
+                          Math.round(y / GRID_SPACING) % 5 === 0
+                            ? cssVar("--light-blue-background", "#e4edf8")
+                            : cssVar("--border-subtle", "#d5dbe3")
+                        }
+                        strokeWidth={1 / view.scale}
+                        listening={false}
+                      />
+                    ))}
+                  </>
+                )}
+                {rects.map((r) => (
+                  // The group's origin is the rect's center so it rotates in place;
+                  // `r.x`/`r.y` remain the unrotated top-left corner.
+                  <Group
+                    key={r.id}
+                    ref={(node) => {
+                      if (node) rectNodes.current.set(r.id, node);
+                      else rectNodes.current.delete(r.id);
+                    }}
+                    x={r.x + r.width / 2}
+                    y={r.y + r.height / 2}
+                    offsetX={r.width / 2}
+                    offsetY={r.height / 2}
+                    rotation={r.rotation || 0}
+                    draggable
+                    onClick={() => setSelectedRectId(r.id)}
+                    onTap={() => setSelectedRectId(r.id)}
+                    onDragEnd={(e) =>
+                      moveRect(
+                        r.id,
+                        e.target.x() - r.width / 2,
+                        e.target.y() - r.height / 2,
+                      )
+                    }
+                    onTransformEnd={(e) => {
+                      const node = e.target;
+                      const rotation = ((Math.round(node.rotation()) % 360) + 360) % 360;
+                      node.rotation(rotation);
+                      if (rotation === (r.rotation || 0)) return;
+                      rotateRect(
+                        r.id,
+                        node.x() - r.width / 2,
+                        node.y() - r.height / 2,
+                        rotation,
+                      );
+                    }}
+                  >
+                    <Rect
+                      width={r.width}
+                      height={r.height}
+                      fill={cssVar("--border-control", "#bfbfbf")}
+                      stroke={canvas.black}
+                      strokeWidth={2}
+                      cornerRadius={4}
+                    />
+                    {r.assignedStudents.map((s) => (
+                      // Counter-rotated so the numbers stay upright.
+                      <Group
+                        key={s.id}
+                        x={s.xRel}
+                        y={s.yRel}
+                        rotation={-(r.rotation || 0)}
+                      >
+                        <Circle
+                          radius={CIRCLE_R}
+                          fill={canvas.light}
+                          stroke={canvas.black}
+                          strokeWidth={1.5}
+                        />
+                        <Text
+                          x={-CIRCLE_R}
+                          y={-CIRCLE_R}
+                          width={CIRCLE_R * 2}
+                          height={CIRCLE_R * 2}
+                          text={String(s.id)}
+                          fontSize={12}
+                          fill={canvas.black}
+                          align="center"
+                          verticalAlign="middle"
+                          listening={false}
+                        />
+                      </Group>
+                    ))}
+                  </Group>
+                ))}
+                <Transformer
+                  ref={transformerRef}
+                  resizeEnabled={false}
+                  rotateEnabled
+                  rotationSnaps={ROTATION_SNAPS}
+                  rotationSnapTolerance={8}
+                  rotateAnchorOffset={30}
+                  anchorSize={16}
+                  borderStroke={cssVar("--orange-edit", "#f79306")}
+                  anchorStroke={cssVar("--orange-edit", "#f79306")}
+                  anchorFill={canvas.light}
+                />
+              </Layer>
+            </Stage>
+          </div>
+        )}
 
         {/* Zoom controls */}
         <div

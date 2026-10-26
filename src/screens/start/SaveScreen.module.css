@@ -130,3 +130,50 @@
 .moveLeft { grid-area: left; }
 .moveRight { grid-area: right; }
 .moveDown { grid-area: down; }
+
+/* ── Layout (spec 018) ──────────────────────────────────────────
+   Wide: sidebar beside the canvas, both 100vh. Below 900px: the sidebar
+   stacks above the canvas and the page scrolls. */
+.layout {
+	display: flex;
+	height: 100vh;
+	overflow: hidden;
+}
+
+.sidebar {
+	width: 260px;
+	flex-shrink: 0;
+	display: flex;
+	flex-direction: column;
+	padding: 16px;
+	gap: 12px;
+	overflow-y: auto;
+	background: var(--surface-subtle);
+	border-right: 1px solid var(--page-text);
+}
+
+.canvasArea {
+	flex: 1;
+	position: relative;
+	min-width: 0;
+}
+
+@media (max-width: 899.98px) {
+	.layout {
+		flex-direction: column;
+		height: auto;
+		overflow: visible;
+	}
+
+	.sidebar {
+		width: auto;
+		overflow-y: visible;
+		border-right: 0;
+		border-bottom: 1px solid var(--page-text);
+	}
+
+	.canvasArea {
+		flex: none;
+		height: max(60vh, 360px);
+	}
+}

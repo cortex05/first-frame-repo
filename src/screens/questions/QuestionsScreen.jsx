@@ -28,6 +28,7 @@ import Modal from "../../components/modal/Modal";
 import StudentReportModal from "../../components/student-report/StudentReportModal";
 import StudentSortModal from "../../components/student-report/StudentSortModal";
 import SeatLayer from "../../components/seat-layer/SeatLayer";
+import useElementSize from "../../hooks/useElementSize";
 
 import styles from "./QuestionsScreen.module.css";
 import usePageTitle from "../../hooks/usePageTitle";
@@ -36,7 +37,6 @@ const CIRCLE_R = 24;
 const SCALE_MIN = 0.1;
 const SCALE_MAX = 5;
 const SCALE_STEP = 1.2;
-const SIDEBAR_W = 300;
 const GRID_SPACING = 40;
 
 const isTrueLabel = (label) => label === true || label === "true";
@@ -82,6 +82,8 @@ const QuestionsScreen = () => {
   const [stagePos, setStagePos] = useState({ x: 0, y: 0 });
   const stageRef = useRef(null);
   const lastPinchDist = useRef(0);
+  // The canvas follows its container, not the window (spec 018).
+  const [canvasRef, canvasSize] = useElementSize();
 
   // Spoken after a keyboard answer on a seat button (spec 014).
   const [announcement, setAnnouncement] = useState("");
@@ -102,8 +104,10 @@ const QuestionsScreen = () => {
     selectedQuestionId === null
       ? null
       : activeCase.questions.findIndex((q) => q.id === selectedQuestionId) + 1;
-  const stageWidth = window.innerWidth - SIDEBAR_W;
-  const stageHeight = window.innerHeight;
+  const stageWidth = canvasSize.width;
+  const stageHeight = canvasSize.height;
+  // Konva never gets a zero-size canvas; it waits for the first measurement.
+  const hasStageSize = stageWidth > 0 && stageHeight > 0;
   const isLightTheme = document.documentElement.dataset.theme === "light";
   const gridStartX = Math.floor((-stagePos.x / scale) / GRID_SPACING) * GRID_SPACING - GRID_SPACING;
   const gridStartY = Math.floor((-stagePos.y / scale) / GRID_SPACING) * GRID_SPACING - GRID_SPACING;
@@ -402,10 +406,7 @@ const QuestionsScreen = () => {
     const stage = stageRef.current;
     const oldScale = stage.scaleX();
     const newScale = clampScale(oldScale * factor);
-    const center = {
-      x: (window.innerWidth - SIDEBAR_W) / 2,
-      y: window.innerHeight / 2,
-    };
+    const center = { x: stageWidth / 2, y: stageHeight / 2 };
     const pointTo = {
       x: (center.x - stage.x()) / oldScale,
       y: (center.y - stage.y()) / oldScale,
@@ -468,7 +469,7 @@ const QuestionsScreen = () => {
   };
 
   return (
-    <main style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
+    <main className={styles.layout}>
       {toast && (
         <div
           key={toast.id}
@@ -491,18 +492,7 @@ const QuestionsScreen = () => {
       </span>
 
       {/* ── Sidebar ── */}
-      <div
-        style={{
-          width: SIDEBAR_W,
-          flexShrink: 0,
-          background: "var(--surface-subtle)", // mod this color
-          borderRight: "2px solid var(--color-text-primary)",
-          display: "flex",
-          flexDirection: "column",
-          overflowY: "auto",
-          padding: 16,
-        }}
-      >
+      <div className={styles.sidebar}>
         <div
           style={{
             display: "flex",
@@ -666,17 +656,17 @@ const QuestionsScreen = () => {
                         <p
                           ref={selectedTextRef}
                           tabIndex={-1}
+                          className={styles.selectedQuestionText}
                           style={{
-                            fontSize: 30,
                             fontWeight: 600,
                             color: "var(--modal-text)",
                             marginBottom: 12,
                           }}
                         >
                           <span
+                            className={styles.questionCounter}
                             style={{
                               display: "block",
-                              fontSize: 40,
                               fontWeight: 700,
                               color: "var(--text-link-muted)",
                               marginBottom: 6,
@@ -849,7 +839,7 @@ const QuestionsScreen = () => {
       </Modal>
 
       {/* ── Canvas area ── */}
-      <div style={{ flex: 1, position: "relative" }}>
+      <div ref={canvasRef} className={styles.canvasArea}>
         {rects.length === 0 ? (
           <div style={{ padding: 32 }}>
             <p style={{ color: "var(--page-text)" }}>
@@ -858,54 +848,56 @@ const QuestionsScreen = () => {
           </div>
         ) : (
           <React.Fragment>
-            {/* Drawn for the eye; SeatLayer below is its accessible equivalent. */}
-            <div aria-hidden="true">
-              <Stage
-                ref={stageRef}
-                width={stageWidth}
-                height={stageHeight}
-                scaleX={scale}
-                scaleY={scale}
-                x={stagePos.x}
-                y={stagePos.y}
-                draggable
-                onDragEnd={(e) =>
-                  setStagePos({ x: e.target.x(), y: e.target.y() })
-                }
-                onWheel={handleWheel}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
-              >
-                <Layer>
-                  {isLightTheme && (
-                    <React.Fragment>
-                      {gridXs.map((x) => (
-                        <Line
-                          key={`grid-x-${x}`}
-                          points={[x, gridStartY, x, gridStartY + gridRowCount * GRID_SPACING]}
-                          stroke={
-                            Math.round(x / GRID_SPACING) % 5 === 0
-                              ? cssVar("--light-blue-background", "#e4edf8")
-                              : cssVar("--border-subtle", "#d5dbe3")
-                          }
-                          strokeWidth={1 / scale}
-                          listening={false}
-                        />
-                      ))}
-                      {gridYs.map((y) => (
-                        <Line
-                          key={`grid-y-${y}`}
-                          points={[gridStartX, y, gridStartX + gridColumnCount * GRID_SPACING, y]}
-                          stroke={
-                            Math.round(y / GRID_SPACING) % 5 === 0
-                              ? cssVar("--light-blue-background", "#e4edf8")
-                              : cssVar("--border-subtle", "#d5dbe3")
-                          }
-                          strokeWidth={1 / scale}
-                          listening={false}
-                        />
-                      ))}
-                    </React.Fragment>
+            {hasStageSize && (
+              <React.Fragment>
+                {/* Drawn for the eye; SeatLayer below is its accessible equivalent. */}
+                <div aria-hidden="true">
+                  <Stage
+                    ref={stageRef}
+                    width={stageWidth}
+                    height={stageHeight}
+                    scaleX={scale}
+                    scaleY={scale}
+                    x={stagePos.x}
+                    y={stagePos.y}
+                    draggable
+                    onDragEnd={(e) =>
+                      setStagePos({ x: e.target.x(), y: e.target.y() })
+                    }
+                    onWheel={handleWheel}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                  >
+                    <Layer>
+                      {isLightTheme && (
+                      <React.Fragment>
+                          {gridXs.map((x) => (
+                            <Line
+                              key={`grid-x-${x}`}
+                              points={[x, gridStartY, x, gridStartY + gridRowCount * GRID_SPACING]}
+                              stroke={
+                                Math.round(x / GRID_SPACING) % 5 === 0
+                                  ? cssVar("--light-blue-background", "#e4edf8")
+                                  : cssVar("--border-subtle", "#d5dbe3")
+                              }
+                              strokeWidth={1 / scale}
+                              listening={false}
+                            />
+                          ))}
+                          {gridYs.map((y) => (
+                            <Line
+                              key={`grid-y-${y}`}
+                              points={[gridStartX, y, gridStartX + gridColumnCount * GRID_SPACING, y]}
+                              stroke={
+                                Math.round(y / GRID_SPACING) % 5 === 0
+                                  ? cssVar("--light-blue-background", "#e4edf8")
+                                  : cssVar("--border-subtle", "#d5dbe3")
+                              }
+                              strokeWidth={1 / scale}
+                              listening={false}
+                            />
+                          ))}
+                      </React.Fragment>
                   )}
                   {/* Row rectangles */}
                   {rects.map((r) => (
@@ -988,6 +980,8 @@ const QuestionsScreen = () => {
               onLetter={handleSeatLetter}
               onBringIntoView={setStagePos}
             />
+            </React.Fragment>
+            )}
 
             {/* Zoom controls */}
             <div
