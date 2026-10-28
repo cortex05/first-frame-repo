@@ -49,7 +49,8 @@ describe('StudentReportCard', () => {
     renderCard();
     const rows = screen.getAllByRole('listitem');
 
-    expect(rows).toHaveLength(3);
+    // The three questions, then the individual round (spec 019).
+    expect(rows).toHaveLength(4);
     expect(rows[0]).toHaveTextContent('1. Was there intent? — True');
     expect(rows[0]).toHaveTextContent('5 pts');
     expect(rows[1]).toHaveTextContent('2. Which motive? — Money');
@@ -62,6 +63,33 @@ describe('StudentReportCard', () => {
 
     expect(row).toHaveTextContent('3. Credible witness? — No answer');
     expect(within(row).getByText('—')).toBeInTheDocument();
+  });
+
+  it('ends with the individual round, 0 when none is given', () => {
+    renderCard();
+
+    expect(screen.getAllByRole('listitem')[3]).toHaveTextContent('Individual round0 pts');
+  });
+
+  it('shows a signed individual round', () => {
+    render(
+      <StudentReportCard studentNumber={3} individual={-2} questions={questions} answers={answers} />,
+    );
+
+    expect(screen.getAllByRole('listitem')[3]).toHaveTextContent('Individual round-2 pts');
+  });
+
+  it.each([
+    [-2, '-2 pts', /risk_low/],
+    [3, '+3 pts', /risk_medium/],
+    [4, '+4 pts', /risk_high/],
+    [0, '0 pts', /badgeEmpty/],
+  ])('colors an individual round of %i like the live report', (individual, text, className) => {
+    render(
+      <StudentReportCard studentNumber={3} individual={individual} questions={questions} answers={answers} />,
+    );
+
+    expect(within(screen.getAllByRole('listitem')[3]).getByText(text).className).toMatch(className);
   });
 
   it('colors the risk badge by tier', () => {

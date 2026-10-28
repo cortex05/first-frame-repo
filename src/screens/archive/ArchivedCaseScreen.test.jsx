@@ -78,6 +78,22 @@ describe('ArchivedCaseScreen', () => {
     expect(within(cards[2]).getByText(/Credible\? — No answer/)).toBeInTheDocument();
   });
 
+  it('counts the archived individual round in totals and risk, and lists it (spec 019)', async () => {
+    vi.mocked(getArchivedCase).mockResolvedValue(archivedCase({ individualRound: { 2: 10, 1: -3 } }));
+    renderScreen();
+
+    const cards = await screen.findAllByRole('region', { name: /^Student \d+$/ });
+
+    // Totals 5, 10, 5 -> range 5, bands at 6.67 / 8.33.
+    expect(within(cards[0]).getByText('Total: 5 pts')).toBeInTheDocument();
+    expect(within(cards[0]).getByText('-3 pts')).toBeInTheDocument();
+    expect(within(cards[1]).getByText('Total: 10 pts')).toBeInTheDocument();
+    expect(within(cards[1]).getByText('Risk: High')).toBeInTheDocument();
+    expect(within(cards[1]).getByText('+10 pts')).toBeInTheDocument();
+    expect(within(cards[2]).getByText('Risk: Low')).toBeInTheDocument();
+    expect(within(cards[2]).getByText('0 pts')).toBeInTheDocument();
+  });
+
   it('keeps the case details', async () => {
     vi.mocked(getArchivedCase).mockResolvedValue(archivedCase());
     renderScreen();

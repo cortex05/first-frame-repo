@@ -99,12 +99,44 @@ describe('StudentReportModal', () => {
     renderModal();
 
     const rows = screen.getAllByRole('listitem');
-    expect(rows).toHaveLength(3);
+    // The three questions, then the individual round (spec 019).
+    expect(rows).toHaveLength(4);
     expect(rows[0]).toHaveTextContent('Was there intent? - True');
     expect(within(rows[0]).getByText('5')).toBeInTheDocument();
     expect(rows[1]).toHaveTextContent('Which motive? - Money');
     expect(rows[2]).toHaveTextContent('Credible witness? - No answer');
     expect(within(rows[2]).getByText('N/A')).toBeInTheDocument();
+  });
+
+  it('shows the individual round and counts it in the total', () => {
+    renderModal({ activeCase: makeCase({ individualRound: { 4: 3 } }) });
+
+    const row = screen.getAllByRole('listitem')[3];
+    expect(row).toHaveTextContent('Individual round');
+    expect(within(row).getByText('+3')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Student Report - #4 = 10 Points' })).toBeInTheDocument();
+  });
+
+  it.each([
+    [-2, '-2', /risk_low/],
+    [3, '+3', /risk_medium/],
+    [4, '+4', /risk_high/],
+  ])('colors an individual round of %i like the seat in the Individual view', (points, text, tierClass) => {
+    renderModal({ activeCase: makeCase({ individualRound: { 4: points } }) });
+
+    expect(within(screen.getAllByRole('listitem')[3]).getByText(text).className).toMatch(tierClass);
+  });
+
+  it('leaves an individual round of 0 neutral', () => {
+    renderModal();
+
+    expect(within(screen.getAllByRole('listitem')[3]).getByText('0').className).toMatch(/pointsEmpty/);
+  });
+
+  it('shows 0 for a case without an individual round', () => {
+    renderModal();
+
+    expect(within(screen.getAllByRole('listitem')[3]).getByText('0')).toBeInTheDocument();
   });
 
   it('turns the details into pre-filled inputs on Edit', async () => {

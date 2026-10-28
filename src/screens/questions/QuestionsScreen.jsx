@@ -5,6 +5,7 @@ import useCaseStore from "../../store/useCaseStore";
 import useAuthStore from "../../store/useAuthStore";
 import {
   isCaseConflict,
+  saveIndividualRound,
   saveQuestionAnswers,
   saveSeating,
   saveStudentDetails,
@@ -14,7 +15,11 @@ import { cssVar } from "../../utils/cssVars";
 import {
   RISK_LABELS,
   RISK_LETTERS,
+  clampIndividualPoints,
+  formatIndividualPoints,
+  getIndividualPoints,
   getRiskTiers,
+  individualPointsTier,
   getStudentTotal,
   isPolled,
 } from "../../utils/studentScores";
@@ -39,6 +44,14 @@ const SCALE_MAX = 5;
 const SCALE_STEP = 1.2;
 const GRID_SPACING = 40;
 
+// The sidebar's three views: answering questions, the individual round
+// (spec 019) and the scores.
+const MODES = [
+  { id: "general", label: "General" },
+  { id: "individual", label: "Individual" },
+  { id: "scores", label: "Scores" },
+];
+
 const isTrueLabel = (label) => label === true || label === "true";
 const isFalseLabel = (label) => label === false || label === "false";
 
@@ -56,7 +69,12 @@ const QuestionsScreen = () => {
   const [selectedQuestionId, setSelectedQuestionId] = useState(null);
   const [currentAnswers, setCurrentAnswers] = useState({});
   const [activeOptionIndex, setActiveOptionIndex] = useState(null);
-  const [showScores, setShowScores] = useState(false);
+  const [mode, setMode] = useState("general"); // one of MODES
+  // Individual round taps not yet saved, keyed by String(student number), and
+  // the step a tap applies: 1, -1, or null before one is chosen.
+  const [individualDraft, setIndividualDraft] = useState({});
+  const [individualStep, setIndividualStep] = useState(null);
+  const [isSavingIndividual, setIsSavingIndividual] = useState(false);
   const [sortModal, setSortModal] = useState(null); // 'high' | 'low' | null
   const [studentReport, setStudentReport] = useState(null); // studentId | null
   const [saveWarning, setSaveWarning] = useState(false); // boolean
@@ -89,6 +107,7 @@ const QuestionsScreen = () => {
   const [announcement, setAnnouncement] = useState("");
   const noQuestionHintId = useId();
   const noOptionHintId = useId();
+  const noStepHintId = useId();
 
   const showToast = (message, type) => {
     toastId.current += 1;
@@ -96,6 +115,9 @@ const QuestionsScreen = () => {
   };
 
   if (!activeCase) return <main><p style={{ padding: 32 }}>Case not found.</p></main>;
+
+  const showScores = mode === "scores";
+  const isIndividual = mode === "individual";
 
   const rects = (activeCase.chartData || {}).rects || [];
   const selectedQuestion =
@@ -127,6 +149,25 @@ const QuestionsScreen = () => {
     });
     return defaults;
   };
+
+  // ── modes ──────────────────────────────────────────────────────
+  // Leaving a view drops whatever wasn't saved in it, like switching questions.
+  const changeMode = (next) => {
+    if (next === mode) return;
+    setSelectedQuestionId(null);
+    setActiveOptionIndex(null);
+    setCurrentAnswers({});
+    setIndividualStep(null);
+    setIndividualDraft({ ...(activeCase.individualRound || {}) });
+    setMode(next);
+  };
+
+  // ── individual round (spec 019) ────────────────────────────────
+  const getDraftPoints = (studentId) =>
+    getIndividualPoints({ individualRound: individualDraft }, studentId);
+
+  const nextDraftPoints = (studentId) =>
+    clampIndividualPoints(getDraftPoints(studentId) + individualStep);
 
   // ── scores & risk tiers ───────────────────────────────────────
   // Totals and the low/medium/high banding come from utils/studentScores, the
@@ -167,8 +208,16 @@ const QuestionsScreen = () => {
 
   const getScoreColor = (studentId) => riskFill[getScoreTier(studentId)];
 
+  // In the Individual view a seat is colored by its own unsaved points.
+  const getIndividualTier = (studentId) =>
+    individualPointsTier(getDraftPoints(studentId));
+
   const getStudentFill = (studentId) => {
     if (showScores) return getScoreColor(studentId);
+    if (isIndividual) {
+      const tier = getIndividualTier(studentId);
+      return tier ? riskFill[tier] : canvas.light;
+    }
     if (!selectedQuestion) return canvas.light;
     const answer = currentAnswers[studentId];
     if (answer === undefined) return canvas.light;
@@ -183,6 +232,10 @@ const QuestionsScreen = () => {
 
   const getStudentTextColor = (studentId) => {
     if (showScores) return riskText[getScoreTier(studentId)];
+    if (isIndividual) {
+      const tier = getIndividualTier(studentId);
+      return tier ? riskText[tier] : canvas.black;
+    }
     if (selectedQuestion?.type === QuestionType.TRUE_FALSE) {
       const answer = currentAnswers[studentId];
       return isTrueLabel(answer?.label) ? canvas.light : canvas.black;
@@ -220,7 +273,6 @@ const QuestionsScreen = () => {
       } else {
         setCurrentAnswers(savedAnswers);
       }
-      setShowScores(false);
     }
   };
 
@@ -228,6 +280,12 @@ const QuestionsScreen = () => {
   const handleStudentTap = (studentId) => {
     if (showScores) {
       setStudentReport(studentId);
+      return;
+    }
+    if (isIndividual) {
+      if (individualStep === null) return;
+      const points = nextDraftPoints(studentId);
+      setIndividualDraft((prev) => ({ ...prev, [String(studentId)]: points }));
       return;
     }
     if (!selectedQuestion) return;
@@ -265,6 +323,13 @@ const QuestionsScreen = () => {
       const tier = RISK_LABELS[getScoreTier(studentId)];
       return { name: `Student ${studentId}, ${getStudentScore(studentId)} points, ${tier} risk` };
     }
+    if (isIndividual) {
+      return {
+        name: `Student ${studentId}, individual points ${formatIndividualPoints(getDraftPoints(studentId))}`,
+        disabled: individualStep === null,
+        hintId: individualStep === null ? noStepHintId : undefined,
+      };
+    }
     if (!selectedQuestion) {
       return { name: `Student ${studentId}`, disabled: true, hintId: noQuestionHintId };
     }
@@ -285,6 +350,13 @@ const QuestionsScreen = () => {
 
   // Same as tapping the circle, plus an announcement of the new answer.
   const handleSeatActivate = (studentId) => {
+    if (isIndividual) {
+      if (individualStep === null) return;
+      const points = nextDraftPoints(studentId);
+      handleStudentTap(studentId);
+      setAnnouncement(`Student ${studentId}: individual points ${formatIndividualPoints(points)}`);
+      return;
+    }
     let next = null;
     if (!showScores && selectedQuestion) {
       if (selectedQuestion.type === QuestionType.TRUE_FALSE) {
@@ -319,6 +391,14 @@ const QuestionsScreen = () => {
     return index >= 0 ? `${studentId}·${optionLetter(index)}` : String(studentId);
   };
 
+  // The circle's text in the Individual view: "7", or "7" over "+ 2".
+  const individualSeatText = (studentId) => {
+    const points = getDraftPoints(studentId);
+    return points === 0
+      ? String(studentId)
+      : `${studentId}\n${formatIndividualPoints(points, { spaced: true })}`;
+  };
+
   // Replaces the local copies with the server's after a conflict.
   const reloadCases = async () => {
     try {
@@ -330,6 +410,22 @@ const QuestionsScreen = () => {
     } catch {
       // The conflict message is shown either way.
     }
+  };
+
+  // Takes the server's copy of the case after a save. A case seated before
+  // seating had its own endpoint holds its chart only in this browser; send it
+  // once so taking the server copy keeps it.
+  const commitServerCase = async (savedCase) => {
+    let serverCase = savedCase;
+    if (activeCase.seated && !serverCase.seated) {
+      serverCase = await saveSeating(activeCase._id, activeCase, userInfo.token);
+    }
+    updateCase(serverCase);
+    localStorage.setItem(
+      "cases",
+      JSON.stringify(useCaseStore.getState().cases),
+    );
+    return serverCase;
   };
 
   // ── save answers ───────────────────────────────────────────────
@@ -346,22 +442,13 @@ const QuestionsScreen = () => {
     try {
       // Only this question's answers go to the server, so someone answering
       // another question of the same case at the same time keeps their work.
-      let savedCase = await saveQuestionAnswers(
+      const savedCase = await saveQuestionAnswers(
         activeCase._id,
         selectedQuestionId,
         currentAnswers,
         userInfo.token,
       );
-      // A case seated before seating had its own endpoint holds its chart only
-      // in this browser; send it once so taking the server copy keeps it.
-      if (activeCase.seated && !savedCase.seated) {
-        savedCase = await saveSeating(activeCase._id, activeCase, userInfo.token);
-      }
-      updateCase(savedCase);
-      localStorage.setItem(
-        "cases",
-        JSON.stringify(useCaseStore.getState().cases),
-      );
+      await commitServerCase(savedCase);
       showToast("Answers saved!", "success");
     } catch (requestError) {
       // The question was removed by someone else: show the current case.
@@ -375,6 +462,37 @@ const QuestionsScreen = () => {
       );
     } finally {
       setIsSavingAnswers(false);
+    }
+  };
+
+  // ── save individual round ──────────────────────────────────────
+  // Sends the whole individual round; nothing else on the case changes.
+  const handleSaveIndividualRound = async () => {
+    if (!userInfo?.token) {
+      showToast("You must be logged in to save points.", "error");
+      return;
+    }
+
+    setIsSavingIndividual(true);
+
+    try {
+      const savedCase = await saveIndividualRound(
+        activeCase._id,
+        individualDraft,
+        userInfo.token,
+      );
+      const serverCase = await commitServerCase(savedCase);
+      setIndividualDraft({ ...(serverCase.individualRound || {}) });
+      showToast("Individual points saved!", "success");
+    } catch (requestError) {
+      // The taps stay, so the save can be tried again.
+      showToast(
+        requestError?.response?.data?.message ||
+          "Unable to save points. Please try again.",
+        "error",
+      );
+    } finally {
+      setIsSavingIndividual(false);
     }
   };
 
@@ -490,6 +608,9 @@ const QuestionsScreen = () => {
       <span id={noOptionHintId} className={styles.srOnly}>
         Select an option first
       </span>
+      <span id={noStepHintId} className={styles.srOnly}>
+        Select + 1 or - 1 first
+      </span>
 
       {/* ── Sidebar ── */}
       <div className={styles.sidebar}>
@@ -501,29 +622,30 @@ const QuestionsScreen = () => {
             marginBottom: 16,
           }}
         >
-          <h1 style={{ margin: 0, fontSize: 16, color: "var(--modal-text)" }}>
-            Questions
-          </h1>
-          <button
-            onClick={() => {
-              setShowScores((v) => {
-                if (v) setSelectedQuestionId(null);
-                return !v;
-              });
-            }}
-            style={{
-              padding: "5px 12px",
-              fontSize: 13,
-              fontWeight: 600,
-              background: showScores ? "var(--blue-background)" : "var(--surface-selected)",
-              color: showScores ? "var(--light-text)" : "var(--modal-text)",
-              border: "1px solid var(--modal-text)",
-              borderRadius: 6,
-              cursor: "pointer",
-            }}
-          >
-            Scores
-          </button>
+          {/* The view buttons name the panel; the page heading is for screen readers. */}
+          <h1 className={styles.srOnly}>Questions</h1>
+          <div role="group" aria-label="View" className={styles.modeButtons}>
+            {MODES.map(({ id, label }) => (
+              <button
+                key={id}
+                type="button"
+                aria-pressed={mode === id}
+                onClick={() => changeMode(id)}
+                style={{
+                  padding: "5px 12px",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  background: mode === id ? "var(--blue-background)" : "var(--surface-selected)",
+                  color: mode === id ? "var(--light-text)" : "var(--modal-text)",
+                  border: "1px solid var(--modal-text)",
+                  borderRadius: 6,
+                  cursor: "pointer",
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {showScores ? (
@@ -576,6 +698,77 @@ const QuestionsScreen = () => {
               }}
             >
               Low to High
+            </button>
+          </div>
+        ) : isIndividual ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <button
+              type="button"
+              style={{
+                width: "100%",
+                padding: "12px 0",
+                fontSize: 15,
+                fontWeight: 600,
+                background: "var(--blue-background)",
+                color: "var(--light-text)",
+                border: "none",
+                borderRadius: 6,
+                cursor: "pointer",
+              }}
+              onClick={() => setSaveWarning(true)}
+            >
+              Back to Case
+            </button>
+
+            <button
+              type="button"
+              aria-pressed={individualStep === 1}
+              aria-label="Add 1 point"
+              className={`${styles.stepButton} ${styles.stepPlus} ${
+                individualStep === 1 ? styles.stepActive : ""
+              }`}
+              onClick={() => setIndividualStep(1)}
+            >
+              + 1
+            </button>
+            <button
+              type="button"
+              aria-pressed={individualStep === -1}
+              aria-label="Subtract 1 point"
+              className={`${styles.stepButton} ${styles.stepMinus} ${
+                individualStep === -1 ? styles.stepActive : ""
+              }`}
+              onClick={() => setIndividualStep(-1)}
+            >
+              - 1
+            </button>
+
+            <p style={{ fontSize: 15, color: "var(--text-strong)", margin: "4px 0" }}>
+              {individualStep === null
+                ? "Select + 1 or - 1, then tap students."
+                : individualStep === 1
+                  ? "Tap a student to add a point."
+                  : "Tap a student to take away a point."}
+            </p>
+
+            <button
+              type="button"
+              onClick={handleSaveIndividualRound}
+              disabled={isSavingIndividual}
+              style={{
+                width: "100%",
+                padding: "12px 0",
+                fontSize: 15,
+                fontWeight: 600,
+                background: "var(--blue-background)",
+                color: "var(--light-text)",
+                border: "none",
+                borderRadius: 6,
+                cursor: isSavingIndividual ? "not-allowed" : "pointer",
+                opacity: isSavingIndividual ? 0.75 : 1,
+              }}
+            >
+              {isSavingIndividual ? "Saving..." : "Save Answers"}
             </button>
           </div>
         ) : (
@@ -949,13 +1142,15 @@ const QuestionsScreen = () => {
                           text={
                             showScores
                               ? `#${s.id}\n${getStudentScore(s.id)} ${RISK_LETTERS[getScoreTier(s.id)]}`
-                              : selectedQuestion?.type === QuestionType.TRUE_FALSE
+                              : isIndividual
+                                ? individualSeatText(s.id)
+                                : selectedQuestion?.type === QuestionType.TRUE_FALSE
                                 ? isTrueLabel(currentAnswers[s.id]?.label)
                                   ? "X"
                                   : String(s.id)
                                 : multipleChoiceSeatText(s.id)
                           }
-                          fontSize={showScores ? 9 : 12}
+                          fontSize={showScores ? 9 : isIndividual && getDraftPoints(s.id) !== 0 ? 11 : 12}
                           fill={getStudentTextColor(s.id)}
                           align="center"
                           verticalAlign="middle"

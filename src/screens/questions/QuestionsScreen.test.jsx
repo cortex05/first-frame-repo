@@ -4,10 +4,17 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import QuestionsScreen from './QuestionsScreen';
-import { getUserCases, saveQuestionAnswers, saveSeating, saveStudentDetails } from '../../api/case';
+import {
+  getUserCases,
+  saveIndividualRound,
+  saveQuestionAnswers,
+  saveSeating,
+  saveStudentDetails,
+} from '../../api/case';
 import useAuthStore from '../../store/useAuthStore';
 import useCaseStore from '../../store/useCaseStore';
 import { resizeTo, uninstallResizeObserver } from '../../test/resizeObserver';
+import { cssVar } from '../../utils/cssVars';
 
 // jsdom has no canvas: render the Konva tree as plain elements.
 vi.mock('react-konva', () => {
@@ -18,7 +25,7 @@ vi.mock('react-konva', () => {
     Line: ({ points }) => <div data-testid="canvas-grid-line" data-points={points.join(',')} />,
     Group: Passthrough,
     Rect: () => null,
-    Circle: () => null,
+    Circle: ({ fill }) => <div data-testid="seat-circle" data-fill={fill} />,
     Text: () => null,
   };
 });
@@ -27,6 +34,7 @@ vi.mock('../../api/case', () => ({
   getUserCases: vi.fn(),
   isCaseConflict: (error) =>
     error?.response?.status === 409 && error?.response?.data?.code === 'CASE_CONFLICT',
+  saveIndividualRound: vi.fn(),
   saveQuestionAnswers: vi.fn(),
   saveSeating: vi.fn(),
   saveStudentDetails: vi.fn(),
@@ -73,6 +81,7 @@ const sortRows = () =>
 beforeEach(() => {
   document.documentElement.dataset.theme = 'dark';
   vi.mocked(getUserCases).mockReset();
+  vi.mocked(saveIndividualRound).mockReset();
   vi.mocked(saveQuestionAnswers).mockReset();
   vi.mocked(saveSeating).mockReset();
   vi.mocked(saveStudentDetails).mockReset();
@@ -608,5 +617,170 @@ describe('QuestionsScreen sizing (spec 018)', () => {
     const question = screen.getByText('Intent?');
     expect(question.className).toMatch(/selectedQuestionText/);
     expect(question.querySelector('span').className).toMatch(/questionCounter/);
+  });
+});
+
+describe('QuestionsScreen views (spec 019)', () => {
+  const viewButton = (name) => within(screen.getByRole('group', { name: 'View' })).getByRole('button', { name });
+  const seatButton = (name) => screen.getByRole('button', { name });
+  const openIndividual = async (user) => {
+    await user.click(viewButton('Individual'));
+  };
+
+  it('starts on General with the questions, and highlights one view at a time', async () => {
+    const user = userEvent.setup();
+    renderQuestions();
+
+    expect(viewButton('General')).toHaveAttribute('aria-pressed', 'true');
+    expect(viewButton('Individual')).toHaveAttribute('aria-pressed', 'false');
+    expect(viewButton('Scores')).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByText('Intent?')).toBeInTheDocument();
+
+    await openIndividual(user);
+    expect(viewButton('General')).toHaveAttribute('aria-pressed', 'false');
+    expect(viewButton('Individual')).toHaveAttribute('aria-pressed', 'true');
+
+    await user.click(viewButton('Scores'));
+    expect(viewButton('Individual')).toHaveAttribute('aria-pressed', 'false');
+    expect(viewButton('Scores')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.queryByText('Intent?')).not.toBeInTheDocument();
+
+    await user.click(viewButton('General'));
+    expect(viewButton('General')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByText('Intent?')).toBeInTheDocument();
+  });
+
+  it('shows Back to Case, the two steps and Save Answers in Individual', async () => {
+    const user = userEvent.setup();
+    renderQuestions();
+
+    await openIndividual(user);
+
+    expect(screen.getByRole('button', { name: 'Back to Case' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add 1 point' })).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('button', { name: 'Subtract 1 point' })).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('button', { name: 'Save Answers' })).toBeInTheDocument();
+    expect(screen.queryByText('Intent?')).not.toBeInTheDocument();
+  });
+
+  it('keeps seats disabled until a step is chosen', async () => {
+    const user = userEvent.setup();
+    renderQuestions();
+    await openIndividual(user);
+
+    const seat = seatButton('Student 1, individual points 0');
+    expect(seat).toHaveAttribute('aria-disabled', 'true');
+    await user.click(seat);
+    expect(seatButton('Student 1, individual points 0')).toBeInTheDocument();
+  });
+
+  it('adds and takes away one point per tap, and announces it', async () => {
+    const user = userEvent.setup();
+    renderQuestions();
+    await openIndividual(user);
+
+    await user.click(screen.getByRole('button', { name: 'Add 1 point' }));
+    expect(screen.getByRole('button', { name: 'Add 1 point' })).toHaveAttribute('aria-pressed', 'true');
+    await user.click(seatButton('Student 1, individual points 0'));
+    await user.click(seatButton('Student 1, individual points +1'));
+    expect(seatButton('Student 1, individual points +2')).toBeInTheDocument();
+    expect(screen.getByTestId('seat-announcer')).toHaveTextContent('Student 1: individual points +2');
+
+    await user.click(screen.getByRole('button', { name: 'Subtract 1 point' }));
+    expect(screen.getByRole('button', { name: 'Add 1 point' })).toHaveAttribute('aria-pressed', 'false');
+    for (const name of ['+2', '+1', '0']) {
+      await user.click(seatButton(`Student 1, individual points ${name}`));
+    }
+    expect(seatButton('Student 1, individual points -1')).toBeInTheDocument();
+  });
+
+  it('starts from the saved individual round', async () => {
+    useCaseStore.setState({ cases: [makeCase({ individualRound: { 2: -4 } })] });
+    const user = userEvent.setup();
+    renderQuestions();
+
+    await openIndividual(user);
+
+    expect(seatButton('Student 2, individual points -4')).toBeInTheDocument();
+  });
+
+  it('saves only the individual round and takes the server copy', async () => {
+    const saved = makeCase({ individualRound: { 1: -1 } });
+    vi.mocked(saveIndividualRound).mockResolvedValue(saved);
+    const user = userEvent.setup();
+    renderQuestions();
+    await openIndividual(user);
+
+    await user.click(screen.getByRole('button', { name: 'Subtract 1 point' }));
+    await user.click(seatButton('Student 1, individual points 0'));
+    await user.click(screen.getByRole('button', { name: 'Save Answers' }));
+
+    expect(await screen.findByRole('status')).toHaveTextContent('Individual points saved!');
+    expect(saveIndividualRound).toHaveBeenCalledWith('case-1', { 1: -1 }, 'token');
+    expect(saveQuestionAnswers).not.toHaveBeenCalled();
+    expect(useCaseStore.getState().cases[0].individualRound).toEqual({ 1: -1 });
+    expect(JSON.parse(localStorage.getItem('cases'))[0].individualRound).toEqual({ 1: -1 });
+  });
+
+  it('keeps the taps and shows the error when the save fails', async () => {
+    vi.mocked(saveIndividualRound).mockRejectedValue({ response: { status: 400, data: { message: 'Bad points' } } });
+    const user = userEvent.setup();
+    renderQuestions();
+    await openIndividual(user);
+
+    await user.click(screen.getByRole('button', { name: 'Add 1 point' }));
+    await user.click(seatButton('Student 3, individual points 0'));
+    await user.click(screen.getByRole('button', { name: 'Save Answers' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Bad points');
+    expect(seatButton('Student 3, individual points +1')).toBeInTheDocument();
+  });
+
+  it('drops unsaved taps when switching views', async () => {
+    const user = userEvent.setup();
+    renderQuestions();
+    await openIndividual(user);
+
+    await user.click(screen.getByRole('button', { name: 'Add 1 point' }));
+    await user.click(seatButton('Student 1, individual points 0'));
+    await user.click(viewButton('Scores'));
+    expect(seatButton('Student 1, 6 points, High risk')).toBeInTheDocument();
+    await openIndividual(user);
+
+    expect(seatButton('Student 1, individual points 0')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add 1 point' })).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('colors each seat by its unsaved points: green below 0, yellow 1-3, red from 4', async () => {
+    useCaseStore.setState({ cases: [makeCase({ individualRound: { 1: 3, 2: -1 } })] });
+    const user = userEvent.setup();
+    renderQuestions();
+    await openIndividual(user);
+    const fills = () => screen.getAllByTestId('seat-circle').map((circle) => circle.dataset.fill);
+    const white = cssVar('--light-text', '#fff');
+    const low = cssVar('--risk-low-bg', '#5BF527');
+    const medium = cssVar('--risk-medium-bg', '#F7F46D');
+    const high = cssVar('--risk-high-bg', '#F54927');
+
+    expect(fills()).toEqual([medium, low, white]);
+
+    await user.click(screen.getByRole('button', { name: 'Add 1 point' }));
+    await user.click(seatButton('Student 1, individual points +3'));
+    await user.click(seatButton('Student 2, individual points -1'));
+
+    expect(fills()).toEqual([high, white, white]);
+  });
+
+  it('counts the saved individual round in Scores, negatives included', async () => {
+    // Totals become -4 / 3 / 0: banded over -4..3.
+    useCaseStore.setState({ cases: [makeCase({ individualRound: { 1: -10 } })] });
+    const user = userEvent.setup();
+    renderQuestions();
+
+    await user.click(viewButton('Scores'));
+    expect(seatButton('Student 1, -4 points, Low risk')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'High to Low' }));
+
+    expect(sortRows().map(([text]) => text)).toEqual(['#2 — 3 · High', '#3 — 0 · Medium', '#1 — -4 · Low']);
   });
 });

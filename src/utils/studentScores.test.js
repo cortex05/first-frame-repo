@@ -3,12 +3,16 @@ import { describe, expect, it } from 'vitest';
 import {
   answerPoints,
   bandTier,
+  clampIndividualPoints,
   formatAnswerLabel,
+  formatIndividualPoints,
   getAnswerTier,
+  getIndividualPoints,
   getReportStudentNumbers,
   getRiskTiers,
   getSeatedStudentNumbers,
   getStudentTotal,
+  individualPointsTier,
   isPolled,
 } from './studentScores';
 
@@ -230,5 +234,76 @@ describe('isPolled', () => {
     expect(isPolled({}, 'q-1')).toBe(false);
     expect(isPolled({ answers: null }, 'q-1')).toBe(false);
     expect(isPolled(undefined, 'q-1')).toBe(false);
+  });
+});
+
+describe('individual round (spec 019)', () => {
+  const questions = [TF('q1', 4)];
+  const withRound = (individualRound) => ({
+    ...caseWith(questions, { 1: { q1: 4 }, 2: { q1: 0 }, 3: { q1: 0 } }, seat(1, 2, 3)),
+    individualRound,
+  });
+
+  it('reads a student by number from string keys, and 0 when missing', () => {
+    const caseLike = withRound({ 1: 2, 2: -3 });
+
+    expect(getIndividualPoints(caseLike, 1)).toBe(2);
+    expect(getIndividualPoints(caseLike, '2')).toBe(-3);
+    expect(getIndividualPoints(caseLike, 3)).toBe(0);
+    expect(getIndividualPoints({}, 1)).toBe(0);
+    expect(getIndividualPoints(undefined, 1)).toBe(0);
+    expect(getIndividualPoints({ individualRound: { 1: 'x' } }, 1)).toBe(0);
+  });
+
+  it('adds the individual round to the answer total, in either direction', () => {
+    const caseLike = withRound({ 1: 2, 2: -3 });
+
+    expect(getStudentTotal(caseLike, 1)).toBe(6);
+    expect(getStudentTotal(caseLike, 2)).toBe(-3);
+    expect(getStudentTotal(caseLike, 3)).toBe(0);
+  });
+
+  it('leaves totals alone on a case without the field', () => {
+    expect(getStudentTotal(withRound(undefined), 1)).toBe(4);
+  });
+
+  it('bands negative totals over the range like any others', () => {
+    // Totals -5, 0, 10: the bands end at 0 and 5.
+    const caseLike = {
+      ...caseWith([TF('q1', 10)], { 1: { q1: 0 }, 2: { q1: 0 }, 3: { q1: 10 } }, seat(1, 2, 3)),
+      individualRound: { 1: -5 },
+    };
+
+    expect(getRiskTiers(caseLike, [1, 2, 3])).toEqual(
+      new Map([
+        [1, 'low'],
+        [2, 'low'],
+        [3, 'high'],
+      ]),
+    );
+  });
+
+  it('formats with the sign, optionally spaced', () => {
+    expect(formatIndividualPoints(2)).toBe('+2');
+    expect(formatIndividualPoints(-3)).toBe('-3');
+    expect(formatIndividualPoints(0)).toBe('0');
+    expect(formatIndividualPoints(2, { spaced: true })).toBe('+ 2');
+    expect(formatIndividualPoints(-3, { spaced: true })).toBe('- 3');
+  });
+
+  it('colors a seat by its own points: none, low, medium for 1-3, high from 4', () => {
+    expect(individualPointsTier(0)).toBeNull();
+    expect(individualPointsTier(-1)).toBe('low');
+    expect(individualPointsTier(-20)).toBe('low');
+    expect(individualPointsTier(1)).toBe('medium');
+    expect(individualPointsTier(3)).toBe('medium');
+    expect(individualPointsTier(4)).toBe('high');
+    expect(individualPointsTier(50)).toBe('high');
+  });
+
+  it('clamps to the limit the server accepts', () => {
+    expect(clampIndividualPoints(1001)).toBe(1000);
+    expect(clampIndividualPoints(-1001)).toBe(-1000);
+    expect(clampIndividualPoints(5)).toBe(5);
   });
 });

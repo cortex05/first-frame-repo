@@ -198,3 +198,40 @@
 .questionCounter {
 	font-size: clamp(24px, 3vw + 12px, 40px);
 }
+
+/* General | Individual | Scores at the top of the sidebar (spec 019). */
+.modeButtons {
+	display: flex;
+	gap: 6px;
+	width: 100%;
+}
+
+.modeButtons button {
+	flex: 1;
+}
+
+/* The individual round's + 1 / - 1 steps: twice the height of Back to Case.
+   The border is always there, so thickening it doesn't move anything. */
+.stepButton {
+	box-sizing: border-box;
+	width: 100%;
+	height: 84px;
+	font-size: 36px;
+	font-weight: 700;
+	color: var(--light-text);
+	border: 3px solid transparent;
+	border-radius: 6px;
+	cursor: pointer;
+}
+
+.stepPlus {
+	background: var(--decline);
+}
+
+.stepMinus {
+	background: var(--confirm);
+}
+
+.stepActive {
+	border: 6px solid var(--text-strong);
+}

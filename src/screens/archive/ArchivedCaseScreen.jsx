@@ -10,6 +10,7 @@ import { caseCategoryLabel } from '../../types/caseCategories';
 import { formatDate } from '../../utils/formatDate';
 import {
   getReportStudentNumbers,
+  getIndividualPoints,
   getRiskTiers,
   getStudentTotal,
 } from '../../utils/studentScores';
@@ -102,6 +103,7 @@ const ArchivedCaseScreen = () => {
                   studentNumber={studentNumber}
                   risk={riskTiers.get(studentNumber)}
                   total={getStudentTotal(archived, studentNumber)}
+                  individual={getIndividualPoints(archived, studentNumber)}
                   questions={archived.questions || []}
                   answers={archived.answers || {}}
                 />

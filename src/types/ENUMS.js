@@ -17,5 +17,9 @@ export const STUDENT_DETAIL_LIMITS = {
   RACE_MAX: 50,
 };
 
+// Points one student can gain or lose in the individual round (spec 019), in
+// either direction. Must match the backend's INDIVIDUAL_ROUND_MAX.
+export const INDIVIDUAL_ROUND_LIMIT = 1000;
+
 // Case classification lives in ./caseCategories.js -- import
 // CASE_CATEGORIES_BY_AREA / caseCategoryLabel from there.

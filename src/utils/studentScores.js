@@ -1,4 +1,4 @@
-import { QuestionType } from '../types/ENUMS';
+import { INDIVIDUAL_ROUND_LIMIT, QuestionType } from '../types/ENUMS';
 
 /**
  * Student totals and risk tiers. The single source for both the live Scores
@@ -7,8 +7,12 @@ import { QuestionType } from '../types/ENUMS';
  * student's archived risk must equal the color they had in the session.
  *
  * Students are identified by their student number: `assignedStudents[].id` in
- * `chartData.rects` is a number, while the keys of `answers[questionId]` are
- * strings once the case has been through JSON. Look answers up by String().
+ * `chartData.rects` is a number, while the keys of `answers[questionId]` (and
+ * of `individualRound`) are strings once the case has been through JSON. Look
+ * them up by String().
+ *
+ * A student's total is their answer points plus their individual-round points
+ * (spec 019), and risk is banded over those totals.
  */
 
 export const RISK_TIERS = ['low', 'medium', 'high'];
@@ -48,12 +52,49 @@ export const answerPoints = (answer) => {
   return Number.isFinite(points) ? points : 0;
 };
 
-/** Sum over the case's current questions; answers for removed questions don't count. */
+/**
+ * Points given to or taken from the student outside any question (spec 019).
+ * A student with no entry, or a case from before the field, has 0.
+ */
+export const getIndividualPoints = (caseLike, studentNumber) => {
+  const points = Number(caseLike?.individualRound?.[String(studentNumber)]);
+  return Number.isFinite(points) ? points : 0;
+};
+
+/** Keeps a tapped-up value within what the server accepts. */
+export const clampIndividualPoints = (points) =>
+  Math.min(INDIVIDUAL_ROUND_LIMIT, Math.max(-INDIVIDUAL_ROUND_LIMIT, points));
+
+/**
+ * The color tier of a seat in the Individual view, from that student's own
+ * individual-round points alone (not banded over the class): none at 0, low
+ * below 0, medium for 1-3, high from 4.
+ */
+export const individualPointsTier = (points) => {
+  if (points === 0) return null;
+  if (points < 0) return 'low';
+  return points <= 3 ? 'medium' : 'high';
+};
+
+/**
+ * The sign always shows: '+2', '-1', '0' -- or '+ 2' / '- 1' with `spaced`,
+ * as the Individual view's seat circles show it.
+ */
+export const formatIndividualPoints = (points, { spaced = false } = {}) => {
+  if (points === 0) return '0';
+  const sign = points > 0 ? '+' : '-';
+  return `${sign}${spaced ? ' ' : ''}${Math.abs(points)}`;
+};
+
+/**
+ * Sum over the case's current questions (answers for removed questions don't
+ * count), plus the individual round.
+ */
 export const getStudentTotal = (caseLike, studentNumber) =>
   (caseLike?.questions || []).reduce(
     (sum, question) => sum + answerPoints(getAnswer(caseLike, question.id, studentNumber)),
     0,
-  );
+  ) + getIndividualPoints(caseLike, studentNumber);
 
 const toSortedNumbers = (values) =>
   [...new Set(values.map(Number).filter(Number.isFinite))].sort((a, b) => a - b);

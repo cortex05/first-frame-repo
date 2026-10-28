@@ -124,3 +124,16 @@ export const saveSeating = async (caseId, { chartData, students }, token) => {
 
   return normalizeCaseQuestionsPayload(res.data.data);
 };
+
+// Replaces the case's individual round, { [studentNumber]: points } (spec 019),
+// without touching answers, seating or questions. Students left out count as 0.
+// Returns the whole updated case.
+export const saveIndividualRound = async (caseId, individualRound, token) => {
+  const res = await axiosInstance.put(CASE_API.INDIVIDUAL_ROUND(caseId), { individualRound }, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return normalizeCaseQuestionsPayload(res.data.data);
+};
