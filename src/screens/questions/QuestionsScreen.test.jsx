@@ -68,6 +68,7 @@ const renderQuestions = () =>
       <Routes>
         <Route path="/questions/:caseId" element={<QuestionsScreen />} />
         <Route path="/case/:id" element={<p>Case page</p>} />
+        <Route path="/dashboard" element={<p>Dashboard page</p>} />
       </Routes>
     </MemoryRouter>,
   );
@@ -722,8 +723,194 @@ describe('QuestionsScreen views (spec 019)', () => {
     expect(JSON.parse(localStorage.getItem('cases'))[0].individualRound).toEqual({ 1: -1 });
   });
 
+  it('sends only the students changed here', async () => {
+    useCaseStore.setState({ cases: [makeCase({ individualRound: { 2: -4 } })] });
+    vi.mocked(saveIndividualRound).mockResolvedValue(makeCase({ individualRound: { 1: 1, 2: -4 } }));
+    const user = userEvent.setup();
+    renderQuestions();
+    await openIndividual(user);
+
+    await user.click(screen.getByRole('button', { name: 'Add 1 point' }));
+    await user.click(seatButton('Student 1, individual points 0'));
+    await user.click(screen.getByRole('button', { name: 'Save Answers' }));
+
+    expect(await screen.findByRole('status')).toHaveTextContent('Individual points saved!');
+    expect(saveIndividualRound).toHaveBeenCalledWith('case-1', { 1: 1 }, 'token');
+    expect(seatButton('Student 2, individual points -4')).toBeInTheDocument();
+  });
+
+  it('sends a student brought back to 0, so the server clears them', async () => {
+    useCaseStore.setState({ cases: [makeCase({ individualRound: { 2: 1 } })] });
+    vi.mocked(saveIndividualRound).mockResolvedValue(makeCase({ individualRound: {} }));
+    const user = userEvent.setup();
+    renderQuestions();
+    await openIndividual(user);
+
+    await user.click(screen.getByRole('button', { name: 'Subtract 1 point' }));
+    await user.click(seatButton('Student 2, individual points +1'));
+    await user.click(screen.getByRole('button', { name: 'Save Answers' }));
+
+    await screen.findByRole('status');
+    expect(saveIndividualRound).toHaveBeenCalledWith('case-1', { 2: 0 }, 'token');
+  });
+
+  it('saves nothing when nothing changed', async () => {
+    const user = userEvent.setup();
+    renderQuestions();
+    await openIndividual(user);
+
+    await user.click(screen.getByRole('button', { name: 'Save Answers' }));
+
+    expect(await screen.findByRole('status')).toHaveTextContent('No changes to save.');
+    expect(saveIndividualRound).not.toHaveBeenCalled();
+  });
+
+  it("shows someone else's saved points for students not changed here", async () => {
+    const user = userEvent.setup();
+    renderQuestions();
+    await openIndividual(user);
+    await user.click(screen.getByRole('button', { name: 'Add 1 point' }));
+    await user.click(seatButton('Student 1, individual points 0'));
+
+    act(() => {
+      useCaseStore.setState({ cases: [makeCase({ individualRound: { 1: 5, 3: -2 } })] });
+    });
+
+    expect(seatButton('Student 1, individual points +1')).toBeInTheDocument();
+    expect(seatButton('Student 3, individual points -2')).toBeInTheDocument();
+  });
+
+  it('counts every tap on a seat, even before a re-render', async () => {
+    const user = userEvent.setup();
+    renderQuestions();
+    await openIndividual(user);
+    await user.click(screen.getByRole('button', { name: 'Add 1 point' }));
+
+    const seat = seatButton('Student 1, individual points 0');
+    act(() => {
+      seat.click();
+      seat.click();
+      seat.click();
+    });
+
+    expect(seatButton('Student 1, individual points +3')).toBeInTheDocument();
+  });
+
+  it('goes to the dashboard when the case can no longer be seen', async () => {
+    vi.mocked(saveIndividualRound).mockRejectedValue({ response: { status: 404, data: { message: 'Case not found' } } });
+    const user = userEvent.setup();
+    renderQuestions();
+    await openIndividual(user);
+
+    await user.click(screen.getByRole('button', { name: 'Add 1 point' }));
+    await user.click(seatButton('Student 1, individual points 0'));
+    await user.click(screen.getByRole('button', { name: 'Save Answers' }));
+
+    expect(await screen.findByText('Dashboard page')).toBeInTheDocument();
+    expect(useCaseStore.getState().cases).toEqual([]);
+  });
+
+  it('reloads the case on a 400 and leaves out students beyond a shrunken class next time', async () => {
+    vi.mocked(saveIndividualRound).mockRejectedValueOnce({
+      response: { status: 400, data: { message: 'student number is out of range for this case' } },
+    });
+    vi.mocked(getUserCases).mockResolvedValue([makeCase({ studentNumber: 2 })]);
+    const user = userEvent.setup();
+    renderQuestions();
+    await openIndividual(user);
+
+    await user.click(screen.getByRole('button', { name: 'Add 1 point' }));
+    await user.click(seatButton('Student 1, individual points 0'));
+    await user.click(seatButton('Student 3, individual points 0'));
+    await user.click(screen.getByRole('button', { name: 'Save Answers' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('student number is out of range for this case');
+    expect(getUserCases).toHaveBeenCalled();
+
+    vi.mocked(saveIndividualRound).mockResolvedValue(makeCase({ studentNumber: 2, individualRound: { 1: 1 } }));
+    await user.click(screen.getByRole('button', { name: 'Save Answers' }));
+
+    await waitFor(() => expect(saveIndividualRound).toHaveBeenLastCalledWith('case-1', { 1: 1 }, 'token'));
+  });
+
+  it('keeps a student tapped while the save is in flight', async () => {
+    let resolveSave;
+    vi.mocked(saveIndividualRound).mockImplementation(
+      () => new Promise((resolve) => {
+        resolveSave = resolve;
+      }),
+    );
+    const user = userEvent.setup();
+    renderQuestions();
+    await openIndividual(user);
+
+    await user.click(screen.getByRole('button', { name: 'Add 1 point' }));
+    await user.click(seatButton('Student 1, individual points 0'));
+    await user.click(screen.getByRole('button', { name: 'Save Answers' }));
+    await user.click(seatButton('Student 2, individual points 0'));
+    await act(async () => resolveSave(makeCase({ individualRound: { 1: 1 } })));
+
+    expect(await screen.findByRole('status')).toHaveTextContent('Individual points saved!');
+    expect(seatButton('Student 1, individual points +1')).toBeInTheDocument();
+    expect(seatButton('Student 2, individual points +1')).toBeInTheDocument();
+
+    vi.mocked(saveIndividualRound).mockResolvedValue(makeCase({ individualRound: { 1: 1, 2: 1 } }));
+    await user.click(screen.getByRole('button', { name: 'Save Answers' }));
+    await waitFor(() => expect(saveIndividualRound).toHaveBeenLastCalledWith('case-1', { 2: 1 }, 'token'));
+  });
+
+  it('says the points were saved when only the legacy seating resend fails', async () => {
+    vi.mocked(saveIndividualRound).mockResolvedValue(makeCase({ seated: false, individualRound: { 1: 1 } }));
+    vi.mocked(saveSeating).mockRejectedValue(new Error('offline'));
+    const user = userEvent.setup();
+    renderQuestions();
+    await openIndividual(user);
+
+    await user.click(screen.getByRole('button', { name: 'Add 1 point' }));
+    await user.click(seatButton('Student 1, individual points 0'));
+    await user.click(screen.getByRole('button', { name: 'Save Answers' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Points saved, but the seating chart could not be synced');
+    expect(seatButton('Student 1, individual points +1')).toBeInTheDocument();
+  });
+
+  it('tells the user when taps for students no longer in the case are dropped', async () => {
+    const user = userEvent.setup();
+    renderQuestions();
+    await openIndividual(user);
+    await user.click(screen.getByRole('button', { name: 'Add 1 point' }));
+    await user.click(seatButton('Student 3, individual points 0'));
+
+    act(() => {
+      useCaseStore.setState({ cases: [makeCase({ studentNumber: 2 })] });
+    });
+    await user.click(screen.getByRole('button', { name: 'Save Answers' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Not saved for students no longer in this case: 3.',
+    );
+    expect(saveIndividualRound).not.toHaveBeenCalled();
+    expect(seatButton('Student 3, individual points 0')).toBeInTheDocument();
+  });
+
+  it('announces the stored value on rapid keyboard presses', async () => {
+    const user = userEvent.setup();
+    renderQuestions();
+    await openIndividual(user);
+    await user.click(screen.getByRole('button', { name: 'Add 1 point' }));
+
+    const seat = seatButton('Student 1, individual points 0');
+    act(() => {
+      seat.click();
+      seat.click();
+    });
+
+    expect(screen.getByTestId('seat-announcer')).toHaveTextContent('Student 1: individual points +2');
+    expect(seatButton('Student 1, individual points +2')).toBeInTheDocument();
+  });
+
   it('keeps the taps and shows the error when the save fails', async () => {
-    vi.mocked(saveIndividualRound).mockRejectedValue({ response: { status: 400, data: { message: 'Bad points' } } });
+    vi.mocked(saveIndividualRound).mockRejectedValue({ response: { status: 500, data: { message: 'Server error' } } });
     const user = userEvent.setup();
     renderQuestions();
     await openIndividual(user);
@@ -732,7 +919,7 @@ describe('QuestionsScreen views (spec 019)', () => {
     await user.click(seatButton('Student 3, individual points 0'));
     await user.click(screen.getByRole('button', { name: 'Save Answers' }));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Bad points');
+    expect(await screen.findByRole('alert')).toHaveTextContent('Server error');
     expect(seatButton('Student 3, individual points +1')).toBeInTheDocument();
   });
 

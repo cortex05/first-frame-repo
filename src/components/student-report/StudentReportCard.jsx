@@ -5,16 +5,10 @@ import {
   formatIndividualPoints,
   getAnswer,
   getAnswerTier,
-  individualPointsTier,
 } from '../../utils/studentScores';
+import individualPointsClass from './individualPointsClass';
 
 import styles from './StudentReportCard.module.css';
-
-// Colored like the student's seat in the Individual view; neutral at 0.
-const individualBadgeClass = (points) => {
-  const tier = individualPointsTier(points);
-  return tier ? styles[`risk_${tier}`] : styles.badgeEmpty;
-};
 
 /**
  * One student's report: their risk tier and total, then every question with
@@ -57,7 +51,7 @@ const StudentReportCard = ({
       })}
       <li className={styles.row}>
         <span className={styles.questionText}>Individual round</span>
-        <span className={`${styles.badge} ${individualBadgeClass(individual)}`}>
+        <span className={`${styles.badge} ${individualPointsClass(styles, individual, styles.badgeEmpty)}`}>
           {formatIndividualPoints(individual)} pts
         </span>
       </li>

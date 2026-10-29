@@ -63,6 +63,7 @@ const QuestionsScreen = () => {
   );
   usePageTitle(activeCase ? `Questions: ${activeCase.clientName}` : "Questions", { ready: Boolean(activeCase) });
   const updateCase = useCaseStore((state) => state.updateCase);
+  const removeCase = useCaseStore((state) => state.removeCase);
   const fetchUserCases = useCaseStore((state) => state.fetchUserCases);
   const userInfo = useAuthStore((state) => state.userInfo);
 
@@ -70,9 +71,14 @@ const QuestionsScreen = () => {
   const [currentAnswers, setCurrentAnswers] = useState({});
   const [activeOptionIndex, setActiveOptionIndex] = useState(null);
   const [mode, setMode] = useState("general"); // one of MODES
-  // Individual round taps not yet saved, keyed by String(student number), and
-  // the step a tap applies: 1, -1, or null before one is chosen.
-  const [individualDraft, setIndividualDraft] = useState({});
+  // Individual round points changed here and not yet saved, keyed by
+  // String(student number): only the students tapped, on top of the saved
+  // case, so others' saves still show and aren't sent back. The step a tap
+  // applies is 1, -1, or null before one is chosen.
+  const [individualEdits, setIndividualEdits] = useState({});
+  // The latest edits, ahead of the next render, so rapid taps build on each
+  // other and the announced value is the one stored.
+  const individualEditsRef = useRef({});
   const [individualStep, setIndividualStep] = useState(null);
   const [isSavingIndividual, setIsSavingIndividual] = useState(false);
   const [sortModal, setSortModal] = useState(null); // 'high' | 'low' | null
@@ -158,16 +164,32 @@ const QuestionsScreen = () => {
     setActiveOptionIndex(null);
     setCurrentAnswers({});
     setIndividualStep(null);
-    setIndividualDraft({ ...(activeCase.individualRound || {}) });
+    replaceIndividualEdits({});
     setMode(next);
   };
 
   // ── individual round (spec 019) ────────────────────────────────
-  const getDraftPoints = (studentId) =>
-    getIndividualPoints({ individualRound: individualDraft }, studentId);
+  // The student's points as shown: their unsaved change, else the saved value.
+  const pointsWithEdits = (edits, studentId) =>
+    Object.hasOwn(edits, String(studentId))
+      ? edits[String(studentId)]
+      : getIndividualPoints(activeCase, studentId);
 
-  const nextDraftPoints = (studentId) =>
-    clampIndividualPoints(getDraftPoints(studentId) + individualStep);
+  const getDraftPoints = (studentId) => pointsWithEdits(individualEdits, studentId);
+
+  const replaceIndividualEdits = (next) => {
+    individualEditsRef.current = next;
+    setIndividualEdits(next);
+  };
+
+  // One tap with the chosen step, on top of the latest edits. Returns the
+  // student's new points.
+  const applyIndividualStep = (studentId) => {
+    const edits = individualEditsRef.current;
+    const points = clampIndividualPoints(pointsWithEdits(edits, studentId) + individualStep);
+    replaceIndividualEdits({ ...edits, [String(studentId)]: points });
+    return points;
+  };
 
   // ── scores & risk tiers ───────────────────────────────────────
   // Totals and the low/medium/high banding come from utils/studentScores, the
@@ -283,9 +305,7 @@ const QuestionsScreen = () => {
       return;
     }
     if (isIndividual) {
-      if (individualStep === null) return;
-      const points = nextDraftPoints(studentId);
-      setIndividualDraft((prev) => ({ ...prev, [String(studentId)]: points }));
+      if (individualStep !== null) applyIndividualStep(studentId);
       return;
     }
     if (!selectedQuestion) return;
@@ -352,8 +372,7 @@ const QuestionsScreen = () => {
   const handleSeatActivate = (studentId) => {
     if (isIndividual) {
       if (individualStep === null) return;
-      const points = nextDraftPoints(studentId);
-      handleStudentTap(studentId);
+      const points = applyIndividualStep(studentId);
       setAnnouncement(`Student ${studentId}: individual points ${formatIndividualPoints(points)}`);
       return;
     }
@@ -466,31 +485,98 @@ const QuestionsScreen = () => {
   };
 
   // ── save individual round ──────────────────────────────────────
-  // Sends the whole individual round; nothing else on the case changes.
+  // The server answers 404 when this user can no longer see the case (their
+  // ownership was removed, or it was archived): drop the local copy and go to
+  // the dashboard, as CaseScreen does.
+  const handleLostAccess = () => {
+    removeCase(activeCase._id);
+    localStorage.setItem(
+      "cases",
+      JSON.stringify(useCaseStore.getState().cases),
+    );
+    navigate("/dashboard", {
+      replace: true,
+      state: { message: "You no longer have access to that case." },
+    });
+  };
+
+  // Sends only the students changed here; nothing else on the case changes.
   const handleSaveIndividualRound = async () => {
     if (!userInfo?.token) {
       showToast("You must be logged in to save points.", "error");
       return;
     }
 
+    // A student beyond the class size (it shrank meanwhile) can't be given
+    // points, only cleared. Their taps are dropped, and the user is told.
+    const edits = individualEditsRef.current;
+    const inClass = ([number, points]) =>
+      points === 0 || Number(number) <= activeCase.studentNumber;
+    const changes = Object.fromEntries(Object.entries(edits).filter(inClass));
+    const dropped = Object.entries(edits)
+      .filter((entry) => !inClass(entry))
+      .map(([number]) => number);
+    const droppedMessage = `Not saved for students no longer in this case: ${dropped.join(", ")}.`;
+    if (dropped.length > 0) {
+      replaceIndividualEdits(
+        Object.fromEntries(Object.entries(edits).filter(([number]) => !dropped.includes(number))),
+      );
+    }
+
+    if (Object.keys(changes).length === 0) {
+      if (dropped.length > 0) showToast(droppedMessage, "error");
+      else showToast("No changes to save.", "success");
+      return;
+    }
+
     setIsSavingIndividual(true);
 
     try {
-      const savedCase = await saveIndividualRound(
-        activeCase._id,
-        individualDraft,
-        userInfo.token,
-      );
-      const serverCase = await commitServerCase(savedCase);
-      setIndividualDraft({ ...(serverCase.individualRound || {}) });
-      showToast("Individual points saved!", "success");
-    } catch (requestError) {
-      // The taps stay, so the save can be tried again.
-      showToast(
-        requestError?.response?.data?.message ||
-          "Unable to save points. Please try again.",
-        "error",
-      );
+      let savedCase;
+      try {
+        savedCase = await saveIndividualRound(
+          activeCase._id,
+          changes,
+          userInfo.token,
+        );
+      } catch (requestError) {
+        if (requestError?.response?.status === 404) {
+          handleLostAccess();
+          return;
+        }
+        // The class size changed under us: take the current case, so the next
+        // save leaves out students who no longer exist. The taps stay.
+        if (requestError?.response?.status === 400 || isCaseConflict(requestError)) {
+          await reloadCases();
+        }
+        showToast(
+          requestError?.response?.data?.message ||
+            "Unable to save points. Please try again.",
+          "error",
+        );
+        return;
+      }
+
+      try {
+        await commitServerCase(savedCase);
+      } catch {
+        // The points are saved; only the legacy seating resend failed. The
+        // edits stay (they equal what was saved), so retrying is harmless.
+        showToast(
+          "Points saved, but the seating chart could not be synced. Please try again.",
+          "error",
+        );
+        return;
+      }
+
+      // Forget what was sent, but not a student tapped again while saving.
+      const remaining = { ...individualEditsRef.current };
+      for (const [number, points] of Object.entries(changes)) {
+        if (remaining[number] === points) delete remaining[number];
+      }
+      replaceIndividualEdits(remaining);
+      if (dropped.length > 0) showToast(droppedMessage, "error");
+      else showToast("Individual points saved!", "success");
     } finally {
       setIsSavingIndividual(false);
     }

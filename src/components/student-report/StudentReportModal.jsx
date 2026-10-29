@@ -19,12 +19,12 @@ import {
   getAnswer,
   getAnswerTier,
   getIndividualPoints,
-  individualPointsTier,
   getReportStudentNumbers,
   getRiskTiers,
   getStudentTotal,
 } from '../../utils/studentScores';
 
+import individualPointsClass from './individualPointsClass';
 import styles from './StudentReportModal.module.css';
 import useFormError from '../../hooks/useFormError';
 import FormError from '../../components/form-error/FormError';
@@ -43,8 +43,6 @@ const StudentReportModal = ({ activeCase, studentNumber, onClose, onSaveDetails 
   const details = getStudentDetails(activeCase, studentNumber);
   const total = getStudentTotal(activeCase, studentNumber);
   const individualPoints = getIndividualPoints(activeCase, studentNumber);
-  // Colored like the student's seat in the Individual view; neutral at 0.
-  const individualTier = individualPointsTier(individualPoints);
   // Banded over the same students as the Scores view and the archive report,
   // so the badge matches the student's color there. Unseated students have none.
   const risk = getRiskTiers(activeCase, getReportStudentNumbers(activeCase)).get(Number(studentNumber));
@@ -186,7 +184,7 @@ const StudentReportModal = ({ activeCase, studentNumber, onClose, onSaveDetails 
               <li className={styles.answerRow}>
                 <span className={styles.answerText}>Individual round</span>
                 <span
-                  className={`${styles.points} ${individualTier ? styles[`risk_${individualTier}`] : styles.pointsEmpty}`}
+                  className={`${styles.points} ${individualPointsClass(styles, individualPoints, styles.pointsEmpty)}`}
                 >
                   {formatIndividualPoints(individualPoints)}
                 </span>
