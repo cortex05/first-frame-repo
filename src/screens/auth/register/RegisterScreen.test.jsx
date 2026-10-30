@@ -63,10 +63,15 @@ beforeEach(() => {
 });
 
 describe('RegisterScreen', () => {
-  it('tells the person creating the account that they will be its administrator', () => {
+  it('explains the new administrator credentials and responsibilities', () => {
     renderScreen();
 
-    expect(screen.getByText(/You will be the administrator of this account/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/These will be the credentials of the person who can decide what other members can access/),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/responsible for accepting and enforcing the terms and conditions/),
+    ).toBeInTheDocument();
   });
 
   it('shows the terms before creating anything', async () => {

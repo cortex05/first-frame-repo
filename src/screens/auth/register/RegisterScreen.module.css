@@ -2,7 +2,7 @@
   width: 100%;
   max-width: 50%;
   margin: 0 auto;
-  padding: 32px;
+  padding: 64px 32px ;
   color: var(--page-text);
   text-align: left;
 }
@@ -90,7 +90,7 @@
   color: var(--warning-text);
   border: 1px solid var(--recommend-bg-hover);
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.4;
 }
 
@@ -98,4 +98,11 @@
   margin: 8px 0 12px;
   color: var(--label-light);;
   font-size: 16px;
+}
+
+.sectionDivider {
+  width: 100%;
+  margin: 48px 0;
+  border: 0;
+  border-top: 3px solid var(--page-text);
 }

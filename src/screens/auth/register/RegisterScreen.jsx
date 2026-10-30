@@ -15,7 +15,7 @@ import FormError from '../../../components/form-error/FormError';
 const MIN_PASSWORD_LENGTH = 8;
 
 const ADMIN_NOTICE =
-  "You will be the administrator of this account and can add other users once it's created.";
+  "These will be the credentials of the person who can decide what other members can access. This user will also be responsible for accepting and enforcing the terms and conditions for all users in your organization. This can be changed later.";
 
 const TERMS_UNAVAILABLE =
   'Terms of Service are unavailable right now. Please try again later.';
@@ -136,12 +136,14 @@ const RegisterScreen = () => {
             type="text"
             value={accountName}
             onChange={(event) => setAccountName(event.target.value)}
-            placeholder="Your firm or organization"
+            placeholder="Your firm or organization name"
             required
             maxLength={80}
             autoComplete="organization"
           />
         </div>
+
+        <hr className={styles.sectionDivider} />
 
         <h2 className={styles.sectionLabel}>Your administrator login</h2>
 
@@ -206,6 +208,8 @@ const RegisterScreen = () => {
         </div>
 
         <FormError id={formError.messageId} message={formError.message} version={formError.version} className={styles.error} />
+
+        <hr className={styles.sectionDivider} />
 
         <button className={styles.submitButton} type="submit" disabled={isLoadingTerms}>
           {isLoadingTerms ? 'Loading terms...' : 'Create Account'}
