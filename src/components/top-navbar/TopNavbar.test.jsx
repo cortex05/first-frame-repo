@@ -58,3 +58,27 @@ describe('TopNavbar landmarks (spec 017)', () => {
     expect(screen.getByRole('banner')).toContainElement(screen.getByText(/Hello someone/));
   });
 });
+
+describe('TopNavbar Home link destination', () => {
+  it('points authenticated users to the dashboard', () => {
+    render(
+      <MemoryRouter>
+        <TopNavbar />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/dashboard');
+  });
+
+  it('points logged-out users to the landing page', () => {
+    useAuthStore.setState({ userInfo: null });
+
+    render(
+      <MemoryRouter>
+        <TopNavbar />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/');
+  });
+});

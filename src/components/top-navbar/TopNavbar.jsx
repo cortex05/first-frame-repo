@@ -12,6 +12,7 @@ const TopNavbar = ({ warnOnHomeNavigation = false }) => {
   const isAccountAdmin = useAuthStore(selectIsAccountAdmin);
   const clearUserInfo = useAuthStore((state) => state.clearUserInfo);
   const isAuthenticated = Boolean(userInfo?.token && userInfo?.userId && userInfo?.username);
+  const homePath = isAuthenticated ? '/dashboard' : '/';
   const [logoutWarningOpen, setLogoutWarningOpen] = useState(false);
   // Where the user asked to go while the page has unsaved changes.
   const [pendingPath, setPendingPath] = useState(null);
@@ -42,9 +43,9 @@ const TopNavbar = ({ warnOnHomeNavigation = false }) => {
             and CSS order keeps the greeting between Home and the right group. */}
         <nav aria-label="Main" className={styles.navLinks}>
           <Link
-            to="/dashboard"
+            to={homePath}
             className={`${styles.navButton} ${styles.homeLink}`}
-            onClick={(event) => handleNavigate(event, '/dashboard')}
+            onClick={(event) => handleNavigate(event, homePath)}
           >
             Home
           </Link>
