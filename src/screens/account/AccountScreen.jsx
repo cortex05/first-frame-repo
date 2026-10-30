@@ -9,6 +9,7 @@ import styles from './AccountScreen.module.css';
 import usePageTitle from '../../hooks/usePageTitle';
 import useFormError from '../../hooks/useFormError';
 import FormError from '../../components/form-error/FormError';
+import Modal from '../../components/modal/Modal';
 
 const MIN_PASSWORD_LENGTH = 8;
 const EMPTY_NEW_USER = { username: '', email: '', password: '', role: 'member' };
@@ -19,6 +20,8 @@ const errorMessage = (requestError, fallback) =>
 /**
  * Account administration: rename the account, add users with a temporary
  * password, and change users' roles or disable them. Account admins only.
+ * Giving up your own admin role asks for confirmation first, and you can't
+ * disable yourself (the backend refuses it too).
  */
 const AccountScreen = () => {
   usePageTitle('Account');
@@ -44,9 +47,13 @@ const AccountScreen = () => {
   const [createMessage, setCreateMessage] = useState('');
   const [isCreating, setIsCreating] = useState(false);
 
-  // Per-row error, keyed by user id, so the last-admin refusal shows where it happened.
+  // Per-row error, keyed by user id, so the last-admin and self-disable refusals show where they happened.
   const [rowErrors, setRowErrors] = useState({});
   const [pendingUserId, setPendingUserId] = useState(null);
+
+  // Your own row, while the "give up admin access" dialog is open.
+  const [pendingSelfDemotion, setPendingSelfDemotion] = useState(null);
+  const [isConfirmingDemotion, setIsConfirmingDemotion] = useState(false);
 
   useEffect(() => {
     if (!userInfo?.token) return;
@@ -125,6 +132,24 @@ const AccountScreen = () => {
     }
   };
 
+  const handleRoleChange = (user, role) => {
+    if (user._id === String(userInfo.userId) && role === 'member') {
+      setPendingSelfDemotion(user);
+      return;
+    }
+    handleUserChange(user, { role });
+  };
+
+  const cancelSelfDemotion = () => setPendingSelfDemotion(null);
+
+  // handleUserChange shows a failure on the row, and on success leaves for /dashboard.
+  const confirmSelfDemotion = async () => {
+    setIsConfirmingDemotion(true);
+    await handleUserChange(pendingSelfDemotion, { role: 'member' });
+    setIsConfirmingDemotion(false);
+    setPendingSelfDemotion(null);
+  };
+
   return (
     <React.Fragment>
       <TopNavbar />
@@ -159,6 +184,10 @@ const AccountScreen = () => {
 
         <section className={styles.section}>
           <h2 className={styles.sectionHeading}>Users</h2>
+          <p className={styles.hint}>
+            To hand over the account, make another user an Admin. Once they have signed in and set
+            their password, change your own role to Member.
+          </p>
 
           {isLoadingUsers && users.length === 0 ? (
             <p className={styles.hint}>Loading users...</p>
@@ -189,24 +218,26 @@ const AccountScreen = () => {
                         value={user.role}
                         disabled={isPending}
                         aria-label={`Role for ${user.username}`}
-                        onChange={(event) => handleUserChange(user, { role: event.target.value })}
+                        onChange={(event) => handleRoleChange(user, event.target.value)}
                       >
                         <option value="member">Member</option>
                         <option value="admin">Admin</option>
                       </select>
 
-                      <button
-                        type="button"
-                        className={user.status === 'active' ? styles.declineButton : styles.confirmButton}
-                        disabled={isPending}
-                        onClick={() =>
-                          handleUserChange(user, {
-                            status: user.status === 'active' ? 'disabled' : 'active',
-                          })
-                        }
-                      >
-                        {user.status === 'active' ? 'Disable' : 'Enable'}
-                      </button>
+                      {!isSelf && (
+                        <button
+                          type="button"
+                          className={user.status === 'active' ? styles.declineButton : styles.confirmButton}
+                          disabled={isPending}
+                          onClick={() =>
+                            handleUserChange(user, {
+                              status: user.status === 'active' ? 'disabled' : 'active',
+                            })
+                          }
+                        >
+                          {user.status === 'active' ? 'Disable' : 'Enable'}
+                        </button>
+                      )}
                     </div>
 
                     <FormError message={rowErrors[user._id]} className={styles.rowError} />
@@ -216,6 +247,36 @@ const AccountScreen = () => {
             </ul>
           )}
         </section>
+
+        <Modal
+          isOpen={Boolean(pendingSelfDemotion)}
+          onClose={cancelSelfDemotion}
+          title="Give up admin access?"
+          hideDefaultClose
+          closeDisabled={isConfirmingDemotion}
+        >
+          <p className={styles.dialogText}>
+            You will lose access to Account and Create Case. Only another admin can give it back.
+          </p>
+          <div className={styles.dialogActions}>
+            <button
+              type="button"
+              className={styles.primaryButton}
+              disabled={isConfirmingDemotion}
+              onClick={cancelSelfDemotion}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className={styles.declineButton}
+              disabled={isConfirmingDemotion}
+              onClick={confirmSelfDemotion}
+            >
+              {isConfirmingDemotion ? 'Saving...' : 'Make me a member'}
+            </button>
+          </div>
+        </Modal>
 
         <section className={styles.section}>
           <h2 className={styles.sectionHeading}>Add a User</h2>

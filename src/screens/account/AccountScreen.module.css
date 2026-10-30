@@ -186,3 +186,17 @@
     max-width: 90%;
   }
 }
+
+.dialogText {
+  margin: 0 0 16px;
+  color: var(--modal-text);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.dialogActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px;
+}
