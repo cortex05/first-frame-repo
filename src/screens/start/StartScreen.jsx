@@ -43,7 +43,7 @@ function getRectSize(rows, cols) {
 // Returns { x, y } relative to the rect's top-left corner.
 // Circles are numbered bottom→top, and left→right within a row (idx=0 is
 // bottom-left) unless `rightToLeft`, which mirrors each row (idx=0 is
-// bottom-right). When students < rows×cols, empty cells appear at the top rows.
+// bottom-right). When students < rows×cols, empty seats appear at the top rows.
 function getCircleRelPos(idx, rows, cols, rightToLeft = false) {
   const col = rightToLeft ? cols - 1 - (idx % cols) : idx % cols;
   const gridRow = Math.floor(idx / cols); // 0 = bottom row
@@ -167,7 +167,7 @@ const StartScreen = () => {
 
   const rows = Math.max(1, parseInt(rowInput, 10) || 1);
   const cols = Math.max(1, parseInt(colInput, 10) || 1);
-  const totalCells = rows * cols;
+  const totalSeats = rows * cols;
   const stageWidth = canvasSize.width;
   const stageHeight = canvasSize.height;
   // Konva never gets a zero-size canvas; it waits for the first measurement.
@@ -182,7 +182,7 @@ const StartScreen = () => {
 
   const handleAddRect = () => {
     if (remaining.length === 0) return;
-    const toAssign = remaining.slice(0, Math.min(totalCells, remaining.length));
+    const toAssign = remaining.slice(0, Math.min(totalSeats, remaining.length));
     const { width, height } = getRectSize(rows, cols);
     const offset = rects.length * 24;
     addRect({
@@ -382,14 +382,14 @@ const StartScreen = () => {
         </h1>
 
         <p style={{ margin: 0, fontSize: 16, color: "var(--text-secondary)" }}>
-          Remaining: <strong>{remaining.length}</strong> /{" "}
+          Seated: <strong>{activeCase.studentNumber - remaining.length}</strong> /{" "}
           {activeCase.studentNumber}
         </p>
 
         <p style={{ margin: 0, fontSize: 16, color: "var(--text-secondary)" }}>
-          {rows} × {cols} = {totalCells} cells
-          {remaining.length < totalCells && remaining.length > 0
-            ? ` (${remaining.length} filled, ${totalCells - remaining.length} empty)`
+          {rows} × {cols} = {totalSeats} Seats
+          {remaining.length < totalSeats && remaining.length > 0
+            ? ` (${remaining.length} filled, ${totalSeats - remaining.length} empty)`
             : ""}
         </p>
 
@@ -479,9 +479,7 @@ const StartScreen = () => {
           onClick={() => setRightToLeft((v) => !v)}
           aria-pressed={rightToLeft}
           title="Order of student numbers in the next row added"
-          className={`${styles.directionToggle} ${
-            rightToLeft ? styles.rightToLeft : styles.leftToRight
-          }`}
+          className={`${styles.directionToggle} ${styles.leftToRight}`}
         >
           {rightToLeft ? "Right to Left" : "Left to Right"}
         </button>
@@ -500,7 +498,7 @@ const StartScreen = () => {
             cursor: remaining.length > 0 ? "pointer" : "not-allowed",
           }}
         >
-          + Add Row
+          + Add Block
         </button>
 
         <div style={{ display: "flex", gap: 8 }}>
@@ -520,9 +518,9 @@ const StartScreen = () => {
           </button>
         </div>
 
-        <h3 className={styles.rowsHeading}>Rows</h3>
+        <h3 className={styles.rowsHeading}>Blocks</h3>
         {rects.length === 0 ? (
-          <p className={styles.rowsEmpty}>No rows yet.</p>
+          <p className={styles.rowsEmpty}>No blocks yet.</p>
         ) : (
           <ul className={styles.rowList}>
             {rects.map((r, i) => (
@@ -534,7 +532,7 @@ const StartScreen = () => {
                   onClick={() => setSelectedRectId(r.id)}
                   onKeyDown={(event) => handleRowKeyDown(event, r)}
                 >
-                  Row {i + 1}: {rowSummary(r)}
+                  Block {i + 1}: {rowSummary(r)}
                 </button>
               </li>
             ))}
@@ -621,7 +619,7 @@ const StartScreen = () => {
 
       {/* ── Canvas ── */}
       <div ref={canvasRef} className={styles.canvasArea}>
-        {/* Drawn for the eye; the Rows list in the sidebar is its text alternative. */}
+        {/* Drawn for the eye; the Blocks list in the sidebar is its text alternative. */}
         {hasStageSize && (
           <div aria-hidden="true">
             <Stage
