@@ -4,7 +4,15 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import CaseScreen from './CaseScreen';
-import { archiveCase, getUserCases, saveCase, saveStudentDetails, startCase } from '../../api/case';
+import {
+  archiveCase,
+  getUserCases,
+  saveCase,
+  saveStudentDetails,
+  setCaseOwners,
+  startCase,
+} from '../../api/case';
+import { getAccountUsers } from '../../api/account';
 import { getPlaylistById } from '../../api/playlist';
 import { expectLabelledQuestionEditor } from '../../test/questionEditor';
 import useAuthStore from '../../store/useAuthStore';
@@ -102,6 +110,46 @@ beforeEach(() => {
   vi.mocked(getPlaylistById).mockReset();
   recommendedState = NO_RECOMMENDED;
   window.scrollTo = vi.fn();
+});
+
+describe('CaseScreen owners modal (spec 021)', () => {
+  const USERS = [
+    { _id: 'u-owner', username: 'owner', role: 'member', status: 'active' },
+    { _id: 'u-2', username: 'second', role: 'member', status: 'active' },
+  ];
+
+  beforeEach(() => {
+    vi.mocked(setCaseOwners).mockReset();
+    vi.mocked(getAccountUsers).mockResolvedValue(USERS);
+    useAuthStore.setState({ userInfo: session({ userId: 'u-admin', role: 'admin' }) });
+  });
+
+  it('leaves the attorney out of the picker and keeps them on save', async () => {
+    const withAttorney = makeCase({ attorneyId: 'u-owner', owners: ['u-owner', 'u-2'] });
+    vi.mocked(setCaseOwners).mockResolvedValue(withAttorney);
+    useCaseStore.setState({ cases: [withAttorney] });
+
+    renderCase();
+    await userEvent.click(screen.getByRole('button', { name: 'Manage Owners' }));
+    const dialog = screen.getByRole('dialog', { name: 'Case Owners' });
+
+    expect(await within(dialog).findByRole('checkbox', { name: /second/ })).toBeChecked();
+    expect(within(dialog).queryByRole('checkbox', { name: /owner/ })).not.toBeInTheDocument();
+
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
+    expect(setCaseOwners).toHaveBeenCalledWith('case-1', ['u-owner', 'u-2'], 'token');
+  });
+
+  it('lists every active user on a case without an attorneyId', async () => {
+    useCaseStore.setState({ cases: [makeCase()] });
+
+    renderCase();
+    await userEvent.click(screen.getByRole('button', { name: 'Manage Owners' }));
+    const dialog = screen.getByRole('dialog', { name: 'Case Owners' });
+
+    expect(await within(dialog).findByRole('checkbox', { name: /^owner/ })).toBeChecked();
+    expect(within(dialog).getByRole('checkbox', { name: /second/ })).not.toBeChecked();
+  });
 });
 
 describe('CaseScreen archiving', () => {

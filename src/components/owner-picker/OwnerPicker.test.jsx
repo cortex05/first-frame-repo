@@ -31,6 +31,27 @@ describe('OwnerPicker', () => {
     expect(onChange).toHaveBeenLastCalledWith([]);
   });
 
+  it('hides the users in excludeIds', () => {
+    render(<OwnerPicker users={users} value={[]} onChange={() => {}} excludeIds={['u-2']} />);
+
+    expect(screen.getByText('alice')).toBeInTheDocument();
+    expect(screen.queryByText('bob')).not.toBeInTheDocument();
+  });
+
+  it('shows emptyMessage when everyone active is excluded', () => {
+    render(
+      <OwnerPicker
+        users={users}
+        value={[]}
+        onChange={() => {}}
+        excludeIds={['u-1', 'u-2']}
+        emptyMessage="No other users in this account."
+      />,
+    );
+
+    expect(screen.getByText('No other users in this account.')).toBeInTheDocument();
+  });
+
   it('shows an empty state when nobody is active', () => {
     render(<OwnerPicker users={[users[2]]} value={[]} onChange={() => {}} />);
 

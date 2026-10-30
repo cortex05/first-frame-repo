@@ -216,8 +216,14 @@ const CaseScreen = () => {
     }
   };
 
+  // The case's attorney is always an owner (spec 021): the picker leaves them
+  // out and every save adds them back. Older cases have no attorneyId.
+  const attorneyId = activeCase.attorneyId ?String(activeCase.attorneyId) : null;
+
   const openOwnersModal = () => {
-    setDraftOwners((activeCase.owners || []).map(String));
+    setDraftOwners(
+      (activeCase.owners || []).map(String).filter((id) => id !== attorneyId),
+    );
     setOwnersError("");
     setOwnersModalOpen(true);
   };
@@ -229,7 +235,7 @@ const CaseScreen = () => {
     try {
       const savedCase = await setCaseOwners(
         activeCase._id,
-        draftOwners,
+        attorneyId ? [attorneyId, ...draftOwners] : draftOwners,
         userInfo.token,
       );
       updateCase(savedCase);
@@ -849,6 +855,7 @@ const CaseScreen = () => {
             value={draftOwners}
             onChange={setDraftOwners}
             disabled={isSavingOwners}
+            excludeIds={attorneyId ? [attorneyId] : []}
           />
           <FormError message={ownersError} className={styles.modalError} />
           <div className={styles.startModalButtons}>

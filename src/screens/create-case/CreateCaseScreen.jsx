@@ -7,7 +7,7 @@ import TopNavbar from "../../components/top-navbar/TopNavbar";
 
 import useCaseStore from "../../store/useCaseStore";
 import useAuthStore from "../../store/useAuthStore";
-import useAccountStore from "../../store/useAccountStore";
+import useAccountStore, { activeUsersOf } from "../../store/useAccountStore";
 import { createCase } from "../../api/case";
 
 import {
@@ -21,21 +21,28 @@ import usePageTitle from "../../hooks/usePageTitle";
 import useFormError from "../../hooks/useFormError";
 import FormError from "../../components/form-error/FormError";
 
+const USERS_LOAD_ERROR = "Couldn't load the account's users. Reload the page to try again.";
+
 /**
  * Creating a case is a purchase: the confirmation modal warns that payment will
  * be initiated, and the backend opens the case's transaction. Questions are
  * added on the case page once payment is processed.
+ *
+ * The attorney is picked from the account's active users and is always an
+ * owner, so Case Owners appears once they're chosen and lists everyone else
+ * (spec 021).
  */
 const CreateCaseScreen = () => {
 	usePageTitle("Create New Case");
 	const navigate = useNavigate();
   const [clientName, setClientName] = useState("");
-	const [attorney, setAttorney] = useState("");
+	const [attorneyId, setAttorneyId] = useState("");
   const [category, setCategory] = useState("");
 
 	const [numberOfStudents, setNumberOfStudents] = useState("");
   // Users the case is handed to. Account admins see every case regardless.
   const [owners, setOwners] = useState([]);
+  const [usersError, setUsersError] = useState("");
 
   const [confirmModal, setConfirmModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -48,19 +55,31 @@ const CreateCaseScreen = () => {
   const setActiveCase = useCaseStore((state) => state.setActiveCase);
   const userInfo = useAuthStore((state) => state.userInfo);
   const accountUsers = useAccountStore((state) => state.users);
+  const isLoadingUsers = useAccountStore((state) => state.isLoadingUsers);
   const fetchAccountUsers = useAccountStore((state) => state.fetchAccountUsers);
 
   useEffect(() => {
     if (userInfo?.token) {
       fetchAccountUsers(userInfo.token).catch(() => {
-        // The picker shows its empty state; creating a case still works.
+        setUsersError(USERS_LOAD_ERROR);
       });
     }
   }, [userInfo?.token]);
 
+  const attorneyOptions = activeUsersOf(accountUsers);
+  const attorneyName = accountUsers.find((user) => user._id === attorneyId)?.username ?? "";
+
+  // The attorney is always an owner, so they can't also be checked as one.
+  const handleAttorneyChange = (event) => {
+    const next = event.target.value;
+    setAttorneyId(next);
+    setOwners((previous) => previous.filter((id) => id !== next));
+  };
+
   const openConfirmModal = () => {
     const missing = [
       [`${idPrefix}-client`, "Client Name", clientName.trim()],
+      [`${idPrefix}-attorney`, "Attorney", attorneyId],
       [`${idPrefix}-category`, "Case Category", category],
       [`${idPrefix}-students`, "Number of Students", numberOfStudents],
     ].filter(([, , value]) => !value);
@@ -89,7 +108,7 @@ const CreateCaseScreen = () => {
       return;
     }
 
-    if (!clientName.trim() || !numberOfStudents || !category) {
+    if (!clientName.trim() || !attorneyId || !numberOfStudents || !category) {
       setSubmitError("Please complete all required case details before creating the case.");
       return;
     }
@@ -99,10 +118,13 @@ const CreateCaseScreen = () => {
 
     const casePayload = {
       clientName: clientName.trim(),
-      attorney: attorney.trim() || userInfo.username,
+      attorney: attorneyName,
+      attorneyId,
       category,
       studentNumber: Number(numberOfStudents),
-      owners,
+      // The backend adds the attorney too; sending them keeps an older backend
+      // giving them access.
+      owners: [attorneyId, ...owners],
       timezone: getBrowserTimeZone(),
     };
 
@@ -147,14 +169,24 @@ const CreateCaseScreen = () => {
 
         <div className={styles.fieldStyle}>
           <label className={styles.labelStyle} htmlFor={`${idPrefix}-attorney`}>Attorney</label>
-          <input
+          <select
             id={`${idPrefix}-attorney`}
+            {...detailsError.fieldProps(`${idPrefix}-attorney`)}
             className={styles.inputStyle}
-            type="text"
-            value={attorney}
-            onChange={(e) => setAttorney(e.target.value)}
-            placeholder="Attorney name"
-          />
+            value={attorneyId}
+            onChange={handleAttorneyChange}
+            disabled={isLoadingUsers}
+          >
+            <option value="">
+              {isLoadingUsers ? "Loading users..." : "Select an attorney..."}
+            </option>
+            {attorneyOptions.map((user) => (
+              <option key={user._id} value={user._id}>
+                {user.username}
+              </option>
+            ))}
+          </select>
+          <FormError message={usersError} className={styles.formError} />
         </div>
 
         <div className={styles.fieldStyle}>
@@ -193,19 +225,24 @@ const CreateCaseScreen = () => {
           />
         </div>
 
-        <div className={styles.fieldStyle}>
-          <span className={styles.labelStyle} id={`${idPrefix}-owners`}>Case Owners</span>
-          <p className={styles.ownersHint} id={`${idPrefix}-owners-hint`}>
-            Owners can open, run and archive this case. Account admins can always see it.
-          </p>
-          <OwnerPicker
-            users={accountUsers}
-            value={owners}
-            onChange={setOwners}
-            labelledBy={`${idPrefix}-owners`}
-            describedBy={`${idPrefix}-owners-hint`}
-          />
-        </div>
+        {attorneyId && (
+          <div className={styles.fieldStyle}>
+            <span className={styles.labelStyle} id={`${idPrefix}-owners`}>Case Owners</span>
+            <p className={styles.ownersHint} id={`${idPrefix}-owners-hint`}>
+              The attorney can always open this case. Owners can also open, run and archive it.
+              Account admins can always see it.
+            </p>
+            <OwnerPicker
+              users={accountUsers}
+              value={owners}
+              onChange={setOwners}
+              labelledBy={`${idPrefix}-owners`}
+              describedBy={`${idPrefix}-owners-hint`}
+              excludeIds={[attorneyId]}
+              emptyMessage="No other users in this account."
+            />
+          </div>
+        )}
       </section>
 
       {/* Questions */}
@@ -243,7 +280,7 @@ const CreateCaseScreen = () => {
               <strong>Client Name:</strong> {clientName || "—"}
             </div>
             <div>
-              <strong>Attorney:</strong> {attorney || "—"}
+              <strong>Attorney:</strong> {attorneyName || "—"}
             </div>
             <div>
               <strong>Case Category:</strong> {caseCategoryLabel(category)}

@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import CreateCaseScreen from './CreateCaseScreen';
 import { createCase } from '../../api/case';
 import { getAccountUsers } from '../../api/account';
+import useAccountStore from '../../store/useAccountStore';
 import useAuthStore from '../../store/useAuthStore';
 import useCaseStore from '../../store/useCaseStore';
 
@@ -28,6 +29,12 @@ const session = {
   mustChangePassword: false,
 };
 
+const USERS = [
+  { _id: 'u-alice', username: 'alice', role: 'admin', status: 'active' },
+  { _id: 'u-bob', username: 'bob', role: 'member', status: 'active' },
+  { _id: 'u-carol', username: 'carol', role: 'member', status: 'disabled' },
+];
+
 const renderCreate = () =>
   render(
     <MemoryRouter initialEntries={['/create-case']}>
@@ -38,10 +45,18 @@ const renderCreate = () =>
     </MemoryRouter>,
   );
 
+// Resolves once the account users have loaded into the Attorney select.
+const attorneySelect = async () => {
+  await screen.findByRole('option', { name: 'bob' });
+  return screen.getByLabelText('Attorney');
+};
+
+const pickAttorney = async (id) => userEvent.selectOptions(await attorneySelect(), id);
+
 const fillForm = async () => {
   await userEvent.type(screen.getByPlaceholderText('Client name'), 'Jane Client');
-  await userEvent.type(screen.getByPlaceholderText('Attorney name'), 'Alex Attorney');
-  await userEvent.selectOptions(screen.getByRole('combobox'), 'criminal.theft');
+  await pickAttorney('u-bob');
+  await userEvent.selectOptions(screen.getByLabelText('Case Category'), 'criminal.theft');
   await userEvent.type(screen.getByPlaceholderText('e.g. 30'), '12');
 };
 
@@ -49,6 +64,9 @@ const openConfirmation = () => userEvent.click(screen.getByRole('button', { name
 
 beforeEach(() => {
   vi.mocked(createCase).mockReset();
+  vi.mocked(getAccountUsers).mockReset();
+  vi.mocked(getAccountUsers).mockResolvedValue(USERS);
+  useAccountStore.setState({ users: [], isLoadingUsers: false });
   useAuthStore.setState({ userInfo: session });
   useCaseStore.setState({ cases: [], activeCase: null });
 });
@@ -71,8 +89,10 @@ describe('CreateCaseScreen', () => {
 
     expect(screen.getByRole('heading', { name: 'Confirm Case' })).toBeInTheDocument();
     expect(screen.getByText('Creating this case will initiate payment.')).toBeInTheDocument();
-    expect(screen.getByText('Jane Client')).toBeInTheDocument();
-    expect(screen.getByText('12')).toBeInTheDocument();
+    const dialog = screen.getByRole('dialog', { name: 'Confirm Case' });
+    expect(within(dialog).getByText('Jane Client')).toBeInTheDocument();
+    expect(within(dialog).getByText('bob')).toBeInTheDocument();
+    expect(within(dialog).getByText('12')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Yes, create case' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'No' })).toBeInTheDocument();
   });
@@ -100,10 +120,11 @@ describe('CreateCaseScreen', () => {
     expect(token).toBe('token');
     expect(payload).toEqual({
       clientName: 'Jane Client',
-      attorney: 'Alex Attorney',
+      attorney: 'bob',
+      attorneyId: 'u-bob',
       category: 'criminal.theft',
       studentNumber: 12,
-      owners: [],
+      owners: ['u-bob'],
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     });
     expect(payload).not.toHaveProperty('questions');
@@ -131,20 +152,18 @@ describe('CreateCaseScreen labels (spec 013)', () => {
     renderCreate();
 
     expect(screen.getByLabelText('Client Name')).toHaveAttribute('placeholder', 'Client name');
-    expect(screen.getByLabelText('Attorney')).toHaveAttribute('placeholder', 'Attorney name');
+    expect(screen.getByLabelText('Attorney').tagName).toBe('SELECT');
     expect(screen.getByLabelText('Case Category').tagName).toBe('SELECT');
     expect(screen.getByLabelText('Number of Students')).toHaveAttribute('type', 'number');
   });
 
   it('groups the owner checkboxes under Case Owners, with its hint as the description', async () => {
-    vi.mocked(getAccountUsers).mockResolvedValue([
-      { _id: 'u-2', username: 'bob', role: 'member', status: 'active' },
-    ]);
     useAuthStore.setState({ userInfo: session });
     renderCreate();
+    await pickAttorney('u-alice');
 
-    const owners = await screen.findByRole('group', { name: 'Case Owners' });
-    expect(owners).toHaveAccessibleDescription(/Owners can open, run and archive this case/);
+    const owners = screen.getByRole('group', { name: 'Case Owners' });
+    expect(owners).toHaveAccessibleDescription(/The attorney can always open this case/);
     expect(within(owners).getByRole('checkbox', { name: /bob/ })).toBeInTheDocument();
   });
 });
@@ -154,7 +173,7 @@ describe('CreateCaseScreen missing details (spec 016)', () => {
     useAuthStore.setState({ userInfo: session });
     renderCreate();
 
-    await userEvent.type(screen.getByLabelText('Attorney'), 'Alex Attorney');
+    await pickAttorney('u-bob');
     await userEvent.click(screen.getByRole('button', { name: 'Create Case' }));
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
@@ -177,5 +196,102 @@ describe('CreateCaseScreen missing details (spec 016)', () => {
 
     expect(screen.getByRole('dialog', { name: 'Confirm Case' })).toBeInTheDocument();
     expect(screen.queryByText(/^Fill in:/)).not.toBeInTheDocument();
+  });
+});
+
+describe('CreateCaseScreen attorney (spec 021)', () => {
+  beforeEach(() => {
+    useAuthStore.setState({ userInfo: session });
+  });
+
+  it('lists the active users after a placeholder, and hides Case Owners until one is picked', async () => {
+    renderCreate();
+    const select = await attorneySelect();
+
+    expect(within(select).getAllByRole('option').map((o) => o.textContent)).toEqual([
+      'Select an attorney...',
+      'alice',
+      'bob',
+    ]);
+    expect(screen.queryByRole('group', { name: 'Case Owners' })).not.toBeInTheDocument();
+  });
+
+  it('leaves the attorney out of Case Owners and drops them if they were checked', async () => {
+    renderCreate();
+    await pickAttorney('u-bob');
+    await userEvent.click(screen.getByRole('checkbox', { name: /alice/ }));
+
+    await pickAttorney('u-alice');
+    const owners = screen.getByRole('group', { name: 'Case Owners' });
+    expect(within(owners).queryByRole('checkbox', { name: /alice/ })).not.toBeInTheDocument();
+
+    await pickAttorney('u-bob');
+    expect(screen.getByRole('checkbox', { name: /alice/ })).not.toBeChecked();
+  });
+
+  it('keeps checked owners while the attorney is cleared and picked again', async () => {
+    renderCreate();
+    await pickAttorney('u-bob');
+    await userEvent.click(screen.getByRole('checkbox', { name: /alice/ }));
+
+    await userEvent.selectOptions(screen.getByLabelText('Attorney'), '');
+    expect(screen.queryByRole('group', { name: 'Case Owners' })).not.toBeInTheDocument();
+
+    await pickAttorney('u-bob');
+    expect(screen.getByRole('checkbox', { name: /alice/ })).toBeChecked();
+  });
+
+  it('says so when nobody else can be an owner', async () => {
+    vi.mocked(getAccountUsers).mockResolvedValue([USERS[1]]);
+    renderCreate();
+    await pickAttorney('u-bob');
+
+    expect(screen.getByText('No other users in this account.')).toBeInTheDocument();
+  });
+
+  it('asks for the attorney instead of opening the confirmation', async () => {
+    renderCreate();
+    await attorneySelect();
+    await userEvent.click(screen.getByRole('button', { name: 'Create Case' }));
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Fill in: Client Name, Attorney, Case Category, Number of Students',
+    );
+    expect(screen.getByLabelText('Attorney')).toHaveAttribute('aria-invalid', 'true');
+  });
+
+  it('disables the select while the users load', async () => {
+    vi.mocked(getAccountUsers).mockReturnValue(new Promise(() => {}));
+    renderCreate();
+
+    const select = screen.getByLabelText('Attorney');
+    expect(select).toBeDisabled();
+    expect(within(select).getByRole('option', { name: 'Loading users...' })).toBeInTheDocument();
+  });
+
+  it('says when the users could not be loaded', async () => {
+    vi.mocked(getAccountUsers).mockRejectedValue(new Error('offline'));
+    renderCreate();
+
+    expect(
+      await screen.findByText("Couldn't load the account's users. Reload the page to try again."),
+    ).toBeInTheDocument();
+  });
+
+  it('sends the attorney first among the owners', async () => {
+    vi.mocked(createCase).mockResolvedValue({ _id: 'case-9', clientName: 'Jane Client' });
+    renderCreate();
+    await fillForm();
+    await userEvent.click(screen.getByRole('checkbox', { name: /alice/ }));
+    await openConfirmation();
+    await userEvent.click(screen.getByRole('button', { name: 'Yes, create case' }));
+
+    await screen.findByText('Case screen');
+    expect(vi.mocked(createCase).mock.calls[0][0]).toMatchObject({
+      attorney: 'bob',
+      attorneyId: 'u-bob',
+      owners: ['u-bob', 'u-alice'],
+    });
   });
 });

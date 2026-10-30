@@ -9,6 +9,9 @@ import styles from './OwnerPicker.module.css';
  *
  * `labelledBy` / `describedBy` (element ids) turn the list into a named group,
  * for forms where a heading introduces it. Without them the markup is a plain list.
+ *
+ * `excludeIds` hides users who can't be picked here (a case's attorney, who is
+ * always an owner; spec 021). `emptyMessage` is shown when nobody is left.
  */
 const OwnerPicker = ({
   users = [],
@@ -17,15 +20,17 @@ const OwnerPicker = ({
   disabled = false,
   labelledBy,
   describedBy,
+  excludeIds = [],
+  emptyMessage = 'No users in this account yet.',
 }) => {
-  const activeUsers = activeUsersOf(users);
+  const activeUsers = activeUsersOf(users).filter((user) => !excludeIds.includes(user._id));
 
   const toggle = (userId) => {
     onChange(value.includes(userId) ? value.filter((id) => id !== userId) : [...value, userId]);
   };
 
   if (activeUsers.length === 0) {
-    return <p className={styles.empty}>No users in this account yet.</p>;
+    return <p className={styles.empty}>{emptyMessage}</p>;
   }
 
   const list = (
