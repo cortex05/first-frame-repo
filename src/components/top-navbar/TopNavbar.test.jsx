@@ -54,8 +54,8 @@ describe('TopNavbar landmarks (spec 017)', () => {
     expect(nav.getByRole('link', { name: 'Home' })).toBeInTheDocument();
     expect(nav.getByRole('link', { name: 'Archive' })).toBeInTheDocument();
     expect(nav.getByRole('button', { name: 'Log out' })).toBeInTheDocument();
-    expect(screen.getByRole('navigation')).not.toContainElement(screen.getByText(/Hello someone/));
-    expect(screen.getByRole('banner')).toContainElement(screen.getByText(/Hello someone/));
+    expect(screen.getByRole('navigation')).not.toHaveTextContent('Firm- someone');
+    expect(screen.getByRole('banner')).toHaveTextContent('Firm- someone');
   });
 });
 

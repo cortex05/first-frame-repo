@@ -86,10 +86,10 @@ const TopNavbar = ({ warnOnHomeNavigation = false }) => {
         </nav>
 
         <div className={styles.greeting}>
-          {userInfo?.username && <span>Hello {userInfo?.username} - TEAM: </span>}
           {userInfo?.accountName && (
             <span className={styles.accountName}>{userInfo.accountName}</span>
           )}
+          {userInfo?.username && <span>- {userInfo?.username}</span>}
         </div>
       </header>
 
