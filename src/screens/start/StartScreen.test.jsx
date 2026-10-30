@@ -92,8 +92,8 @@ describe('StartScreen rows list and keyboard positioning (spec 014)', () => {
   };
 
   const addRowAndSelect = async (user) => {
-    await user.click(screen.getByRole('button', { name: '+ Add Row' }));
-    const row = screen.getByRole('button', { name: 'Row 1: students 1–6' });
+    await user.click(screen.getByRole('button', { name: '+ Add Block' }));
+    const row = screen.getByRole('button', { name: 'Block 1: students 1–6' });
     await user.click(row);
     return row;
   };
@@ -102,10 +102,10 @@ describe('StartScreen rows list and keyboard positioning (spec 014)', () => {
     const user = userEvent.setup();
     renderStart();
 
-    expect(screen.getByText('No rows yet.')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: '+ Add Row' }));
+    expect(screen.getByText('No blocks yet.')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: '+ Add Block' }));
 
-    expect(screen.getByRole('button', { name: 'Row 1: students 1–6' })).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('button', { name: 'Block 1: students 1–6' })).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('shows move and rotate controls for the selected row', async () => {
@@ -115,7 +115,7 @@ describe('StartScreen rows list and keyboard positioning (spec 014)', () => {
     const row = await addRowAndSelect(user);
 
     expect(row).toHaveAttribute('aria-pressed', 'true');
-    const controls = within(screen.getByRole('group', { name: 'Move row' }));
+    const controls = within(screen.getByRole('group', { name: 'Move block' }));
     for (const name of ['Move up', 'Move down', 'Move left', 'Move right']) {
       expect(controls.getByRole('button', { name })).toBeInTheDocument();
     }
@@ -156,8 +156,8 @@ describe('StartScreen rows list and keyboard positioning (spec 014)', () => {
   it('selects an unselected row on its first arrow key, without moving it', async () => {
     const user = userEvent.setup();
     const { container } = renderStart();
-    await user.click(screen.getByRole('button', { name: '+ Add Row' }));
-    const row = screen.getByRole('button', { name: 'Row 1: students 1–6' });
+    await user.click(screen.getByRole('button', { name: '+ Add Block' }));
+    const row = screen.getByRole('button', { name: 'Block 1: students 1–6' });
     const start = position(container);
 
     row.focus();
@@ -170,10 +170,10 @@ describe('StartScreen rows list and keyboard positioning (spec 014)', () => {
   it('hides the canvas from screen readers and names the zoom buttons', async () => {
     const user = userEvent.setup();
     const { container } = renderStart();
-    await user.click(screen.getByRole('button', { name: '+ Add Row' }));
+    await user.click(screen.getByRole('button', { name: '+ Add Block' }));
 
     expect(rowOnCanvas(container).closest('[aria-hidden="true"]')).not.toBeNull();
-    expect(screen.getByRole('button', { name: 'Row 1: students 1–6' }).closest('[aria-hidden="true"]')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Block 1: students 1–6' }).closest('[aria-hidden="true"]')).toBeNull();
     for (const name of ['Zoom in', 'Zoom out', 'Reset zoom']) {
       expect(screen.getByRole('button', { name })).toBeInTheDocument();
     }
@@ -186,7 +186,7 @@ describe('StartScreen error contrast (spec 015)', () => {
     const user = userEvent.setup();
     renderStart();
 
-    await user.click(screen.getByRole('button', { name: '+ Add Row' }));
+    await user.click(screen.getByRole('button', { name: '+ Add Block' }));
     await user.click(screen.getByRole('button', { name: 'Save Chart' }));
     await user.click(screen.getByRole('button', { name: 'Proceed' }));
 

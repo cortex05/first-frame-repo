@@ -540,7 +540,7 @@ const StartScreen = () => {
         )}
 
         {selectedRect && (
-          <div role="group" aria-label="Move row" className={styles.moveControls}>
+          <div role="group" aria-label="Move block" className={styles.moveControls}>
             <div className={styles.moveGrid}>
               {[
                 ["Move up", "↑", styles.moveUp, 0, -1],
