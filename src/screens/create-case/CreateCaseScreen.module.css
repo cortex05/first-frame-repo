@@ -3,6 +3,7 @@
   max-width: 50%;
   margin: 0 auto;
   padding: 32px;
+  padding-bottom: 64px;
   color: var(--page-text);
 }
 
