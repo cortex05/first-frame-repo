@@ -616,7 +616,7 @@ const CaseScreen = () => {
     <React.Fragment>
       <TopNavbar />
 
-      <main style={{ maxWidth: 640, margin: "0 auto", padding: 32 }}>
+      <main style={{ maxWidth: 640, margin: "0 auto", marginBottom: "64px", padding: 32 }}>
         <h1 style={{ marginBottom: 32 }}>Client: {activeCase.clientName}</h1>
 
         {/* Basic Info */}
