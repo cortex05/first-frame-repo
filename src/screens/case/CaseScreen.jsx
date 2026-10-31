@@ -918,7 +918,7 @@ const CaseScreen = () => {
               display: "flex",
               flexDirection: "column",
               gap: 4,
-              marginBottom: 16,
+              marginBottom: 8,
             }}
           >
             <label
@@ -1005,7 +1005,7 @@ const CaseScreen = () => {
                     <span
                       style={{ minWidth: 52, fontSize: 14, fontWeight: 600, color: 'var(--modal-text)' }}
                     >
-                      {String(opt.label)}:
+                      {String(opt.label) === "true" ? "True" : "False"}:
                     </span>
                     <input
                       className={styles.inputStyle}
@@ -1240,7 +1240,7 @@ const CaseScreen = () => {
                 </label>
                 <input
                   id={`${idPrefix}-start-students`}
-                  className={styles.inputStyle}
+                  className={styles.studentAdjustInput}
                   type="number"
                   min={1}
                   value={numberOfStudents}

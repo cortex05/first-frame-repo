@@ -81,7 +81,17 @@
 }
 
 .inputStyle {
+	margin: 0px 0px;
+}
+
+.studentAdjustInput {
 	margin: 18px 0px;
+	padding: 10px 12px;
+    font-size: 15px;
+    border: 1px solid var(--border-input);
+    border-radius: 6px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .caseItem {
