@@ -1205,11 +1205,13 @@ const CaseScreen = () => {
           {!editStudentNumber ? (
             <div className={styles.startModal}>
               <p style={{ marginBottom: 16 }}>
-                You are moving to assign the students to their rows and tables.
+                You are moving to assign the students in their seating arrangement for the Voir Dire and questioning.
               </p>
+              <hr />
               <p style={{ marginBottom: 24 }}>
-                Currently this case is set for {activeCase.studentNumber}
+                Currently this case is set for {activeCase.studentNumber} students.
               </p>
+              <hr />
               <p style={{ marginBottom: 16 }}>Is this correct?</p>
               <FormError message={startError} className={styles.modalError} />
               <div className={styles.startModalButtons}>
