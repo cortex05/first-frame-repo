@@ -337,7 +337,7 @@ const MakePlaylistScreen = () => {
               padding: '14px 36px',
               fontSize: 17,
               fontWeight: 600,
-              background: 'var(--modal-text)',
+              background: 'var(--blue-background)',
               color: 'var(--light-text)',
               borderRadius: 8,
               textDecoration: 'none',

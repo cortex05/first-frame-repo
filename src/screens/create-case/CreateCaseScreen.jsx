@@ -159,7 +159,7 @@ const CreateCaseScreen = () => {
           <input
             id={`${idPrefix}-client`}
             {...detailsError.fieldProps(`${idPrefix}-client`)}
-            className={styles.inputStyle}
+            className={styles.inputStyle} 
             type="text"
             value={clientName}
             onChange={(e) => setClientName(e.target.value)}
