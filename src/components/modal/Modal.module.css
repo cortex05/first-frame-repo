@@ -35,8 +35,8 @@
   width: 100%;
   padding: 12px 0;
   font-size: 16px;
-  background: var(--light-blue-background);
-  color: var(--text-strong);
+  background: var(--text-strong);
+  color: var(--light-blue-background);
   border: 1px solid var(--grey-disabled);
   border-radius: 6px;
   cursor: pointer;
@@ -45,7 +45,8 @@
     color 0.5s ease;
 }
 
-.closeButton:hover {
-  background: var(--text-strong);
-  color: var(--light-blue-background);
+/* Same hover as the standard list rows (#1, styles/linkItem.module.css). */
+.closeButton:hover:not(:disabled) {
+  background: var(--light-blue-background);
+  color: var(--text-strong);
 }

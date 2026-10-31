@@ -1345,7 +1345,7 @@ const CaseScreen = () => {
                       <button
                         type="button"
                         aria-pressed={isSelected}
-                        className={`${styles.playlistQuestionItem} ${styles.playlistQuestionSelectable} ${
+                        className={`${styles.playlistQuestionItem} ${
                           isSelected ? styles.playlistQuestionSelected : ""
                         }`}
                         onClick={() =>
