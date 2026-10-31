@@ -801,7 +801,7 @@ const CaseScreen = () => {
                 aria-describedby={activeCase.questions.length === 0 ? offlineHintId : undefined}
                 className={`${styles.questionActionButton} ${styles.offlineExportButton}`}
               >
-                For offline use
+                For Offline Use
               </button>
               {activeCase.questions.length === 0 && (
                 <p id={offlineHintId} className={styles.offlineExportHint}>

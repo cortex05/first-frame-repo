@@ -406,7 +406,7 @@ describe('CaseScreen student details', () => {
 });
 
 describe('CaseScreen offline PDF export', () => {
-  const offlineButton = () => screen.getByRole('button', { name: 'For offline use' });
+  const offlineButton = () => screen.getByRole('button', { name: 'For Offline Use' });
 
   it('sits under the Add Question / Access Playlists row, in the same container', () => {
     useAuthStore.setState({ userInfo: session() });
@@ -522,7 +522,7 @@ describe('CaseScreen export slides PDF', () => {
     renderCase();
 
     expect(exportButton()).toBeDisabled();
-    // One hint under For offline use, one under Export Questions.
+    // One hint under For Offline Use, one under Export Questions.
     expect(screen.getAllByText('Add a question to export.')).toHaveLength(2);
   });
 
