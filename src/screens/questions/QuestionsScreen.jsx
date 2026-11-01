@@ -931,7 +931,7 @@ const QuestionsScreen = () => {
                   <div>
                     {/* Answer controls */}
                     {selectedQuestion && (
-                      <div style={{ borderTop: "1px solid var(--light-blue-background)" }}>
+                      <div >
                         <p
                           ref={selectedTextRef}
                           tabIndex={-1}
@@ -946,7 +946,7 @@ const QuestionsScreen = () => {
                             className={styles.questionCounter}
                             style={{
                               display: "block",
-                              fontWeight: 700,
+                              fontWeight: 500,
                               color: "var(--text-link-muted)",
                               marginBottom: 6,
                             }}
@@ -1025,7 +1025,7 @@ const QuestionsScreen = () => {
                           }}
                         >
                           {selectedQuestion.type === QuestionType.TRUE_FALSE
-                            ? "Tap again to switch true circles back to false."
+                            ? "Tap again to switch True circles back to False."
                             : activeOptionIndex !== null
                               ? `Tap students (or press A–D on a seat) to assign "${optionLetter(activeOptionIndex)}: ${selectedQuestion.options[activeOptionIndex].label}".`
                               : "Select an option above."}
@@ -1045,7 +1045,7 @@ const QuestionsScreen = () => {
                             borderRadius: 6,
                             cursor: isSavingAnswers ? "not-allowed" : "pointer",
                             opacity: isSavingAnswers ? 0.75 : 1,
-                            marginBottom: 16,
+                            marginBottom: 8,
                           }}
                         >
                           {isSavingAnswers ? "Saving..." : "Save Answers"}

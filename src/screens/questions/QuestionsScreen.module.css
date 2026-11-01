@@ -33,6 +33,12 @@
 	color: inherit;
 	text-align: inherit;
 	cursor: pointer;
+	transition: background 0.5s ease, color 0.5s ease;
+}
+
+.questionSelectButton:hover {
+	background-color: var(--blue-background);
+	color: var(--light-text)
 }
 
 .inactiveAfterFirstPoll {
@@ -193,6 +199,8 @@
    stay readable at 200% zoom in the sidebar (spec 018). */
 .selectedQuestionText {
 	font-size: clamp(20px, 2.2vw + 10px, 30px);
+	margin: 0px;
+	margin-top: 8px;
 }
 
 .questionCounter {
