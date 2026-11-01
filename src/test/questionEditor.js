@@ -3,7 +3,8 @@ import { expect } from 'vitest';
 
 /**
  * Spec 013: the Add Question editor (copied in CaseScreen, MakePlaylistScreen,
- * CreateRecommendedScreen and EditRecommendedScreen) names every control.
+ * CreateRecommendedScreen, EditRecommendedScreen and EditPlaylistScreen) names
+ * every control.
  * Opens the editor with "+ Add Question", then walks both question types.
  */
 export const expectLabelledQuestionEditor = async (user) => {

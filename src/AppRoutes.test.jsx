@@ -18,6 +18,7 @@ vi.mock('./screens/create-case/CreateCaseScreen', () => stub('Create case'));
 vi.mock('./screens/case/CaseScreen', () => stub('Case'));
 vi.mock('./screens/questions/QuestionsScreen', () => stub('Questions'));
 vi.mock('./screens/make-playlist/MakePlaylistScreen', () => stub('Make playlist'));
+vi.mock('./screens/edit-playlist/EditPlaylistScreen', () => stub('Edit playlist'));
 vi.mock('./screens/recommended/RecommendedScreen', () => stub('Recommended'));
 vi.mock('./screens/create-recommended/CreateRecommendedScreen', () => stub('Create recommended'));
 vi.mock('./screens/edit-recommended/EditRecommendedScreen', () => stub('Edit recommended'));
@@ -111,6 +112,20 @@ describe('AppRoutes guards', () => {
 
     renderAt('/create-case');
     expect(screen.getByText('Create case screen')).toBeInTheDocument();
+  });
+
+  it('keeps members out of playlist editing (spec 022)', () => {
+    useAuthStore.setState({ userInfo: session() });
+
+    renderAt('/edit-playlist/p-1');
+    expect(screen.getByText('Dashboard screen')).toBeInTheDocument();
+  });
+
+  it('lets an account admin edit a playlist (spec 022)', () => {
+    useAuthStore.setState({ userInfo: session({ role: 'admin' }) });
+
+    renderAt('/edit-playlist/p-1');
+    expect(screen.getByText('Edit playlist screen')).toBeInTheDocument();
   });
 
   it('lets every signed-in user see the archive', () => {

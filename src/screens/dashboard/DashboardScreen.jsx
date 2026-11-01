@@ -4,7 +4,8 @@ import Modal from "../../components/modal/Modal";
 import TopNavbar from "../../components/top-navbar/TopNavbar";
 import ThemeToggle from "../../components/theme-toggle/ThemeToggle";
 import styles from "./DashboardScreen.module.css";
-import { getPlaylistById } from "../../api/playlist";
+import { deletePlaylist, getPlaylistById } from "../../api/playlist";
+import FormError from "../../components/form-error/FormError";
 
 import useCaseStore from "../../store/useCaseStore";
 import useAuthStore, { selectIsAccountAdmin } from "../../store/useAuthStore";
@@ -19,12 +20,19 @@ const Dashboard = () => {
   const [playlistModalOpen, setPlaylistModalOpen] = useState(false);
   const [selectedPlaylist, setSelectedPlaylist] = useState(null);
   const [isLoadingPlaylistDetails, setIsLoadingPlaylistDetails] = useState(false);
+  // Delete flow (spec 022): the warning replaces the playlist modal while open,
+  // and `selectedPlaylist` is kept so Cancel brings the same view back.
+  const [deleteWarningOpen, setDeleteWarningOpen] = useState(false);
+  const [isDeletingPlaylist, setIsDeletingPlaylist] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+  const [listNotice, setListNotice] = useState("");
   const cases = useCaseStore((state) => state.cases);
   const fetchUserCases = useCaseStore((state) => state.fetchUserCases);
   const setActiveCase = useCaseStore((state) => state.setActiveCase);
   const userInfo = useAuthStore((state) => state.userInfo);
   const playlists = useAuthStore((state) => state.playlists);
   const fetchUserPlaylists = useAuthStore((state) => state.fetchUserPlaylists);
+  const setPlaylists = useAuthStore((state) => state.setPlaylists);
   const isAccountAdmin = useAuthStore(selectIsAccountAdmin);
 
   const navigate = useNavigate();
@@ -45,6 +53,7 @@ const Dashboard = () => {
 
   const handleOpenPlaylistModal = () => {
     setSelectedPlaylist(null);
+    setListNotice("");
     setPlaylistModalOpen(true);
   };
 
@@ -55,6 +64,7 @@ const Dashboard = () => {
       return;
     }
 
+    setListNotice("");
     setIsLoadingPlaylistDetails(true);
 
     try {
@@ -62,6 +72,63 @@ const Dashboard = () => {
       setSelectedPlaylist(playlistDetails);
     } finally {
       setIsLoadingPlaylistDetails(false);
+    }
+  };
+
+  const handleEditPlaylist = () => {
+    const playlistId = selectedPlaylist?._id;
+    if (!playlistId) return;
+
+    setPlaylistModalOpen(false);
+    setSelectedPlaylist(null);
+    navigate(`/edit-playlist/${playlistId}`);
+  };
+
+  const handleRequestDelete = () => {
+    setDeleteError("");
+    setDeleteWarningOpen(true);
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteWarningOpen(false);
+    setDeleteError("");
+  };
+
+  // Back to the refreshed list inside the still-open playlist modal.
+  const finishDelete = async (deletedId, message = "") => {
+    let notice = message;
+    try {
+      await fetchUserPlaylists(userInfo.token);
+    } catch {
+      setPlaylists(playlists.filter((p) => p._id !== deletedId));
+      notice = "Playlist deleted, but the list could not be refreshed.";
+    }
+
+    setListNotice(notice);
+    setSelectedPlaylist(null);
+    setDeleteWarningOpen(false);
+  };
+
+  const handleConfirmDelete = async () => {
+    const playlistId = selectedPlaylist?._id;
+    if (!playlistId || !userInfo?.token || isDeletingPlaylist) return;
+
+    setDeleteError("");
+    setIsDeletingPlaylist(true);
+
+    try {
+      await deletePlaylist(playlistId, userInfo.token);
+      await finishDelete(playlistId);
+    } catch (requestError) {
+      const message = requestError?.response?.data?.message;
+      if (requestError?.response?.status === 404) {
+        // Someone else already deleted it: the list is stale either way.
+        await finishDelete(playlistId, message || "Playlist not found.");
+      } else {
+        setDeleteError(message || "Unable to delete this playlist. Please try again.");
+      }
+    } finally {
+      setIsDeletingPlaylist(false);
     }
   };
 
@@ -161,15 +228,21 @@ const Dashboard = () => {
         </Modal>
 
         <Modal
-          isOpen={playlistModalOpen}
+          isOpen={playlistModalOpen && !deleteWarningOpen}
           onClose={() => {
             setPlaylistModalOpen(false);
             setSelectedPlaylist(null);
+            setListNotice("");
           }}
           title="Access Playlists"
         >
           {!selectedPlaylist ? (
             <div className={styles.modalContent}>
+              {listNotice && (
+                <p role="status" style={{ color: "var(--modal-text)", marginBottom: 12 }}>
+                  {listNotice}
+                </p>
+              )}
               {playlists.length === 0 ? (
                 <p style={{ color: "var(--modal-text)" }}>No playlists found.</p>
               ) : (
@@ -215,43 +288,108 @@ const Dashboard = () => {
                 ))}
               </div>
 
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
-                <button
-                  onClick={() => {}}
-                  style={{
-                    flex: 1,
-                    minWidth: 100,
-                    padding: "10px 0",
-                    fontWeight: 600,
-                    background: "var(--orange-edit)",
-                    color: "var(--text-on-bright-fill)",
-                    border: "none",
-                    borderRadius: 6,
-                    cursor: "pointer",
-                  }}
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => {}}
-                  style={{
-                    flex: 1,
-                    minWidth: 100,
-                    padding: "10px 0",
-                    fontWeight: 600,
-                    background: "var(--decline)",
-                    color: "var(--light-text)",
-                    border: "none",
-                    borderRadius: 6,
-                    cursor: "pointer",
-                  }}
-                >
-                  Delete
-                </button>
-                
-              </div>
+              {isAccountAdmin && (
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
+                  <button
+                    type="button"
+                    onClick={handleEditPlaylist}
+                    style={{
+                      flex: 1,
+                      minWidth: 100,
+                      padding: "10px 0",
+                      fontWeight: 600,
+                      background: "var(--orange-edit)",
+                      color: "var(--text-on-bright-fill)",
+                      border: "none",
+                      borderRadius: 6,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleRequestDelete}
+                    style={{
+                      flex: 1,
+                      minWidth: 100,
+                      padding: "10px 0",
+                      fontWeight: 600,
+                      background: "var(--decline)",
+                      color: "var(--light-text)",
+                      border: "none",
+                      borderRadius: 6,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
+              )}
             </div>
           )}
+        </Modal>
+
+        <Modal
+          isOpen={deleteWarningOpen}
+          onClose={handleCancelDelete}
+          title="Warning"
+          hideDefaultClose
+          closeDisabled={isDeletingPlaylist}
+        >
+          <div className={styles.modalContent}>
+            <p style={{ color: "var(--modal-text)" }}>
+              This will delete the selected playlist permanently for all users in this account.
+            </p>
+            <hr />
+            <p style={{ color: "var(--modal-text)" }}>Do you wish to proceed?</p>
+
+            <FormError
+              message={deleteError}
+              style={{ color: "var(--error-text-surface)", fontSize: 14, marginBottom: 12 }}
+            />
+
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                disabled={isDeletingPlaylist}
+                style={{
+                  flex: 1,
+                  minWidth: 100,
+                  padding: "10px 0",
+                  fontWeight: 600,
+                  background: "var(--confirm)",
+                  color: "var(--light-text)",
+                  border: "none",
+                  borderRadius: 6,
+                  cursor: isDeletingPlaylist ? "not-allowed" : "pointer",
+                  opacity: isDeletingPlaylist ? 0.75 : 1,
+                }}
+              >
+                {isDeletingPlaylist ? "Deleting..." : "Confirm"}
+              </button>
+              <button
+                type="button"
+                onClick={handleCancelDelete}
+                disabled={isDeletingPlaylist}
+                style={{
+                  flex: 1,
+                  minWidth: 100,
+                  padding: "10px 0",
+                  fontWeight: 600,
+                  background: "var(--decline)",
+                  color: "var(--light-text)",
+                  border: "none",
+                  borderRadius: 6,
+                  cursor: isDeletingPlaylist ? "not-allowed" : "pointer",
+                  opacity: isDeletingPlaylist ? 0.75 : 1,
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
         </Modal>
       </main>
     </React.Fragment>

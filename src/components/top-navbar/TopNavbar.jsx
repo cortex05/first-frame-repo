@@ -6,7 +6,9 @@ import useAuthStore, { selectIsAccountAdmin } from '../../store/useAuthStore';
 
 import styles from './TopNavbar.module.css';
 
-const TopNavbar = ({ warnOnHomeNavigation = false }) => {
+// `navigationWarning` replaces the default text of the leave-page dialog and
+// relabels its confirm button "Proceed" (spec 022).
+const TopNavbar = ({ warnOnHomeNavigation = false, navigationWarning }) => {
   const navigate = useNavigate();
   const userInfo = useAuthStore((state) => state.userInfo);
   const isAccountAdmin = useAuthStore(selectIsAccountAdmin);
@@ -135,12 +137,19 @@ const TopNavbar = ({ warnOnHomeNavigation = false }) => {
             maxWidth: 420,
           }}
         >
-          Navigating away will discard unsaved changes.
+          {navigationWarning || 'Navigating away will discard unsaved changes.'}
         </h3>
 
         <div className={styles.modalButtons}>
           <button type="button" className={styles.confirm} onClick={handleContinueNavigation}>
-            Confirm
+            {navigationWarning ? 'Proceed' : 'Confirm'}
+          </button>
+          <button
+            type="button"
+            className={styles.decline}
+            onClick={() => setPendingPath(null)}
+          >
+            Cancel
           </button>
         </div>
       </Modal>

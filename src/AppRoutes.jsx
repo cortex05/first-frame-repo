@@ -9,6 +9,7 @@ import CreateCaseScreen from './screens/create-case/CreateCaseScreen';
 import CaseScreen from './screens/case/CaseScreen';
 import QuestionsScreen from './screens/questions/QuestionsScreen';
 import MakePlaylistScreen from './screens/make-playlist/MakePlaylistScreen';
+import EditPlaylistScreen from './screens/edit-playlist/EditPlaylistScreen';
 import RecommendedScreen from './screens/recommended/RecommendedScreen';
 import CreateRecommendedScreen from './screens/create-recommended/CreateRecommendedScreen';
 import EditRecommendedScreen from './screens/edit-recommended/EditRecommendedScreen';
@@ -126,6 +127,7 @@ const AppRoutes = () => {
 						<Route element={<AccountAdminRoutes isAccountAdmin={isAccountAdmin} />}>
 							<Route path="/account" element={<AccountScreen />} />
 							<Route path="/create-case" element={<CreateCaseScreen />} />
+							<Route path="/edit-playlist/:playlistId" element={<EditPlaylistScreen />} />
 						</Route>
 
 						<Route element={<PlatformAdminRoutes isPlatformAdmin={isPlatformAdmin} />}>

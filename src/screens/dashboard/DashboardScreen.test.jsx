@@ -4,12 +4,12 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import DashboardScreen from './DashboardScreen';
-import { getPlaylistById } from '../../api/playlist';
+import { deletePlaylist, getPlaylistById } from '../../api/playlist';
 import { __resetPageTitleForTests } from '../../hooks/usePageTitle';
 import useAuthStore from '../../store/useAuthStore';
 import useCaseStore from '../../store/useCaseStore';
 
-vi.mock('../../api/playlist', () => ({ getPlaylistById: vi.fn() }));
+vi.mock('../../api/playlist', () => ({ getPlaylistById: vi.fn(), deletePlaylist: vi.fn() }));
 
 const seedSession = (role) => {
   useAuthStore.setState({
@@ -176,5 +176,156 @@ describe('DashboardScreen structure (spec 017)', () => {
     const main = screen.getByRole('main');
     expect(main).toContainElement(screen.getByRole('heading', { level: 1 }));
     expect(main).not.toContainElement(screen.getByRole('banner'));
+  });
+});
+
+describe('DashboardScreen playlist edit and delete (spec 022)', () => {
+  const PLAYLIST = {
+    _id: 'p-1',
+    title: 'Opening',
+    questions: [{ id: 'q-1', text: 'Was there intent?', type: 'TRUE_FALSE', options: [] }],
+  };
+
+  const renderWithRoutes = () =>
+    render(
+      <MemoryRouter initialEntries={['/dashboard']}>
+        <Routes>
+          <Route path="/dashboard" element={<DashboardScreen />} />
+          <Route path="/edit-playlist/:playlistId" element={<p>edit page</p>} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+  const openPlaylist = async (user) => {
+    await user.click(screen.getByRole('button', { name: 'Personal Playlists' }));
+    await user.click(screen.getByRole('button', { name: 'Opening' }));
+    await screen.findByText('Was there intent?');
+  };
+
+  beforeEach(() => {
+    vi.mocked(getPlaylistById).mockReset().mockResolvedValue(PLAYLIST);
+    vi.mocked(deletePlaylist).mockReset();
+  });
+
+  const seedWithPlaylist = (role) => {
+    seedSession(role);
+    useAuthStore.setState({ playlists: [{ _id: 'p-1', title: 'Opening' }] });
+  };
+
+  it('shows a member the questions without Edit or Delete', async () => {
+    seedWithPlaylist('member');
+    const user = userEvent.setup();
+    renderWithRoutes();
+
+    await openPlaylist(user);
+
+    expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument();
+  });
+
+  it('sends an admin to the edit page', async () => {
+    seedWithPlaylist('admin');
+    const user = userEvent.setup();
+    renderWithRoutes();
+
+    await openPlaylist(user);
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+
+    expect(await screen.findByText('edit page')).toBeInTheDocument();
+  });
+
+  it('warns before deleting, and Cancel restores the playlist view', async () => {
+    seedWithPlaylist('admin');
+    const user = userEvent.setup();
+    renderWithRoutes();
+
+    await openPlaylist(user);
+    await user.click(screen.getByRole('button', { name: 'Delete' }));
+
+    const dialog = within(screen.getByRole('dialog', { name: 'Warning' }));
+    expect(
+      dialog.getByText('This will delete the selected playlist permanently for all users in this account.'),
+    ).toBeInTheDocument();
+    expect(dialog.getByRole('separator')).toBeInTheDocument();
+    expect(dialog.getByText('Do you wish to proceed?')).toBeInTheDocument();
+
+    await user.click(dialog.getByRole('button', { name: 'Cancel' }));
+
+    expect(screen.queryByRole('dialog', { name: 'Warning' })).not.toBeInTheDocument();
+    expect(await screen.findByText('Was there intent?')).toBeInTheDocument();
+    expect(deletePlaylist).not.toHaveBeenCalled();
+    expect(getPlaylistById).toHaveBeenCalledTimes(1);
+  });
+
+  it('deletes on Confirm, refetches and shows the list again', async () => {
+    seedWithPlaylist('admin');
+    let resolveDelete;
+    vi.mocked(deletePlaylist).mockReturnValue(
+      new Promise((resolve) => {
+        resolveDelete = resolve;
+      }),
+    );
+    const fetchUserPlaylists = vi.fn();
+    useAuthStore.setState({ fetchUserPlaylists });
+    const user = userEvent.setup();
+    renderWithRoutes();
+
+    await openPlaylist(user);
+    // The refetch after the delete returns the list without the playlist.
+    fetchUserPlaylists.mockClear().mockImplementation(async () => {
+      useAuthStore.setState({ playlists: [] });
+    });
+    await user.click(screen.getByRole('button', { name: 'Delete' }));
+    await user.click(screen.getByRole('button', { name: 'Confirm' }));
+
+    expect(screen.getByRole('button', { name: 'Deleting...' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled();
+
+    resolveDelete();
+
+    expect(await screen.findByText('No playlists found.')).toBeInTheDocument();
+    expect(deletePlaylist).toHaveBeenCalledWith('p-1', 'token');
+    expect(fetchUserPlaylists).toHaveBeenCalledWith('token');
+    expect(screen.queryByRole('dialog', { name: 'Warning' })).not.toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'Access Playlists' })).toBeInTheDocument();
+  });
+
+  it('keeps the warning open with the server message when the delete fails', async () => {
+    seedWithPlaylist('admin');
+    vi.mocked(deletePlaylist).mockRejectedValue({
+      response: { status: 403, data: { message: 'Only an account admin can change a playlist.' } },
+    });
+    const user = userEvent.setup();
+    renderWithRoutes();
+
+    await openPlaylist(user);
+    await user.click(screen.getByRole('button', { name: 'Delete' }));
+    await user.click(screen.getByRole('button', { name: 'Confirm' }));
+
+    const dialog = within(screen.getByRole('dialog', { name: 'Warning' }));
+    expect(await dialog.findByRole('alert')).toHaveTextContent(
+      'Only an account admin can change a playlist.',
+    );
+    expect(dialog.getByRole('button', { name: 'Confirm' })).toBeEnabled();
+  });
+
+  it('returns to the refreshed list with a notice on a 404', async () => {
+    seedWithPlaylist('admin');
+    vi.mocked(deletePlaylist).mockRejectedValue({
+      response: { status: 404, data: { message: 'Playlist not found.' } },
+    });
+    const fetchUserPlaylists = vi.fn();
+    useAuthStore.setState({ fetchUserPlaylists });
+    const user = userEvent.setup();
+    renderWithRoutes();
+
+    await openPlaylist(user);
+    fetchUserPlaylists.mockClear();
+    await user.click(screen.getByRole('button', { name: 'Delete' }));
+    await user.click(screen.getByRole('button', { name: 'Confirm' }));
+
+    const list = within(await screen.findByRole('dialog', { name: 'Access Playlists' }));
+    expect(list.getByRole('status')).toHaveTextContent('Playlist not found.');
+    expect(fetchUserPlaylists).toHaveBeenCalledWith('token');
   });
 });

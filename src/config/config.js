@@ -40,6 +40,7 @@ export const PLAYLIST_API = {
   GET_BY_ID: (id) => `/playlists/${id}`,
   CREATE: "/playlists",
   UPDATE: (id) => `/playlists/${id}`,
+  DELETE: (id) => `/playlists/${id}`,
 };
 
 export const RECOMMENDED_API = {

@@ -1,6 +1,6 @@
 import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import TopNavbar from './TopNavbar';
@@ -80,5 +80,55 @@ describe('TopNavbar Home link destination', () => {
     );
 
     expect(screen.getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/');
+  });
+});
+
+describe('TopNavbar unsaved-changes warning (spec 022)', () => {
+  const renderWarning = (props) =>
+    render(
+      <MemoryRouter initialEntries={['/edit']}>
+        <Routes>
+          <Route path="/edit" element={<TopNavbar warnOnHomeNavigation {...props} />} />
+          <Route path="/dashboard" element={<p>dashboard page</p>} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+  it('shows the custom text, and Proceed navigates', async () => {
+    const user = userEvent.setup();
+    renderWarning({ navigationWarning: 'Unsaved changes will be lost. Do you wish to proceed?' });
+
+    await user.click(screen.getByRole('link', { name: 'Home' }));
+    const dialog = within(screen.getByRole('dialog', { name: 'Leave This Page?' }));
+    expect(dialog.getByText('Unsaved changes will be lost. Do you wish to proceed?')).toBeInTheDocument();
+
+    await user.click(dialog.getByRole('button', { name: 'Proceed' }));
+
+    expect(await screen.findByText('dashboard page')).toBeInTheDocument();
+  });
+
+  it('stays on the page when Cancel is pressed', async () => {
+    const user = userEvent.setup();
+    renderWarning({ navigationWarning: 'Unsaved changes will be lost. Do you wish to proceed?' });
+
+    await user.click(screen.getByRole('link', { name: 'Archive' }));
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    await act(async () => {});
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Home' })).toBeInTheDocument();
+    expect(screen.queryByText('dashboard page')).not.toBeInTheDocument();
+  });
+
+  it('keeps the default text and Confirm label without the prop', async () => {
+    const user = userEvent.setup();
+    renderWarning({});
+
+    await user.click(screen.getByRole('link', { name: 'Home' }));
+    const dialog = within(screen.getByRole('dialog', { name: 'Leave This Page?' }));
+
+    expect(dialog.getByText('Navigating away will discard unsaved changes.')).toBeInTheDocument();
+    expect(dialog.getByRole('button', { name: 'Confirm' })).toBeInTheDocument();
+    expect(dialog.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
   });
 });
