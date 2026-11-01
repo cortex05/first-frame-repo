@@ -885,8 +885,10 @@ const CaseScreen = () => {
         >
           <p className={styles.modalText}>
             Archiving moves this case to the account&apos;s archive. It can
-            still be viewed there, but it can no longer be changed.
+            still be viewed there, but it can no longer be changed. 
           </p>
+          <hr />
+          <p  className={styles.modalText}>Do you wish to proceed with Archiving this Case?</p>
           <FormError message={archiveError} className={styles.modalError} />
           <div className={styles.startModalButtons}>
             <button
