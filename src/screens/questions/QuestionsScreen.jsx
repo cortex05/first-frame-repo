@@ -222,10 +222,10 @@ const QuestionsScreen = () => {
   };
   // Multiple-choice option colors: canvas fills and the option buttons.
   const mcColors = [
-    cssVar("--mc-1", "#4caf50"),
-    cssVar("--mc-2", "#f44336"),
-    cssVar("--mc-3", "#ff9800"),
-    cssVar("--mc-4", "#009688"),
+    cssVar("--mc-1", "#F54927"),
+    cssVar("--mc-2", "#ff9800"),
+    cssVar("--mc-3", "#009688"),
+    cssVar("--mc-4", "#28bb28"),
   ];
 
   const getScoreColor = (studentId) => riskFill[getScoreTier(studentId)];

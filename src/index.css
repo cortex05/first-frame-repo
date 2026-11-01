@@ -69,10 +69,10 @@
   --question-bg: #d0dcfc;
   --question-answered-bg: #c0d6ff;
   /* Multiple-choice option colors; Konva reads these through cssVar(). */
-  --mc-1: #4caf50;
-  --mc-2: #f44336;
-  --mc-3: #ff9800;
-  --mc-4: #009688;
+  --mc-1: #F54927;
+  --mc-2: #ff9800;
+  --mc-3: #009688;
+  --mc-4: #28bb28;
 
   /* --- Risk tiers: Scores view + archive report (utils/studentScores.js) --- */
   /* Konva reads these through cssVar(); keep the fallbacks there in sync. */
