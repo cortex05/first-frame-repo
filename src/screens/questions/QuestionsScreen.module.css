@@ -234,10 +234,22 @@
 
 .stepPlus {
 	background: var(--decline);
+	transition: background 0.5s ease, color 0.5s ease;
+}
+
+.stepPlus:hover {
+	background-color: var(--risk-high-bg);
+	border: 6px solid var(--text-strong);
 }
 
 .stepMinus {
 	background: var(--confirm);
+	transition: background 0.5s ease, color 0.5s ease;
+}
+
+.stepMinus:hover {
+	background-color: var(--confirm-hover);
+	border: 6px solid var(--text-strong);
 }
 
 .stepActive {

@@ -40,7 +40,7 @@ const StudentListModal = ({ activeCase, onSelectStudent, onClose }) => {
           <div className={styles.list}>
             {numbers.map((number) => {
               const tier = seatedSet.has(number) ? tiers.get(number) : null;
-              return (
+              return ( 
                 <button
                   key={number}
                   type="button"

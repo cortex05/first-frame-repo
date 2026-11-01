@@ -40,8 +40,8 @@ const StudentSortModal = ({ order, students, getScore, getTier, onSelectStudent,
             background: 'var(--surface)',
             borderRadius: 10,
             padding: 24,
-            minWidth: 280,
-            maxWidth: 360,
+            minWidth: 320,
+            maxWidth: 440,
             maxHeight: '75vh',
             display: 'flex',
             flexDirection: 'column',
@@ -75,7 +75,7 @@ const StudentSortModal = ({ order, students, getScore, getTier, onSelectStudent,
               ×
             </button>
           </div>
-          <div style={{ overflowY: 'auto' }}>
+          <div style={{ overflowY: 'auto', paddingRight: 12 }}>
             {sorted.map((s) => {
               const tier = getTier(s.id);
               return (
