@@ -57,6 +57,14 @@
   cursor: pointer;
 }
 
+.modalAdd:hover {
+  box-shadow: 0 4px 12px var(--shadow-strong);
+}
+
+.editModalSave:hover {
+  box-shadow: 0 4px 12px var(--shadow-strong);
+}
+
 /* --- Load states, used by EditPlaylistScreen (spec 022) --- */
 
 .statusText {

@@ -55,7 +55,7 @@ describe('AcceptTermsScreen', () => {
 
     expect(await screen.findByText('Agreement: 12-01-2026')).toBeInTheDocument();
     await userEvent.click(screen.getByLabelText(AGREE));
-    await userEvent.click(screen.getByRole('button', { name: 'Submit' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Agree' }));
 
     expect(await screen.findByText('Dashboard screen')).toBeInTheDocument();
     expect(acceptAgreement).toHaveBeenCalledWith({ termsVersion: '12-01-2026' }, 'token');
@@ -78,7 +78,7 @@ describe('AcceptTermsScreen', () => {
     renderScreen();
 
     await userEvent.click(await screen.findByLabelText(AGREE));
-    await userEvent.click(screen.getByRole('button', { name: 'Submit' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Agree' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Nope');
   });

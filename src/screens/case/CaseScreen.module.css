@@ -80,6 +80,25 @@
 	color: var(--light-text);
 }
 
+.editModalSaveButton {
+	flex: 1;
+  padding: 12px 0px;
+	font-size: 15;
+  font-weight: 600;
+	color: var(--light-text);
+  border: none;
+  border-radius: 6px;
+	transition: box-shadow 0.5s ease, color 0.5s ease,
+}
+
+.editModalCancelButton {
+	transition: box-shadow 0.5s ease, color 0.5s ease,
+}
+
+.editModalSaveButton:hover, .editModalCancelButton:hover {
+	box-shadow: 0 4px 12px var(--shadow-strong);
+}
+
 .inputStyle {
 	margin: 0px 0px;
 }
@@ -232,6 +251,11 @@
 
 .addQuestionButton {
 	background: var(--confirm);
+	transition: box-shadow 0.5s ease, color 0.5s ease;
+}
+
+.addQuestionButton:hover {
+	box-shadow: 0 4px 12px var(--confirm);
 }
 
 .accessPlaylistsButton {
@@ -361,6 +385,11 @@
 	border: none;
 	border-radius: 6px;
 	cursor: pointer;
+	transition: box-shadow 0.5s ease, color 0.5s ease;
+}
+
+.playlistLoadButton:hover, .playlistCancelButton:hover {
+	box-shadow: 0 4px 12px var(--shadow-strong);
 }
 
 .playlistLoadButton:disabled {
@@ -374,10 +403,11 @@
 	padding: 10px 0;
 	font-weight: 600;
 	background: var(--decline);
-	color: var(--modal-text);
+	color: var(--light-text);
 	border: 1px solid var(--grey-disabled);
 	border-radius: 6px;
-	cursor: pointer; 
+	cursor: pointer;
+	transition: box-shadow 0.5s ease, color 0.5s ease;
 }
 /* Panel Section */
 .panelSection {

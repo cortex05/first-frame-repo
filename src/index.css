@@ -96,6 +96,8 @@
   --shadow-soft: rgba(0, 0, 0, 0.3);
   --overlay: rgba(0, 0, 0, 0.4);
 
+  --light-strong: rgba(255,255,255, 0.6);
+
   /* Backward-compatible aliases for existing styles */
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
   --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
@@ -196,6 +198,8 @@
   --shadow-modal: rgba(15, 30, 50, 0.18);
   --shadow-soft: rgba(15, 30, 50, 0.15);
   --overlay: rgba(15, 30, 50, 0.35);
+
+  --light-strong: rgba(255,255,255, 0.6);
 
   /* light background ONLY */
   --input-border-case: var(--modal-text); 

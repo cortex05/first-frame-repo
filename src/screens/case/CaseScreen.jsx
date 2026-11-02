@@ -107,7 +107,7 @@ const CaseScreen = () => {
     if (isAccountAdmin && userInfo?.token) {
       fetchAccountUsers(userInfo.token).catch(() => {});
     }
-  }, [isAccountAdmin, userInfo?.token]);
+  }, [fetchAccountUsers, isAccountAdmin, userInfo?.token]);
 
   if (!activeCase) return <main><p>Case not found.</p></main>;
 
@@ -1098,27 +1098,23 @@ const CaseScreen = () => {
               <button
                 onClick={handleSaveEditedQuestion}
                 disabled={!questionForm.text.trim() || isSavingCase}
+                className={styles.editModalSaveButton}
                 style={{
-                  flex: 1,
-                  padding: "12px 0",
-                  fontSize: 15,
-                  fontWeight: 600,
                   background: questionForm.text.trim()
-                    ? "var(--blue-background)"
+                    ? "var(--confirm)"
                     : "var(--grey-disabled)",
-                  color: "var(--light-text)",
-                  border: "none",
-                  borderRadius: 6,
                   cursor:
                     questionForm.text.trim() && !isSavingCase
                       ? "pointer"
                       : "not-allowed",
+                  transition: "box-shadow 0.5s ease, color 0.5s ease",
                 }}
               >
                 {isSavingCase ? "Saving..." : "Save"}
               </button>
               <button
                 onClick={closeQuestionModal}
+                className={styles.editModalCancelButton}
                 style={{
                   flex: 1,
                   padding: "12px 0",
@@ -1129,6 +1125,7 @@ const CaseScreen = () => {
                   border: "1px solid var(--grey-disabled)",
                   borderRadius: 6,
                   cursor: "pointer",
+                  transition: "box-shadow 0.5s ease, color 0.5s ease",
                 }}
               >
                 Cancel
@@ -1220,7 +1217,7 @@ const CaseScreen = () => {
                 <button
                   onClick={handleStart}
                   disabled={isStarting}
-                  className={styles.confirm}
+                  className={styles.confirm} 
                 >
                   {isStarting ? "Starting..." : "Yes"}
                 </button>

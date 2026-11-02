@@ -63,7 +63,7 @@ const AccountScreen = () => {
         if (loadedAccount?.name) setAccountName(loadedAccount.name);
       })
       .catch((requestError) => setLoadError(errorMessage(requestError, 'Unable to load the account.')));
-  }, [userInfo?.token]);
+  }, [fetchAccount, fetchAccountUsers, userInfo?.token]);
 
   const handleRename = async (event) => {
     event.preventDefault();

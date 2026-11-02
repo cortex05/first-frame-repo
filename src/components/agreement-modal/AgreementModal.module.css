@@ -136,6 +136,10 @@
   background: var(--decline);
 }
 
+.submit:hover, .cancel:hover {
+  box-shadow: 0 4px 12px var(--shadow-strong);
+}
+
 .submit:disabled,
 .cancel:disabled {
   background: var(--grey-disabled);

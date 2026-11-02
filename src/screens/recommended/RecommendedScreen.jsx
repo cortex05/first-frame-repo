@@ -21,7 +21,7 @@ const RecommendedScreen = () => {
     if (userInfo?.token) {
       fetchRecommendedNames(userInfo.token);
     }
-  }, [userInfo?.token]);
+  }, [fetchRecommendedNames, userInfo?.token]);
 
   return (
     <React.Fragment>

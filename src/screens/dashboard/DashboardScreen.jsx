@@ -42,14 +42,14 @@ const Dashboard = () => {
       fetchUserCases(userInfo.token);
       fetchUserPlaylists(userInfo.token);
     }
-  }, [userInfo?.token]);
+  }, [fetchUserCases, fetchUserPlaylists, userInfo?.token]);
 
   useEffect(() => {
     // Clear the one-off message so a refresh or back navigation does not repeat it.
     if (location.state?.message) {
       navigate(location.pathname, { replace: true, state: null });
     }
-  }, []);
+  }, [location.pathname, location.state?.message, navigate]);
 
   const handleOpenPlaylistModal = () => {
     setSelectedPlaylist(null);

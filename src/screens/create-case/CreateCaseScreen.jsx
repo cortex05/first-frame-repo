@@ -64,7 +64,7 @@ const CreateCaseScreen = () => {
         setUsersError(USERS_LOAD_ERROR);
       });
     }
-  }, [userInfo?.token]);
+  }, [fetchAccountUsers, userInfo?.token]);
 
   const attorneyOptions = activeUsersOf(accountUsers);
   const attorneyName = accountUsers.find((user) => user._id === attorneyId)?.username ?? "";

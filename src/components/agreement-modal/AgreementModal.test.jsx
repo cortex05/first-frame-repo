@@ -21,9 +21,9 @@ describe('AgreementModal', () => {
     expect(screen.getByLabelText(AGREE_LABEL)).not.toBeChecked();
   });
 
-  it('enables Submit only once the box is checked', async () => {
+  it('enables Agree only once the box is checked', async () => {
     const { onSubmit } = renderModal();
-    const submit = screen.getByRole('button', { name: 'Submit' });
+    const submit = screen.getByRole('button', { name: 'Agree' });
 
     expect(submit).toBeDisabled();
     await userEvent.click(screen.getByLabelText(AGREE_LABEL));
@@ -63,7 +63,7 @@ describe('AgreementModal', () => {
     );
 
     expect(screen.getByLabelText(AGREE_LABEL)).not.toBeChecked();
-    expect(screen.getByRole('button', { name: 'Submit' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Agree' })).toBeDisabled();
   });
 });
 

@@ -574,18 +574,20 @@ const EditPlaylistScreen = () => {
               type="button"
               onClick={handleSaveEditedQuestion}
               disabled={!questionForm.text.trim()}
+              className={styles.editModalSave}
               style={{
                 flex: 1,
                 padding: '12px 0',
                 fontSize: 15,
                 fontWeight: 600,
                 background: questionForm.text.trim()
-                  ? 'var(--blue-background)'
+                  ? 'var(--confirm)'
                   : 'var(--grey-disabled)',
                 color: 'var(--light-text)',
                 border: 'none',
                 borderRadius: 6,
                 cursor: questionForm.text.trim() ? 'pointer' : 'not-allowed',
+                transition: "box-shadow 0.5s ease, color 0.5s ease",
               }}
             >
               Save

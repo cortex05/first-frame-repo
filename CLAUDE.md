@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run preview`: serve the built `dist/`
 - `npm test`: Vitest + jsdom + Testing Library (`npx vitest run src/AppRoutes.test.jsx` for one file, `-t "name"` for one test). Tests sit next to their source as `*.test.js(x)`; setup is `src/test/setup.js`.
 
-Plain JavaScript/JSX, no TypeScript. Existing files carry pre-existing lint errors (unused `React` imports, `studentPage.js`); don't add new ones.
+Plain JavaScript/JSX, no TypeScript. Lint is clean (no errors or warnings); keep it that way.
 
 ## Backend
 
@@ -66,5 +66,5 @@ This is the frontend only. The API is a separate repo, **first-frame-back**, whi
 
 ## Notes
 
-- `src/utils/studentPage.js` references an undefined `activeCase` and nothing imports it. It is dead code.
+- `src/utils/studentPage.js` (`total`, `studentSummary`, `sorted`, each taking the case as its first argument) is unused; nothing imports it.
 - Both `src/utils/` and `src/utilities/` exist. Most helpers live in `src/utils/`.

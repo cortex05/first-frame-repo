@@ -82,7 +82,7 @@ const AgreementModal = ({
               onClick={onSubmit}
               disabled={!isChecked || isSubmitting}
             >
-              {isSubmitting ? 'Submitting...' : 'Submit'}
+              {isSubmitting ? 'Submitting...' : 'Agree'}
             </button>
             <button type="button" className={styles.cancel} onClick={onCancel} disabled={isSubmitting}>
               {cancelLabel}

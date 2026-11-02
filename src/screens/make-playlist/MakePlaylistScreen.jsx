@@ -494,6 +494,7 @@ const MakePlaylistScreen = () => {
           <button
             onClick={handleAddQuestion}
             disabled={!questionForm.text.trim()}
+            className={styles.modalAdd}
             style={{
               width: '100%',
               padding: '12px 0',
@@ -505,6 +506,7 @@ const MakePlaylistScreen = () => {
               borderRadius: 6,
               marginBottom: 8,
               cursor: questionForm.text.trim() ? 'pointer' : 'not-allowed',
+              transition: "box-shadow 0.5s ease, color 0.5s ease",
             }}
           >
             Add Question

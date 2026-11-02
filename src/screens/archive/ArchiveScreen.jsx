@@ -38,7 +38,7 @@ const ArchiveScreen = () => {
           error: requestError?.response?.data?.message || 'Unable to load archived cases.',
         }),
       );
-  }, [userInfo?.token]);
+  }, [fetchAccountUsers, userInfo?.token]);
 
   return (
     <React.Fragment>

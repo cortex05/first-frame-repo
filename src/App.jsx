@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 import { BrowserRouter } from "react-router-dom";
 
 import useCaseStore from './store/useCaseStore';
@@ -34,13 +34,13 @@ function App() {
 			localStorage.setItem('cases', JSON.stringify([]));
 			getAllCases([]);
 		}
-	}, []);
+	}, [getAllCases]);
 
 	useEffect(() => {
 		if (canLoadData && playlists.length === 0) {
 			fetchUserPlaylists(userInfo.token);
 		}
-	}, []);
+	}, [canLoadData, fetchUserPlaylists, playlists.length, userInfo?.token]);
 
 	// Rehydrate after a page reload -- login populates these, but a refresh
 	// restores userInfo from localStorage without going through login.
@@ -48,7 +48,7 @@ function App() {
 		if (canLoadData && isPlatformAdmin && recommendedNames.length === 0) {
 			fetchRecommendedNames(userInfo.token);
 		}
-	}, [isPlatformAdmin]);
+	}, [canLoadData, fetchRecommendedNames, isPlatformAdmin, recommendedNames.length, userInfo?.token]);
 
   	return (
     	<BrowserRouter>

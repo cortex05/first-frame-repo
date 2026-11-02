@@ -55,7 +55,7 @@ const ArchivedCaseScreen = () => {
           });
         }
       });
-  }, [id, userInfo?.token]);
+  }, [fetchAccountUsers, id, userInfo?.token]);
 
   const renderBody = () => {
     if (isLoading) return <p className={styles.hint}>Loading...</p>;

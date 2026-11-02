@@ -52,7 +52,7 @@ const openTerms = async (options) => {
 
 const acceptTerms = async () => {
   await userEvent.click(screen.getByLabelText(AGREE));
-  await userEvent.click(screen.getByRole('button', { name: 'Submit' }));
+  await userEvent.click(screen.getByRole('button', { name: 'Agree' }));
 };
 
 beforeEach(() => {
@@ -81,7 +81,7 @@ describe('RegisterScreen', () => {
 
     expect(screen.getByText('Agreement: 11-20-2026')).toBeInTheDocument();
     expect(screen.getByLabelText(AGREE)).not.toBeChecked();
-    expect(screen.getByRole('button', { name: 'Submit' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Agree' })).toBeDisabled();
     expect(register).not.toHaveBeenCalled();
   });
 

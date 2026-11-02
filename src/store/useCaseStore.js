@@ -7,7 +7,7 @@ const useCaseStore = create(devtools((set) => ({
   activeCase: null,
 
   getAllCases: (casesArray) =>
-	set((state) => ({ cases: casesArray })),
+	set(() => ({ cases: casesArray })),
 
   fetchUserCases: async (token) => {
     if (!token) {
