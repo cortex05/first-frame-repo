@@ -80,6 +80,22 @@
 	color: var(--light-text);
 }
 
+.addQuestionModalButton {
+	width: 100%;
+  padding: 12px 0;
+  font-size: 15px;
+  font-weight: 600;
+	color: var(--light-text);
+	border: none;
+  border-radius: 6px;
+  margin-bottom: 8px;
+	transition: box-shadow 0.5s ease, color 0.5s ease;
+}
+
+.addQuestionModalButton:hover {
+	box-shadow: 0 4px 12px var(--shadow-strong);
+}
+
 .editModalSaveButton {
 	flex: 1;
   padding: 12px 0px;

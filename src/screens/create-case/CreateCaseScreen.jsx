@@ -302,7 +302,7 @@ const CreateCaseScreen = () => {
               className={styles.confirmButton}
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Creating..." : "Yes, create case"}
+              {isSubmitting ? "Creating..." : "Yes, create case"} 
             </button>
             <button
               onClick={closeConfirmModal}

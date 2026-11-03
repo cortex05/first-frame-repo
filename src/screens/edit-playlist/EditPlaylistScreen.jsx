@@ -18,7 +18,7 @@ import { getPlaylistById, updatePlaylist } from '../../api/playlist';
 import styles from '../make-playlist/MakePlaylistScreen.module.css';
 import usePageTitle from '../../hooks/usePageTitle';
 import useFormError from '../../hooks/useFormError';
-import FormError from '../../components/form-error/FormError';
+import FormError from '../../components/form-error/FormError'; 
 
 export const UNSAVED_WARNING = 'Unsaved changes will be lost. Do you wish to proceed?';
 
@@ -551,6 +551,7 @@ const EditPlaylistScreen = () => {
             type="button"
             onClick={handleAddQuestion}
             disabled={!questionForm.text.trim()}
+            className={styles.modalAdd}
             style={{
               width: '100%',
               padding: '12px 0',
@@ -562,6 +563,7 @@ const EditPlaylistScreen = () => {
               borderRadius: 6,
               marginBottom: 8,
               cursor: questionForm.text.trim() ? 'pointer' : 'not-allowed',
+              transition: "box-shadow 0.5s ease, color 0.5s ease",
             }}
           >
             Add Question

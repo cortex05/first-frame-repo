@@ -96,6 +96,7 @@
   color: var(--light-text);
   border-radius: 6px;
   cursor: pointer;
+  transition: box-shadow 0.5s ease, color 0.5s ease;
 }
 
 .confirmButton {
@@ -106,6 +107,11 @@
 .declineButton {
   background: var(--decline);
   border: 1px solid var(--grey-disabled);
+}
+
+.confirmButton:hover,
+.declineButton:hover {
+  box-shadow: 0 4px 12px var(--shadow-strong);
 }
 
 .confirmButton:disabled,

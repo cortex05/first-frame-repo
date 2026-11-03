@@ -1074,18 +1074,11 @@ const CaseScreen = () => {
             <button
               onClick={handleAddQuestion}
               disabled={!questionForm.text.trim()}
+              className={styles.addQuestionModalButton}
               style={{
-                width: "100%",
-                padding: "12px 0",
-                fontSize: 15,
-                fontWeight: 600,
                 background: questionForm.text.trim()
                   ? "var(--confirm)"
                   : "var(--grey-disabled)",
-                color: "var(--light-text)",
-                border: "none",
-                borderRadius: 6,
-                marginBottom: 8,
                 cursor: questionForm.text.trim() ? "pointer" : "not-allowed",
               }}
             >
