@@ -25,8 +25,8 @@
   padding: 16px 32px;
   font-size: 18px;
   font-weight: 600;
-  background: var(--light-blue-background);
-	color: var(--modal-text);
+  background: var(--blue-background);
+	color: var(--page-text);
   border-radius: 8px;
   text-decoration: none;
   border: 3px solid var(--blue-background);
@@ -36,8 +36,8 @@
 }
 
 .linkButton:hover {
-  background: var(--blue-background);
-  color: var(--light-text);
+  background: var(--light-blue-background);
+  color: var(--modal-text);
 }
 
 .themeToggleRow {

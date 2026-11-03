@@ -261,7 +261,7 @@ const AccountScreen = () => {
           <div className={styles.dialogActions}>
             <button
               type="button"
-              className={styles.primaryButton}
+              className={styles.modal}
               disabled={isConfirmingDemotion}
               onClick={cancelSelfDemotion}
             >

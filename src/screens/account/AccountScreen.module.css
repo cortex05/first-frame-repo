@@ -69,7 +69,8 @@
 
 .primaryButton,
 .confirmButton,
-.declineButton {
+.declineButton,
+.modal {
   padding: 10px 20px;
   font-size: 15px;
   font-weight: 600;
@@ -77,10 +78,24 @@
   border: none;
   border-radius: 6px;
   cursor: pointer;
+  transition: background 0.5s ease, color 0.5s ease;
 }
 
 .primaryButton {
   background: var(--blue-background);
+}
+
+.primaryButton:hover {
+  background: var(--light-blue-background);
+  color: var(--modal-text);
+}
+
+.modal {
+  background: var(--blue-background);
+}
+
+.modal:hover {
+  background: var(--page-bg);
 }
 
 .confirmButton {

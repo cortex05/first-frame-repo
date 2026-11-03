@@ -35,7 +35,7 @@
   background: var(--label-light);
   border: 1px solid var(--question-bg);
   border-radius: 6px;
-  color: var(--modal-text);
+  color: var(--page-bg);
   text-decoration: none; 
   transition: background 0.3s ease, border-color 0.3s ease;
 }
@@ -43,7 +43,7 @@
 .item:hover {
   background: var(--blue-background);
   border-color: var(--light-blue-background);
-  color: var(--modal-text);
+  color: var(--light-text);
 }
 
 .itemTitle {
@@ -54,6 +54,11 @@
 .itemMeta {
   font-size: 13px;
   color: var(--page-bg);
+}
+
+.item:hover .itemTitle,
+.item:hover .itemMeta {
+  color: var(--light-text);
 }
 
 .muted {

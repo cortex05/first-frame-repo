@@ -25,8 +25,8 @@
   font-size: 16px;
   font-weight: 700;
   text-decoration: none;
-  background: var(--surface);
-  color: var(--modal-text);
+  background: var(--blue-button-nav);
+  color: var(--duo-nav-text);
   border: 1px solid var(--blue-background);
   border-radius: 8px;
   cursor: pointer;
@@ -34,8 +34,8 @@
 }
 
 .navButton:hover {
-  background: var(--blue-background);
-  color: var(--light-text);
+  background: var(--light-blue-background);
+  color: var(--modal-text);
 }
 
 .modalButtons {

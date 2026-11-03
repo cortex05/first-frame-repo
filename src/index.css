@@ -61,6 +61,8 @@
   --navbar-bg: #273952;
   --navbar-border: #2f425a;
   --navbar-text: #d8d8d8;
+  --blue-button-nav: #2f74c0;
+  --duo-text-nav: #d8d8d8;
 
   /* CARD */
   --card-bg: #e8edfa;            /* Dashboard + Case card bg */
@@ -132,7 +134,6 @@
   --tf-bg: #e6f4ea;
   --tf-text: #2e7d32;
 
-  --light-text: #fff;
   --text-on-bright-fill: #121212;
   --label-light: #4a5566;
   --error-text-light: #b3261e;
@@ -169,6 +170,8 @@
   --navbar-bg: var(--blue-background);
   --navbar-border: #d2d9e3;
   --navbar-text: #1f2f45;
+  --blue-button-nav: #273952;
+  --duo-text-nav: #d8d8d8;
 
   /* CARD */
   --card-bg: #eef2fc;
