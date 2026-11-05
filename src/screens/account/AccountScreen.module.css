@@ -83,11 +83,13 @@
 
 .primaryButton {
   background: var(--blue-background);
+  border: 2px solid var(--page-bg);
 }
 
 .primaryButton:hover {
   background: var(--light-blue-background);
   color: var(--modal-text);
+  border: 2px solid var(--blue-primary-dark);
 }
 
 .modal {

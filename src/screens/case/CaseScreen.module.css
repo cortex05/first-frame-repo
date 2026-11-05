@@ -34,7 +34,7 @@
 	font-weight: 600;
 	color: var(--light-text);
 	background: var(--blue-background);
-	border: none;
+	border: 3px solid var(--blue-background);
 	border-radius: 6px;
 	cursor: pointer;
 	transition: background 0.5s ease, color 0.5s ease;
@@ -199,6 +199,7 @@
 	color: var(--light-text);
 	font-weight: 600;
 	background: var(--blue-background);
+	border: 3px solid var(--blue-background);
 	transition: background 0.5s ease, color 0.5s ease;
 }
 
@@ -229,6 +230,7 @@
 	font-weight: 600;
 	background: var(--blue-background);
 	color: var(--light-text);
+	border: 3px solid var(--blue-background);
 	border: none;
 	border-radius: 8px;
 	cursor: pointer;
@@ -242,6 +244,7 @@
 	text-align: center;
 	text-decoration: none;
 	line-height: normal;
+	border: 3px solid var(--blue-background);
 }
 
 .exportSlidesWrapper {
@@ -252,8 +255,13 @@
 .exportSlidesButton {
 	background: var(--orange-edit);
 	color: var(--text-on-bright-fill);
+	border: 3px solid var(--orange-edit);
 	font-weight: 600;
 	font-size: 17px;
+}
+
+.exportSlidesButton:hover {
+	border: 3px solid var(--blue-background);
 }
 
 .exportSlidesButton:disabled {
@@ -281,6 +289,7 @@
 .addQuestionButton {
 	background: var(--confirm);
 	color: var(--light-text);
+	border: 3px solid var(--confirm);
 	font-size: 15px;
 	font-weight: 600;
 	transition: background 0.5s ease, color 0.5s ease;
@@ -289,6 +298,7 @@
 .addQuestionButton:hover {
 	background: var(--light-blue-background);
   color: var(--modal-text);
+	border: 3px solid var(--blue-background);
 }
 
 .activeQuestionButton {
@@ -327,6 +337,7 @@
 .accessPlaylistsButton {
 	background: var(--blue-background);
 	color: var(--light-text);
+	border: 3px solid var(--blue-background);
 	font-size: 15px;
 	font-weight: 600;
 	transition: background 0.5s ease, color 0.5s ease;
@@ -515,7 +526,7 @@
 	font-size: 15px;
 	font-weight: 600;
 	color: var(--light-text);
-	border: none;
+	border: 3px solid var(--blue-background);
 	border-radius: 6px;
 	cursor: pointer;
 	transition: background 0.5s ease, color 0.5s ease;
@@ -527,6 +538,11 @@
 
 .archiveButton {
 	background: var(--decline);
+	border: 3px solid var(--decline);
+}
+
+.archiveButton:hover {
+	border: 3px solid var(--blue-background);
 }
 
 .archiveButton:disabled {
