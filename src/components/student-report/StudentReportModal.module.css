@@ -200,6 +200,11 @@
 .edit {
   background: var(--orange-edit);
   color: var(--text-on-bright-fill);
+  transition: box-shadow 0.5s ease, color 0.5s ease;
+}
+
+.edit:hover {
+  box-shadow: 0 4px 12px var(--shadow-strong);
 }
 
 .save {

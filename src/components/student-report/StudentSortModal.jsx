@@ -4,6 +4,8 @@ import DialogPortal from '../modal/DialogPortal';
 import useModalDialog from '../../hooks/useModalDialog';
 import { RISK_LABELS } from '../../utils/studentScores';
 
+import styles from './StudentSortModal.module.css'
+
 /**
  * The Scores view's ranked student list ("High to Low" / "Low to High") on
  * QuestionsScreen. Each row opens that student's report on top of this list.
@@ -83,6 +85,7 @@ const StudentSortModal = ({ order, students, getScore, getTier, onSelectStudent,
                   key={s.id}
                   type="button"
                   onClick={() => onSelectStudent(s.id)}
+                  className={styles.listDisplay}
                   style={{
                     display: 'block',
                     width: '100%',
@@ -96,6 +99,7 @@ const StudentSortModal = ({ order, students, getScore, getTier, onSelectStudent,
                     fontWeight: 600,
                     border: 'none',
                     cursor: 'pointer',
+                    transition: "box-shadow 0.5s ease, color 0.5s ease",
                   }}
                 >
                   #{s.id} &mdash; {getScore(s.id)} &middot; {RISK_LABELS[tier]}

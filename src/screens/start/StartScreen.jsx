@@ -481,20 +481,15 @@ const StartScreen = () => {
           title="Order of student numbers in the next row added"
           className={`${styles.directionToggle} ${styles.leftToRight}`}
         >
-          {rightToLeft ? "Right to Left" : "Left to Right"}
+          {rightToLeft ? "Right to Left" : "Left to Right"} 
         </button>
 
         <button
           onClick={handleAddRect}
           disabled={remaining.length === 0}
+          className={styles.addBlock}
           style={{
-            padding: "10px 0",
-            fontSize: 14,
-            fontWeight: 600,
             background: remaining.length > 0 ? "var(--confirm)" : "var(--grey-disabled)",
-            color: "var(--light-text)",
-            border: "none",
-            borderRadius: 6,
             cursor: remaining.length > 0 ? "pointer" : "not-allowed",
           }}
         >
@@ -505,6 +500,7 @@ const StartScreen = () => {
           <button
             onClick={undo}
             disabled={!canUndo}
+            className={styles.blockAdjustmentButtons}
             style={{ ...secondaryButtonStyle(canUndo), flex: 1 }}
           >
             ↩ Undo
@@ -512,6 +508,7 @@ const StartScreen = () => {
           <button
             onClick={clearRects}
             disabled={rects.length === 0}
+            className={`${rects.length !== 0 ? styles.blockAdjustmentButtons : ''}`}
             style={{ ...secondaryButtonStyle(rects.length > 0), flex: 1 }}
           >
             Clear All
@@ -527,7 +524,7 @@ const StartScreen = () => {
               <li key={r.id}>
                 <button
                   type="button"
-                  className={styles.rowButton}
+                  className={`${styles.rowButton} ${styles.blockAdjustmentButtons}`}
                   aria-pressed={r.id === selectedRectId}
                   onClick={() => setSelectedRectId(r.id)}
                   onKeyDown={(event) => handleRowKeyDown(event, r)}
@@ -552,7 +549,7 @@ const StartScreen = () => {
                   key={label}
                   type="button"
                   aria-label={label}
-                  className={`${styles.moveButton} ${className}`}
+                  className={`${styles.moveButton} ${className} ${styles.blockAdjustmentButtons}`}
                   onClick={() => nudge(selectedRect, dx * GRID_SPACING, dy * GRID_SPACING)}
                 >
                   {arrow}
@@ -561,7 +558,7 @@ const StartScreen = () => {
             </div>
             <button
               type="button"
-              className={styles.moveButton}
+              className={`${styles.moveButton} ${styles.blockAdjustmentButtons}`}
               onClick={() => rotateBy45(selectedRect)}
             >
               Rotate 45°
@@ -571,6 +568,7 @@ const StartScreen = () => {
 
         <button
           onClick={() => setSaveWarning(true)}
+          className={styles.blockAdjustmentButtons}
           style={{
             padding: "10px 0",
             fontSize: 14,

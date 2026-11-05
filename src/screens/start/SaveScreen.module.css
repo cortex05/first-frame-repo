@@ -39,7 +39,22 @@
 	transition: background 0.3s ease, box-shadow 0.3s ease;
 }
 
-.directionToggle:hover {
+.addBlock {
+	padding: 10px 0;
+  font-size: 14px;
+  font-weight: 600;
+	color: var(--light-text);
+  border: none;
+  border-radius: 6px;
+	transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.blockAdjustmentButtons {
+	transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.directionToggle:hover, .addBlock:hover,
+.blockAdjustmentButtons:hover {
 	box-shadow: 0 4px 12px var(--shadow-strong);
 }
 

@@ -737,51 +737,21 @@ const QuestionsScreen = () => {
         {showScores ? (
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             <button
-              style={{
-                width: "100%",
-                padding: "12px 0",
-                fontSize: 15,
-                fontWeight: 600,
-                background: "var(--blue-background)",
-                color: "var(--light-text)",
-                border: "none",
-                borderRadius: 6,
-                cursor: "pointer",
-              }}
+              className={styles.panelBackToCase}
               onClick={() => setSaveWarning(true)}
             >
-              Back to Case
+              Back to Case!
             </button>
 
             <button
               onClick={() => setSortModal("high")}
-              style={{
-                width: "100%",
-                padding: "12px 0",
-                fontSize: 15,
-                fontWeight: 600,
-                background: "var(--blue-background)",
-                color: "var(--light-text)",
-                border: "none",
-                borderRadius: 6,
-                cursor: "pointer",
-              }}
+              className={styles.panelIndividualBackToCase}
             >
               High to Low
             </button>
             <button
               onClick={() => setSortModal("low")}
-              style={{
-                width: "100%",
-                padding: "12px 0",
-                fontSize: 15,
-                fontWeight: 600,
-                background: "var(--blue-background)",
-                color: "var(--light-text)",
-                border: "none",
-                borderRadius: 6,
-                cursor: "pointer",
-              }}
+              className={styles.panelIndividualBackToCase}
             >
               Low to High
             </button>
@@ -790,17 +760,7 @@ const QuestionsScreen = () => {
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             <button
               type="button"
-              style={{
-                width: "100%",
-                padding: "12px 0",
-                fontSize: 15,
-                fontWeight: 600,
-                background: "var(--blue-background)",
-                color: "var(--light-text)",
-                border: "none",
-                borderRadius: 6,
-                cursor: "pointer",
-              }}
+              className={styles.panelBackToCase}
               onClick={() => setSaveWarning(true)}
             >
               Back to Case
@@ -841,6 +801,7 @@ const QuestionsScreen = () => {
               type="button"
               onClick={handleSaveIndividualRound}
               disabled={isSavingIndividual}
+              className={styles.individualSave}
               style={{
                 width: "100%",
                 padding: "12px 0",
@@ -852,6 +813,7 @@ const QuestionsScreen = () => {
                 borderRadius: 6,
                 cursor: isSavingIndividual ? "not-allowed" : "pointer",
                 opacity: isSavingIndividual ? 0.75 : 1,
+                transition: "box-shadow 0.5s ease, color 0.5s ease",
               }}
             >
               {isSavingIndividual ? "Saving..." : "Save Answers"}
@@ -866,18 +828,7 @@ const QuestionsScreen = () => {
             )}
 
             <button
-              style={{
-                width: "100%",
-                padding: "12px 0",
-                fontSize: 15,
-                fontWeight: 600,
-                background: "var(--blue-background)",
-                color: "var(--light-text)",
-                border: "none",
-                borderRadius: 6,
-                cursor: "pointer",
-								marginBottom: 12
-              }}
+              className={styles.panelBackToCase}  
               onClick={() => setSaveWarning(true)}
             >
               Back to Case

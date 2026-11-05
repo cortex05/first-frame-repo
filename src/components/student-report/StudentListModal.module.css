@@ -61,6 +61,11 @@
   font-weight: 600;
   text-align: left;
   cursor: pointer;
+  transition: box-shadow 0.5s ease, color 0.5s ease;
+}
+
+.row:hover {
+  box-shadow: 0 4px 12px var(--shadow-strong);
 }
 
 .risk_high {
