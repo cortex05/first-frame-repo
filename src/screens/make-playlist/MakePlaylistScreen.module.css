@@ -19,11 +19,12 @@
   box-sizing: border-box;
   height: 50px;
   margin: 18px 0;
+  transition: border 0.5s ease, color 0.5s ease;
 }
 
-/* .inputStyle {
-  padding: 2px 12px;
-} */
+.inputStyle:hover {
+  border: 3px solid var(--input-border-case);
+}
 
 .fieldStyle {
   margin-bottom: 16px;
@@ -46,15 +47,101 @@
   display: block;
 }
 
+.questionsField {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  background: var(--surface-subtle);
+  border: 2px solid var(--duo-input-border-dark);
+  border-radius: 6px;
+  font-size: 14px;
+  transition: box-shadow 0.5s ease, color 0.5s ease;
+}
+
+.questionsField:hover {
+  box-shadow: 0 4px 12px var(--shadow-strong);
+}
+
 .addQuestionButton {
   margin-top: 8px;
-  padding: 10px 20px;
-  font-size: 15px;
+  padding: 14px 36px;
+  font-size: 17px;
+  font-weight: 600;
   background: var(--confirm);
   color: var(--light-text);
-  border: none;
+  border: 3px solid var(--confirm);
   border-radius: 6px;
   cursor: pointer;
+  transition: background 0.5s ease, color 0.5s ease;
+}
+
+.activeQuestionButton {
+	font-size: 12;
+  font-weight: 700;
+  padding: 4px 8px;
+  background: var(--orange-edit);
+  color: var(--text-on-bright-fill);
+  border: 2px solid var(--orange-edit);
+  border-radius: 4px;
+  cursor: pointer;
+	transition: background 0.5s ease, color 0.5s ease;
+}
+
+.activeQuestionDeleteButton {
+	width: 24px;
+  height: 24px;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 0px;
+  background: var(--decline);
+  color: var(--light-text);
+  border: 2px solid var(--decline);
+  border-radius: 4px;
+  cursor: pointer;
+  line-height: 1;
+	transition: background 0.5s ease, color 0.5s ease;
+}
+
+.activeQuestionButton:hover, .activeQuestionDeleteButton:hover {
+	background: #121212;
+  color: var(--light-text);
+	border: 2px solid var(--color-text-primary);
+}
+
+.createButton {
+  display: inline-block;
+  padding: 14px 36px;
+  font-size: 17px;
+  font-weight: 600;
+  background: var(--blue-background);
+  color: var(--light-text);
+  border-radius: 8px;
+  text-decoration: none;
+  border: 3px solid var(--blue-background);
+  margin-right: 12px;
+  transition: background 0.5s ease, color 0.5s ease;
+}
+
+.cancelButton {
+  display: inline-block;
+  padding: 14px 36px;
+  font-size: 17px;
+  font-weight: 600;
+  background: var(--decline);
+  color: var(--light-text);
+  border: 3px solid var(--decline);
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background 0.5s ease, color 0.5s ease;
+}
+
+.createButton:hover, .cancelButton:hover,
+.addQuestionButton:hover {
+  background: var(--light-blue-background);
+  color: var(--modal-text);
+  border: 3px solid var(--blue-primary-dark);
 }
 
 .modalAdd:hover {

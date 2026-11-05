@@ -293,6 +293,7 @@ const Dashboard = () => {
                   <button
                     type="button"
                     onClick={handleEditPlaylist}
+                    className={styles.modalEdits}
                     style={{
                       flex: 1,
                       minWidth: 100,
@@ -310,6 +311,7 @@ const Dashboard = () => {
                   <button
                     type="button"
                     onClick={handleRequestDelete}
+                    className={styles.modalEdits}
                     style={{
                       flex: 1,
                       minWidth: 100,

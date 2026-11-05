@@ -56,6 +56,7 @@
   --border-subtle: #e0e0e0;
   --border-control: #bfbfbf;
   --border-input: #8a8a8a; /* input/select/textarea outlines, 3:1 on --surface */
+  --duo-input-border-dark: var(--page-bg);
 
   /* --- Navbar --- */
   --navbar-bg: #273952;
@@ -63,6 +64,7 @@
   --navbar-text: #d8d8d8;
   --blue-button-nav: #2f74c0;
   --duo-text-nav: #d8d8d8;
+
 
   /* CARD */
   --card-bg: #e8edfa;            /* Dashboard + Case card bg */
@@ -172,6 +174,8 @@
   --navbar-text: #1f2f45;
   --blue-button-nav: #273952;
   --duo-text-nav: #d8d8d8;
+
+  --duo-input-border-dark: #121212;
 
   /* CARD */
   --card-bg: #eef2fc;

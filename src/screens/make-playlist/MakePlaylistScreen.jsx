@@ -242,17 +242,7 @@ const MakePlaylistScreen = () => {
           {questions.map((q, i) => (
             <div
               key={q.id}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                padding: '8px 12px',
-                marginBottom: 8,
-                background: 'var(--surface-subtle)',
-                border: '1px solid var(--light-blue-background)',
-                borderRadius: 6,
-                fontSize: 14,
-              }}
+              className={styles.questionsField}
             >
               <span style={{ fontWeight: 600, color: 'var(--modal-text)', minWidth: 24 }}>
                 {i + 1}.
@@ -261,35 +251,14 @@ const MakePlaylistScreen = () => {
 
               <button
                 onClick={() => openEditQuestionModal(q)}
-                style={{
-                  fontSize: 12,
-                  fontWeight: 700,
-                  padding: '4px 8px',
-                  background: 'var(--orange-edit)',
-                  color: 'var(--text-on-bright-fill)',
-                  border: 'none',
-                  borderRadius: 4,
-                  cursor: 'pointer',
-                }}
+                className={styles.activeQuestionButton}
               >
                 Edit
               </button>
 
               <button
                 onClick={() => setDeleteQuestionId(q.id)}
-                style={{
-                  width: 24,
-                  height: 24,
-                  fontSize: 13,
-                  fontWeight: 700,
-                  padding: 0,
-                  background: 'var(--decline)',
-                  color: 'var(--light-text)',
-                  border: 'none',
-                  borderRadius: 4,
-                  cursor: 'pointer',
-                  lineHeight: 1,
-                }}
+                className={styles.activeQuestionDeleteButton}
                 aria-label="Delete question"
               >
                 X
@@ -332,35 +301,18 @@ const MakePlaylistScreen = () => {
           <button
             onClick={handleCreatePlaylist}
             disabled={isSubmitting}
+            className={styles.createButton}
             style={{
-              display: 'inline-block',
-              padding: '14px 36px',
-              fontSize: 17,
-              fontWeight: 600,
-              background: 'var(--blue-background)',
-              color: 'var(--light-text)',
-              borderRadius: 8,
-              textDecoration: 'none',
-              border: 'none',
               cursor: isSubmitting ? 'not-allowed' : 'pointer',
               opacity: isSubmitting ? 0.75 : 1,
-              marginRight: 12,
             }}
           >
             {isSubmitting ? 'Creating Playlist...' : 'Create Playlist'}
           </button>
           <button
             onClick={() => navigate(fromCaseId ? `/case/${fromCaseId}` : '/dashboard')}
+            className={styles.cancelButton}
             style={{
-              display: 'inline-block',
-              padding: '14px 36px',
-              fontSize: 17,
-              fontWeight: 600,
-              background: 'var(--decline)',
-              color: 'var(--light-text)',
-              borderRadius: 8,
-              textDecoration: 'none',
-              border: 'none',
               cursor: isSubmitting ? 'not-allowed' : 'pointer',
               opacity: isSubmitting ? 0.75 : 1,
             }}

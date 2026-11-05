@@ -48,6 +48,14 @@
   margin: 20px 0px;
 }
 
+.modalEdits {
+  transition: box-shadow 0.5s ease, color 0.5s ease;
+}
+
+.modalEdits:hover {
+  box-shadow: 0 4px 12px var(--shadow-strong);
+}
+
 .caseItem {
   composes: linkItemCentered from '../../styles/linkItem.module.css';
 }
