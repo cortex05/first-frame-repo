@@ -639,7 +639,7 @@ const CaseScreen = () => {
             className={styles.viewStudentsButton}
             onClick={() => setStudentListOpen(true)}
           >
-            View Students
+            View Students 
           </button>
 
           {/* Owners & archive */}
@@ -725,34 +725,13 @@ const CaseScreen = () => {
               <span style={{ flex: 1 }}>{q.text}</span>
               <button
                 onClick={() => openEditQuestionModal(q)}
-                style={{
-                  fontSize: 12,
-                  fontWeight: 700,
-                  padding: "4px 8px",
-                  background: "var(--orange-edit)",
-                  color: "var(--text-on-bright-fill)",
-                  border: "none",
-                  borderRadius: 4,
-                  cursor: "pointer",
-                }}
+                className={styles.activeQuestionButton}
               >
                 Edit
               </button>
               <button
                 onClick={() => setDeleteQuestionId(q.id)}
-                style={{
-                  width: 24,
-                  height: 24,
-                  fontSize: 13,
-                  fontWeight: 700,
-                  padding: 0,
-                  background: "var(--decline)",
-                  color: "var(--light-text)",
-                  border: "none",
-                  borderRadius: 4,
-                  cursor: "pointer",
-                  lineHeight: 1,
-                }}
+                className={styles.activeQuestionDeleteButton}
                 aria-label="Delete question"
               >
                 X

@@ -37,6 +37,14 @@
 	border: none;
 	border-radius: 6px;
 	cursor: pointer;
+	transition: background 0.5s ease, color 0.5s ease;
+}
+
+.viewStudentsButton:hover, .manageOwnersButton:hover,
+.accessPlaylistsButton:hover, .offlineExportButton:hover,
+.sessionButton:hover, .archiveButton:hover {
+	background: var(--light-blue-background);
+  color: var(--modal-text);
 }
 
 .startModal {
@@ -188,8 +196,10 @@
 }
 
 .offlineExportButton {
+	color: var(--light-text);
 	font-weight: 600;
 	background: var(--blue-background);
+	transition: background 0.5s ease, color 0.5s ease;
 }
 
 .offlineExportButton:disabled {
@@ -222,6 +232,7 @@
 	border: none;
 	border-radius: 8px;
 	cursor: pointer;
+	transition: background 0.5s ease, color 0.5s ease;
 }
 
 /* "Access Questions" is a link drawn as .sessionButton (spec 017). */
@@ -241,6 +252,8 @@
 .exportSlidesButton {
 	background: var(--orange-edit);
 	color: var(--text-on-bright-fill);
+	font-weight: 600;
+	font-size: 17px;
 }
 
 .exportSlidesButton:disabled {
@@ -267,15 +280,56 @@
 
 .addQuestionButton {
 	background: var(--confirm);
-	transition: box-shadow 0.5s ease, color 0.5s ease;
+	color: var(--light-text);
+	font-size: 15px;
+	font-weight: 600;
+	transition: background 0.5s ease, color 0.5s ease;
 }
 
 .addQuestionButton:hover {
-	box-shadow: 0 4px 12px var(--confirm);
+	background: var(--light-blue-background);
+  color: var(--modal-text);
+}
+
+.activeQuestionButton {
+	font-size: 12;
+  font-weight: 700;
+  padding: 4px 8px;
+  background: var(--orange-edit);
+  color: var(--text-on-bright-fill);
+  border: 2px solid var(--orange-edit);
+  border-radius: 4px;
+  cursor: pointer;
+	transition: background 0.5s ease, color 0.5s ease;
+}
+
+.activeQuestionDeleteButton {
+	width: 24px;
+  height: 24px;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 0px;
+  background: var(--decline);
+  color: var(--light-text);
+  border: 2px solid var(--decline);
+  border-radius: 4px;
+  cursor: pointer;
+  line-height: 1;
+	transition: background 0.5s ease, color 0.5s ease;
+}
+
+.activeQuestionButton:hover, .activeQuestionDeleteButton:hover {
+	background: #121212;
+  color: var(--light-text);
+	border: 2px solid var(--color-text-primary);
 }
 
 .accessPlaylistsButton {
 	background: var(--blue-background);
+	color: var(--light-text);
+	font-size: 15px;
+	font-weight: 600;
+	transition: background 0.5s ease, color 0.5s ease;
 }
 
 .recommendedListItem {
@@ -464,6 +518,7 @@
 	border: none;
 	border-radius: 6px;
 	cursor: pointer;
+	transition: background 0.5s ease, color 0.5s ease;
 }
 
 .manageOwnersButton {
